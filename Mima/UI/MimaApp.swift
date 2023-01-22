@@ -31,7 +31,8 @@ struct ContentView: View {
 @main
 struct MimaApp: App {
     @StateObject private var model = Model.load()
-
+    @Environment(\.openWindow) var openWindow
+    
     var body: some Scene {
         WindowGroup {
             ContentView(model: model)
@@ -47,6 +48,11 @@ struct MimaApp: App {
                     withAnimation {
                         model.removeAll()
                     }
+                }
+            }
+            CommandGroup(replacing: .appInfo) {
+                Button("About Mima") {
+                    openWindow(id: "about")
                 }
             }
             CommandGroup(replacing: .importExport) {
@@ -68,5 +74,10 @@ struct MimaApp: App {
             }
         }
         .defaultSize(width: 1024, height: 768)
+        
+        Window("About Mima", id: "about") {
+            AboutView()
+        }
+        .windowResizability(.contentSize)
     }
 }

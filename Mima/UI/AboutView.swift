@@ -60,13 +60,14 @@ struct AboutView: View {
                 Image("aboutMargin")
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: 256)
+                    .frame(width: 16)
                 
                 Spacer()
             }
-            HStack {
+            
+            HStack(alignment: .top) {
                 VStack {
-                    ScrollView {
+                    ScrollView(showsIndicators: false) {
                         VStack {
                             VStack(spacing: 2) {
                                 Text("Aniara, poem 9")
@@ -78,19 +79,43 @@ struct AboutView: View {
                             .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                             Text(aboutText)
                         }
+                        .multilineTextAlignment(.center)
                         .padding()
                         .foregroundColor(.white)
                         .background(.ultraThinMaterial)
                         .cornerRadius(12)
                         .padding()
                     }
-                    Spacer()
                 }
                 
                 Spacer()
+                
+                VStack(alignment: .trailing, spacing: 16) {
+                    Text("Mima")
+                        .font(.title)
+                        .bold()
+                    VStack(alignment: .trailing) {
+                        Text("© Copyright 2023")
+                            .font(.headline)
+                        Text("Paul Tsochantaris")
+                            .font(.headline)
+                    }
+                    VStack(alignment: .trailing) {
+                        Text("Mima uses Stable")
+                        Text("Diffusion v1.5")
+                    }
+                    Text("Usage of this app and the model is subject to the Stable Diffusion license which can be found at https://raw.githubusercontent.com/CompVis/stable-diffusion/main/LICENSE")
+                }
+                .foregroundColor(.black.opacity(0.9))
+                .padding()
+                .cornerRadius(12)
+                .frame(width: 256)
+                .padding()
             }
+            .foregroundColor(.black)
+            .multilineTextAlignment(.trailing)
         }
-        .frame(height: 794)
+        .frame(width: 680, height: 790)
     }
 }
 
