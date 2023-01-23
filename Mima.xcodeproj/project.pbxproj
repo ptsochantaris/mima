@@ -47,6 +47,7 @@
 		1661425E2974D15E00BFA494 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		16622AC6297D996300C8C7F0 /* Mac.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mac.swift; sourceTree = "<group>"; };
 		166A262D297EE7C600A1BB50 /* Rendering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rendering.swift; sourceTree = "<group>"; };
+		169732BC297F0C2700DFF596 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +82,7 @@
 		166142462974BD5800BFA494 /* Mima */ = {
 			isa = PBXGroup;
 			children = (
+				169732BC297F0C2700DFF596 /* Info.plist */,
 				16622AC3297D82DA00C8C7F0 /* UI */,
 				16622AC2297D82CF00C8C7F0 /* Data */,
 				1661424D2974BD5900BFA494 /* Mima.entitlements */,
@@ -92,7 +94,6 @@
 		16622AC2297D82CF00C8C7F0 /* Data */ = {
 			isa = PBXGroup;
 			children = (
-				166A262C297EE7BB00A1BB50 /* New Group */,
 				1625572B297B2C9C0027BD4F /* ListItem.swift */,
 				1625572F297B6EAF0027BD4F /* ListItemState.swift */,
 				1625572D297B38EF0027BD4F /* Model.swift */,
@@ -117,13 +118,6 @@
 				165150E6297DCC5A00124967 /* AboutView.swift */,
 			);
 			path = UI;
-			sourceTree = "<group>";
-		};
-		166A262C297EE7BB00A1BB50 /* New Group */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "New Group";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -344,6 +338,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Mima/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -382,6 +377,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Mima/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;

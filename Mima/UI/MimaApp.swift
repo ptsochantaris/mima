@@ -11,7 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     }
 }
 
-struct ContentView: View {
+private struct ContentView: View {
     @ObservedObject private var model = Model.shared
 
     var body: some View {

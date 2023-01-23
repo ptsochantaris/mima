@@ -110,7 +110,6 @@ struct NewItem: View {
                         }
                         
                         Button {
-                            updatePrototype()
                             create()
                         } label: {
                             Text("Create")
@@ -150,6 +149,7 @@ struct NewItem: View {
     
     @MainActor
     private func create() {
+        updatePrototype()
         withAnimation {
             let count = Int(countText) ?? 1
             Model.shared.createItems(count: count, basedOn: prototype, fromCreator: prototype.state.isCreator)
