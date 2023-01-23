@@ -15,7 +15,7 @@ struct ListItemView: View {
         ZStack {
             Color.secondary.opacity(0.1)
             switch entry.state {
-            case .creating, .clonedCreator:
+            case .clonedCreator, .creating:
                 NewItem(prototype: entry)
 
             case .queued:
@@ -121,6 +121,16 @@ struct ListItemView: View {
             }
         }
         .contextMenu {
+            Button("Cut") {
+                entry.copyImageToPasteboard()
+                Model.shared.delete(entry)
+            }
+            Button("Copy") {
+                entry.copyImageToPasteboard()
+            }
+            Button("Delete") {
+                Model.shared.delete(entry)
+            }
             Button("Render This Next") {
                 Model.shared.prioritise(entry)
             }
@@ -143,22 +153,22 @@ struct ListItemView: View {
 struct DismissButton: View {
     @ObservedObject private var entry: ListItem
     private let visibleControls: Bool
-    
+
     init(entry: ListItem, visibleControls: Bool) {
         self.entry = entry
         self.visibleControls = visibleControls
     }
-    
+
     var body: some View {
         switch entry.state {
-        case .queued, .warmup, .clonedCreator, .cancelled, .error, .creating:
+        case .cancelled, .clonedCreator, .creating, .error, .queued, .warmup:
             MimaButon(look: .dismiss)
                 .onTapGesture {
                     withAnimation {
                         Model.shared.delete(entry)
                     }
                 }
-            
+
         case let .rendering(step, total):
             ZStack {
                 ProgressView(value: step, total: total)
@@ -171,7 +181,7 @@ struct DismissButton: View {
                         }
                     }
             }
-            
+
         case .done:
             if visibleControls {
                 MimaButon(look: .dismiss)

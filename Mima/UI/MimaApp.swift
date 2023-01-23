@@ -1,7 +1,6 @@
 import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
-    
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         Task {
             await shutdown()
@@ -79,7 +78,7 @@ struct MimaApp: App {
             }
         }
         .defaultSize(width: 1024, height: 768)
-        
+
         Window("About Mima", id: "about") {
             AboutView()
         }

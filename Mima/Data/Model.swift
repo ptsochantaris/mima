@@ -23,7 +23,7 @@ final class Model: ObservableObject, Codable {
 
         entries = try values.decode(ContiguousArray<ListItem>.self, forKey: .entries)
         renderQueue = try values.decode(ContiguousArray<UUID>.self, forKey: .renderQueue)
-                
+
         if !renderQueue.isEmpty {
             Task { @MainActor in
                 startRendering()
@@ -119,7 +119,7 @@ extension Model {
         }
         save()
     }
-    
+
     func prioritise(_ item: ListItem) {
         if let index = renderQueue.firstIndex(of: item.id) {
             renderQueue.move(fromOffsets: IndexSet(integer: index), toOffset: 0)
@@ -162,11 +162,11 @@ extension Model {
         Task { @RenderActor in
             startup()
         }
-        
+
         guard let data = try? Data(contentsOf: indexFileUrl) else {
             return Model()
         }
-        
+
         do {
             return try JSONDecoder().decode(Model.self, from: data)
         } catch {

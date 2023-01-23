@@ -1,5 +1,21 @@
 import SwiftUI
 
+struct ButtonBackground: View {
+    var body: some View {
+        Group {
+            if NSApp.isActive {
+                Circle()
+                    .foregroundStyle(.ultraThinMaterial)
+            } else {
+                Circle()
+                    .foregroundStyle(.ultraThinMaterial.opacity(0.2))
+            }
+        }
+        .frame(width: 26, height: 26)
+        .padding(13)
+    }
+}
+
 struct MimaButon: View {
     enum Look {
         case share, dismiss, encore, edit
@@ -21,26 +37,16 @@ struct MimaButon: View {
     }
 
     var body: some View {
-        Group {
-            if NSApp.isActive {
-                Circle()
-                    .foregroundStyle(.ultraThinMaterial)
-            } else {
-                Circle()
-                    .foregroundStyle(.ultraThinMaterial.opacity(0.2))
+        ButtonBackground()
+            .overlay {
+                Image(systemName: look.systemName)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.white.opacity(0.7))
             }
-        }
-        .frame(width: 26, height: 26)
-        .padding(13)
-        .overlay {
-            Image(systemName: look.systemName)
-                .fontWeight(.bold)
-                .foregroundStyle(.white.opacity(0.7))
-        }
         #if os(macOS)
-        .overlay {
-            AcceptingFirstMouse()
-        }
+            .overlay {
+                AcceptingFirstMouse()
+            }
         #endif
     }
 }

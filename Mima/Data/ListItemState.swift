@@ -10,7 +10,7 @@ extension ListItem {
             }
             return isWarmup
         }
-        
+
         var isCreator: Bool {
             if case .creating = self {
                 return true

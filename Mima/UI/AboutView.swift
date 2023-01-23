@@ -1,10 +1,3 @@
-//
-//  AboutView.swift
-//  Mima
-//
-//  Created by Paul Tsochantaris on 22/01/2023.
-//
-
 import SwiftUI
 
 private let aboutText = """
@@ -61,10 +54,10 @@ struct AboutView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 56)
-                
+
                 Spacer()
             }
-            
+
             HStack(alignment: .top) {
                 VStack {
                     ScrollView(showsIndicators: false) {
@@ -88,9 +81,9 @@ struct AboutView: View {
                         .padding()
                     }
                 }
-                
+
                 Spacer()
-                
+
                 VStack(alignment: .trailing, spacing: 16) {
                     Text("Mima")
                         .font(.title)

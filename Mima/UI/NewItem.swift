@@ -2,7 +2,7 @@ import SwiftUI
 
 struct NewItem: View {
     private var prototype: ListItem
-    
+
     init(prototype: ListItem) {
         self.prototype = prototype
 
@@ -15,20 +15,20 @@ struct NewItem: View {
         } else {
             seedText = ""
         }
-        
+
         if prototype.steps == 50 {
             stepText = ""
         } else {
             stepText = String(prototype.steps)
         }
-        
+
         if prototype.guidance == 7.5 {
             guidanceText = ""
         } else {
             guidanceText = String(prototype.guidance)
         }
     }
-    
+
     private func updatePrototype() {
         prototype.update(prompt: promptText.trimmingCharacters(in: .whitespacesAndNewlines),
                          negativePrompt: negativePromptText.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -36,14 +36,14 @@ struct NewItem: View {
                          steps: Int(stepText) ?? 50,
                          guidance: Float(guidanceText) ?? 7.5)
     }
-    
+
     @State private var promptText: String
     @State private var negativePromptText: String
     @State private var seedText: String
     @State private var stepText: String
     @State private var guidanceText: String
     @State private var countText = ""
-    
+
     var body: some View {
         GeometryReader { proxy in
             ZStack {
@@ -73,7 +73,7 @@ struct NewItem: View {
                                     }
                             }
                         }
-                        
+
                         Grid {
                             GridRow(alignment: .bottom) {
                                 Text("Seed")
@@ -108,7 +108,7 @@ struct NewItem: View {
                                 create()
                             }
                         }
-                        
+
                         Button {
                             create()
                         } label: {
@@ -146,7 +146,7 @@ struct NewItem: View {
         }
         .aspectRatio(1, contentMode: .fill)
     }
-    
+
     @MainActor
     private func create() {
         updatePrototype()

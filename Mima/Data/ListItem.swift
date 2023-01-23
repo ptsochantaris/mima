@@ -35,15 +35,15 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         state = try values.decode(State.self, forKey: .state)
         guidance = try values.decode(Float.self, forKey: .guidance)
     }
-    
+
     func randomVariant() -> ListItem {
         ListItem(prompt: prompt, negativePrompt: negativePrompt, seed: UInt32.random(in: 0 ..< UInt32.max), steps: steps, guidance: guidance, state: .queued)
     }
-    
+
     func cloneAsCreator() -> ListItem {
         ListItem(prompt: prompt, negativePrompt: negativePrompt, seed: seed, steps: steps, guidance: guidance, state: .clonedCreator)
     }
-    
+
     func update(prompt: String, negativePrompt: String, seed: UInt32?, steps: Int, guidance: Float) {
         self.prompt = prompt
         self.negativePrompt = negativePrompt
@@ -123,6 +123,15 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         } else {
             state = .cancelled
         }
+    }
+
+    @MainActor
+    func copyImageToPasteboard() {
+        guard let url = (imageUrl as NSURL).fileReferenceURL() as NSURL? else { return }
+        let pb = NSPasteboard.general
+        pb.clearContents()
+        pb.writeObjects([url])
+        pb.setString(url.relativeString, forType: .fileURL)
     }
 
     @RenderActor
