@@ -9,7 +9,7 @@ struct MimaButon: View {
             case .dismiss: return "xmark"
             case .share: return "square.and.arrow.up"
             case .encore: return "arrow.clockwise"
-            case .edit: return "pencil"
+            case .edit: return "square.on.square"
             }
         }
     }

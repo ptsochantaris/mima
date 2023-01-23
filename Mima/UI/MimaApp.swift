@@ -1,7 +1,7 @@
 import SwiftUI
 
-// save all
-// share button
+// close button on main creator
+// queue next
 
 struct ContentView: View {
     @ObservedObject private var model: Model
@@ -30,10 +30,14 @@ struct ContentView: View {
 struct MimaApp: App {
     @StateObject private var model = Model.load()
     @Environment(\.openWindow) var openWindow
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView(model: model)
+                .onDisappear {
+                    model.save()
+                    NSApplication.shared.terminate(nil)
+                }
         }.commands {
             CommandGroup(replacing: .newItem, addition: {})
             CommandGroup(after: .textEditing) {

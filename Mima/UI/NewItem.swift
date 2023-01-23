@@ -1,9 +1,11 @@
 import SwiftUI
 
 struct NewItem: View {
-    private var model: Model
+    private var prototype: ListItem
+    private let model: Model
     
     init(prototype: ListItem, model: Model) {
+        self.prototype = prototype
         self.model = model
 
         promptText = prototype.prompt
@@ -29,13 +31,21 @@ struct NewItem: View {
         }
     }
     
+    private func updatePrototype() {
+        prototype.update(prompt: promptText.trimmingCharacters(in: .whitespacesAndNewlines),
+                         negativePrompt: negativePromptText.trimmingCharacters(in: .whitespacesAndNewlines),
+                         seed: UInt32(seedText) ?? UInt32.random(in: 0 ..< UInt32.max),
+                         steps: Int(stepText) ?? 50,
+                         guidance: Float(guidanceText) ?? 7.5)
+    }
+    
     @State private var promptText: String
     @State private var negativePromptText: String
     @State private var seedText: String
     @State private var stepText: String
     @State private var guidanceText: String
     @State private var countText = ""
-
+    
     var body: some View {
         GeometryReader { proxy in
             ZStack {
@@ -60,9 +70,12 @@ struct NewItem: View {
                                 TextField("", text: $negativePromptText)
                                     .textFieldStyle(.roundedBorder)
                                     .font(.caption)
+                                    .onSubmit {
+                                        create()
+                                    }
                             }
                         }
-
+                        
                         Grid {
                             GridRow(alignment: .bottom) {
                                 Text("Seed")
@@ -83,27 +96,21 @@ struct NewItem: View {
                             }
                             GridRow {
                                 TextField("Random", text: $seedText)
-                                    .textFieldStyle(.roundedBorder)
-                                    .font(.footnote)
-                                    .multilineTextAlignment(.center)
                                 TextField("50", text: $stepText)
-                                    .textFieldStyle(.roundedBorder)
-                                    .font(.footnote)
-                                    .multilineTextAlignment(.center)
                                     .frame(width: 55)
                                 TextField("7.5", text: $guidanceText)
-                                    .textFieldStyle(.roundedBorder)
-                                    .font(.footnote)
-                                    .multilineTextAlignment(.center)
                                     .frame(width: 55)
                                 TextField("1", text: $countText)
-                                    .textFieldStyle(.roundedBorder)
-                                    .font(.footnote)
-                                    .multilineTextAlignment(.center)
                                     .frame(width: 55)
                             }
+                            .textFieldStyle(.roundedBorder)
+                            .font(.footnote)
+                            .multilineTextAlignment(.center)
+                            .onSubmit {
+                                create()
+                            }
                         }
-
+                        
                         Button {
                             create()
                         } label: {
@@ -116,6 +123,29 @@ struct NewItem: View {
                 }
             }
         }
+        .onChange(of: promptText) { _ in
+            updatePrototype()
+        }
+        .onChange(of: negativePromptText) { _ in
+            updatePrototype()
+        }
+        .onChange(of: seedText) { _ in
+            updatePrototype()
+        }
+        .onChange(of: stepText) { _ in
+            updatePrototype()
+        }
+        .onChange(of: guidanceText) { _ in
+            updatePrototype()
+        }
+        .overlay(alignment: .topTrailing) {
+            if !prototype.state.isCreator {
+                MimaButon(look: .dismiss)
+                    .onTapGesture {
+                        model.delete(prototype)
+                    }
+            }
+        }
         .aspectRatio(1, contentMode: .fill)
     }
     
@@ -123,13 +153,7 @@ struct NewItem: View {
     private func create() {
         withAnimation {
             let count = Int(countText) ?? 1
-            let prototype = ListItem(prompt: promptText.trimmingCharacters(in: .whitespacesAndNewlines),
-                                     negativePrompt: negativePromptText.trimmingCharacters(in: .whitespacesAndNewlines),
-                                     seed: UInt32(seedText) ?? UInt32.random(in: 0 ..< UInt32.max),
-                                     steps: Int(stepText) ?? 50,
-                                     guidance: Float(guidanceText) ?? 7.5,
-                                     state: .queued)
-            model.createItems(count: count, basedOn: prototype)
+            model.createItems(count: count, basedOn: prototype, fromCreator: prototype.state.isCreator)
         }
     }
 }

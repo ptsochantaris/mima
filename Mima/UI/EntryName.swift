@@ -8,12 +8,12 @@ struct EntryName: View {
     }
 
     var body: some View {
-        VStack {
+        VStack(spacing: 4) {
             if entry.prompt.isEmpty && entry.negativePrompt.isEmpty {
                 Text("Random prompt")
             } else if !entry.prompt.isEmpty && !entry.negativePrompt.isEmpty {
                 Text(entry.prompt)
-                Text("Exclude: " + entry.negativePrompt)
+                Text("Excluding: " + entry.negativePrompt)
                     .font(.caption)
             } else {
                 if !entry.prompt.isEmpty {

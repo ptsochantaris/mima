@@ -2,7 +2,7 @@ import Foundation
 
 extension ListItem {
     enum State: Codable {
-        case queued, warmup, rendering(step: Float, total: Float), done, cancelled, error, creating
+        case queued, warmup, rendering(step: Float, total: Float), done, cancelled, error, creating, clonedCreator
 
         var isWaiting: Bool {
             if case .queued = self {
@@ -53,6 +53,7 @@ extension ListItem {
             case cancelled
             case error
             case creating
+            case clonedCreator
         }
 
         enum GalleryEntryDecoderError: Error {
@@ -81,6 +82,10 @@ extension ListItem {
                 self = .creating
                 return
             }
+            if (try? values.decode(Bool.self, forKey: .clonedCreator)) != nil {
+                self = .clonedCreator
+                return
+            }
             throw GalleryEntryDecoderError.decodingState
         }
 
@@ -97,6 +102,8 @@ extension ListItem {
                 try container.encode(true, forKey: .ready)
             case .creating:
                 try container.encode(true, forKey: .creating)
+            case .clonedCreator:
+                try container.encode(true, forKey: .clonedCreator)
             }
         }
     }

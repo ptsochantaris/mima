@@ -2,12 +2,12 @@ import Foundation
 import SwiftUI
 
 final class ListItem: ObservableObject, Codable, Identifiable {
-    let id: UUID
-    let prompt: String
-    let negativePrompt: String
-    let guidance: Float
-    let seed: UInt32
-    let steps: Int
+    var id: UUID
+    var prompt: String
+    var negativePrompt: String
+    var guidance: Float
+    var seed: UInt32
+    var steps: Int
 
     @Published var state: State
 
@@ -34,7 +34,19 @@ final class ListItem: ObservableObject, Codable, Identifiable {
     }
     
     func randomVariant() -> ListItem {
-        ListItem(prompt: prompt, negativePrompt: negativePrompt, seed: UInt32.random(in: 0 ..< UInt32.max), steps: steps, guidance: guidance, state: .creating)
+        ListItem(prompt: prompt, negativePrompt: negativePrompt, seed: UInt32.random(in: 0 ..< UInt32.max), steps: steps, guidance: guidance, state: .queued)
+    }
+    
+    func cloneAsCreator() -> ListItem {
+        ListItem(prompt: prompt, negativePrompt: negativePrompt, seed: seed, steps: steps, guidance: guidance, state: .clonedCreator)
+    }
+    
+    func update(prompt: String, negativePrompt: String, seed: UInt32, steps: Int, guidance: Float) {
+        self.prompt = prompt
+        self.negativePrompt = negativePrompt
+        self.seed = seed
+        self.steps = steps
+        self.guidance = guidance
     }
 
     func encode(to encoder: Encoder) throws {
@@ -48,14 +60,14 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         try container.encode(guidance, forKey: .guidance)
     }
 
-    init(prompt: String, negativePrompt: String, seed: UInt32, steps: Int, guidance: Float, state: State) {
+    init(id: UUID? = nil, prompt: String, negativePrompt: String, seed: UInt32, steps: Int, guidance: Float, state: State) {
+        self.id = id ?? UUID()
         self.prompt = prompt
         self.negativePrompt = negativePrompt
         self.seed = seed
         self.steps = steps
         self.guidance = guidance
         self.state = state
-        self.id = UUID()
     }
 
     func nuke() {

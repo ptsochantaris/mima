@@ -17,7 +17,7 @@ struct ListItemView: View {
         ZStack {
             Color.secondary.opacity(0.1)
             switch entry.state {
-            case .creating:
+            case .creating, .clonedCreator:
                 NewItem(prototype: entry, model: model)
 
             case .queued:
@@ -98,7 +98,7 @@ struct ListItemView: View {
                             .background(SharePicker(isPresented: $showPicker, sharingItems: [sourceUrl]))
                     }
                 }
-                .overlay(alignment: .bottomTrailing) {
+                .overlay(alignment: .bottomLeading) {
                     if visibleControls {
                         MimaButon(look: .encore)
                             .onTapGesture {
@@ -108,12 +108,12 @@ struct ListItemView: View {
                             }
                     }
                 }
-                .overlay(alignment: .bottomLeading) {
+                .overlay(alignment: .bottomTrailing) {
                     if visibleControls {
                         MimaButon(look: .edit)
                             .onTapGesture {
                                 withAnimation {
-                                    // TODO
+                                    model.insertCreator(for: entry)
                                 }
                             }
                     }
@@ -132,7 +132,7 @@ struct ListItemView: View {
             visibleControls = false
         }
         .overlay(alignment: .topTrailing) {
-            if visibleControls || entry.state.isWaiting || entry.state.isRendering {
+            if (visibleControls || entry.state.isWaiting || entry.state.isRendering) && !(entry.state.isCreator) {
                 MimaButon(look: .dismiss)
                     .onTapGesture {
                         withAnimation {

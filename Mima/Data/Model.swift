@@ -8,7 +8,7 @@ final class Model: ObservableObject, Codable {
     @MainActor
     init() {
         entries = [
-            ListItem(prompt: "A bowl of fruit", negativePrompt: "", seed: 0, steps: 50, guidance: 7.5, state: .creating)
+            ListItem(prompt: "A colorful bowl of fruit on a wooden table", negativePrompt: "Berries", seed: 0, steps: 50, guidance: 7.5, state: .creating)
         ]
         renderQueue = ContiguousArray<UUID>()
     }
@@ -83,7 +83,7 @@ extension Model {
         Task {
             while let entry = nextEntryToRender() {
                 await entry.render()
-                renderQueue.removeFirst()
+                renderQueue.removeAll(where: { $0 == entry.id })
                 save()
             }
         }
@@ -98,12 +98,16 @@ extension Model {
         NSWorkspace.shared.open(url)
     }
 
-    func createItems(count: Int, basedOn prototype: ListItem) {
+    func createItems(count: Int, basedOn prototype: ListItem, fromCreator: Bool) {
         let queueWasEmpty = renderQueue.isEmpty
         for i in 0 ..< count {
             let entry = ListItem(prompt: prototype.prompt, negativePrompt: prototype.negativePrompt, seed: prototype.seed + UInt32(i), steps: prototype.steps, guidance: prototype.guidance, state: .queued)
             if let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) {
-                entries.insert(entry, at: creatorIndex)
+                if fromCreator {
+                    entries.insert(entry, at: creatorIndex)
+                } else {
+                    entries[creatorIndex] = entry
+                }
             } else {
                 entries.insert(entry, at: 0)
             }
@@ -129,11 +133,20 @@ extension Model {
         }
     }
 
-    private static let indexFileUrl = fileDirectory.appending(path: "mima.json", directoryHint: .notDirectory)
+    func insertCreator(for entry: ListItem) {
+        if let index = entries.firstIndex(where: { $0.id == entry.id }) {
+            let newEntry = entry.cloneAsCreator()
+            entries.insert(newEntry, at: index + 1)
+            save()
+        }
+    }
+
+    private static let indexFileUrl = fileDirectory.appending(path: "data.json", directoryHint: .notDirectory)
 
     func save() {
         do {
             try JSONEncoder().encode(self).write(to: Model.indexFileUrl)
+            NSLog("State saved")
         } catch {
             NSLog("Error saving state: \(error)")
         }
