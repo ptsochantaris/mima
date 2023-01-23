@@ -2,11 +2,9 @@ import SwiftUI
 
 struct NewItem: View {
     private var prototype: ListItem
-    private let model: Model
     
-    init(prototype: ListItem, model: Model) {
+    init(prototype: ListItem) {
         self.prototype = prototype
-        self.model = model
 
         promptText = prototype.prompt
 
@@ -143,7 +141,7 @@ struct NewItem: View {
             if !prototype.state.isCreator {
                 MimaButon(look: .dismiss)
                     .onTapGesture {
-                        model.delete(prototype)
+                        Model.shared.delete(prototype)
                     }
             }
         }
@@ -154,7 +152,7 @@ struct NewItem: View {
     private func create() {
         withAnimation {
             let count = Int(countText) ?? 1
-            model.createItems(count: count, basedOn: prototype, fromCreator: prototype.state.isCreator)
+            Model.shared.createItems(count: count, basedOn: prototype, fromCreator: prototype.state.isCreator)
         }
     }
 }

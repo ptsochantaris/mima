@@ -158,8 +158,11 @@ extension Model {
         }
     }
 
-    static func load() -> Model {
-        startup()
+    static let shared: Model = {
+        Task { @RenderActor in
+            startup()
+        }
+        
         guard let data = try? Data(contentsOf: indexFileUrl) else {
             return Model()
         }
@@ -170,5 +173,5 @@ extension Model {
             NSLog("Error loading model: \(error.localizedDescription)")
             return Model()
         }
-    }
+    }()
 }

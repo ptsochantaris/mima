@@ -103,7 +103,7 @@ final class ListItem: ObservableObject, Codable, Identifiable {
 
     @MainActor
     func render() async {
-        switch pipelineState {
+        switch await pipelineState {
         case .warmup:
             state = .warmup
         case .ready:
@@ -130,7 +130,7 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         if state.isCancelled {
             return []
         }
-        guard case let .ready(pipeline) = await pipelineState else {
+        guard case let .ready(pipeline) = pipelineState else {
             return []
         }
         return try! pipeline.generateImages(

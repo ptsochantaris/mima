@@ -1,7 +1,6 @@
-import Combine
 import Foundation
-import StableDiffusion
-import SwiftUI
+import CoreGraphics
+import ImageIO
 import UniformTypeIdentifiers
 
 let fileDirectory: URL = {
@@ -24,47 +23,11 @@ extension CGImage {
     }
 }
 
-@globalActor
-enum RenderActor {
-    final actor ActorType {}
-    static let shared = ActorType()
-}
-
 extension RangeReplaceableCollection {
     mutating func popFirst() -> Element? {
         if !isEmpty {
             return removeFirst()
         }
         return nil
-    }
-}
-
-enum PipelineState {
-    case warmup, ready(StableDiffusionPipeline)
-}
-
-@MainActor
-var pipelineState = PipelineState.warmup
-
-func startup() {
-    Task { @RenderActor in
-        let url = Bundle.main.url(forResource: "sd15", withExtension: nil)!
-        NSLog("Constructing pipeline...")
-        let pipeline = try! StableDiffusionPipeline(resourcesAt: url, disableSafety: true)
-        NSLog("Warmup...")
-        _ = try! pipeline.generateImages(
-            prompt: "",
-            negativePrompt: "",
-            imageCount: 1,
-            stepCount: 2,
-            seed: 1,
-            guidanceScale: 1,
-            disableSafety: true,
-            progressHandler: { _ in false }
-        )
-        Task { @MainActor in
-            NSLog("Pipeline ready")
-            pipelineState = .ready(pipeline)
-        }
     }
 }

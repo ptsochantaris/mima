@@ -1,14 +1,18 @@
 import SwiftUI
 
-// close button on main creator
-// queue next
+final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
+    
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        Task {
+            await shutdown()
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
+    }
+}
 
 struct ContentView: View {
-    @ObservedObject private var model: Model
-
-    init(model: Model) {
-        self.model = model
-    }
+    @ObservedObject private var model = Model.shared
 
     var body: some View {
         ScrollView {
@@ -16,7 +20,7 @@ struct ContentView: View {
                 GridItem(.adaptive(minimum: 300, maximum: 1024), spacing: 16)
             ], spacing: 16) {
                 ForEach(model.entries) { entry in
-                    ListItemView(entry: entry, model: model)
+                    ListItemView(entry: entry)
                         .cornerRadius(21)
                 }
             }
@@ -28,14 +32,13 @@ struct ContentView: View {
 
 @main
 struct MimaApp: App {
-    @StateObject private var model = Model.load()
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate: AppDelegate
     @Environment(\.openWindow) var openWindow
 
     var body: some Scene {
         WindowGroup {
-            ContentView(model: model)
+            ContentView()
                 .onDisappear {
-                    model.save()
                     NSApplication.shared.terminate(nil)
                 }
         }.commands {
@@ -43,12 +46,12 @@ struct MimaApp: App {
             CommandGroup(after: .textEditing) {
                 Button("Cancel Queued Items") {
                     withAnimation {
-                        model.removeAllQueued()
+                        Model.shared.removeAllQueued()
                     }
                 }
                 Button("Remove All Items") {
                     withAnimation {
-                        model.removeAll()
+                        Model.shared.removeAll()
                     }
                 }
             }
@@ -65,10 +68,10 @@ struct MimaApp: App {
                         panel.canCreateDirectories = true
                         panel.canChooseDirectories = true
                         panel.allowsMultipleSelection = false
-                        panel.prompt = "Export \(model.entries.count) Items"
+                        panel.prompt = "Export \(Model.shared.entries.count) Items"
                         if panel.runModal() == .OK {
                             if let url = panel.url {
-                                model.exportAll(to: url)
+                                Model.shared.exportAll(to: url)
                             }
                         }
                     }

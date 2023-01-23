@@ -3,12 +3,10 @@ import UniformTypeIdentifiers
 
 struct ListItemView: View {
     @ObservedObject private var entry: ListItem
-    private let model: Model
     @State private var showPicker = false
 
-    init(entry: ListItem, model: Model) {
+    init(entry: ListItem) {
         self.entry = entry
-        self.model = model
     }
 
     @State private var visibleControls = false
@@ -18,7 +16,7 @@ struct ListItemView: View {
             Color.secondary.opacity(0.1)
             switch entry.state {
             case .creating, .clonedCreator:
-                NewItem(prototype: entry, model: model)
+                NewItem(prototype: entry)
 
             case .queued:
                 EntryTitle(entry: entry)
@@ -97,7 +95,7 @@ struct ListItemView: View {
                         MimaButon(look: .encore)
                             .onTapGesture {
                                 withAnimation {
-                                    model.createRandomVariant(of: entry)
+                                    Model.shared.createRandomVariant(of: entry)
                                 }
                             }
                     }
@@ -107,7 +105,7 @@ struct ListItemView: View {
                         MimaButon(look: .edit)
                             .onTapGesture {
                                 withAnimation {
-                                    model.insertCreator(for: entry)
+                                    Model.shared.insertCreator(for: entry)
                                 }
                             }
                     }
@@ -124,7 +122,7 @@ struct ListItemView: View {
         }
         .contextMenu {
             Button("Render This Next") {
-                model.prioritise(entry)
+                Model.shared.prioritise(entry)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification, object: nil)) { _ in
@@ -132,7 +130,7 @@ struct ListItemView: View {
         }
         .overlay(alignment: .topTrailing) {
             if !entry.state.isCreator {
-                DismissButton(entry: entry, model: model, visibleControls: visibleControls)
+                DismissButton(entry: entry, visibleControls: visibleControls)
             }
         }
         .onHover { state in
@@ -144,12 +142,10 @@ struct ListItemView: View {
 
 struct DismissButton: View {
     @ObservedObject private var entry: ListItem
-    private let model: Model
     private let visibleControls: Bool
     
-    init(entry: ListItem, model: Model, visibleControls: Bool) {
+    init(entry: ListItem, visibleControls: Bool) {
         self.entry = entry
-        self.model = model
         self.visibleControls = visibleControls
     }
     
@@ -159,7 +155,7 @@ struct DismissButton: View {
             MimaButon(look: .dismiss)
                 .onTapGesture {
                     withAnimation {
-                        model.delete(entry)
+                        Model.shared.delete(entry)
                     }
                 }
             
@@ -171,7 +167,7 @@ struct DismissButton: View {
                 MimaButon(look: .dismiss)
                     .onTapGesture {
                         withAnimation {
-                            model.delete(entry)
+                            Model.shared.delete(entry)
                         }
                     }
             }
@@ -181,7 +177,7 @@ struct DismissButton: View {
                 MimaButon(look: .dismiss)
                     .onTapGesture {
                         withAnimation {
-                            model.delete(entry)
+                            Model.shared.delete(entry)
                         }
                     }
             }
