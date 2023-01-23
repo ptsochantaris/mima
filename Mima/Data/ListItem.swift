@@ -40,8 +40,8 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         ListItem(prompt: prompt, negativePrompt: negativePrompt, seed: UInt32.random(in: 0 ..< UInt32.max), steps: steps, guidance: guidance, state: .queued)
     }
 
-    func cloneAsCreator() -> ListItem {
-        ListItem(prompt: prompt, negativePrompt: negativePrompt, seed: seed, steps: steps, guidance: guidance, state: .clonedCreator)
+    func clone(as newState: State) -> ListItem {
+        ListItem(prompt: prompt, negativePrompt: negativePrompt, seed: generatedSeed, steps: steps, guidance: guidance, state: newState)
     }
 
     func update(prompt: String, negativePrompt: String, seed: UInt32?, steps: Int, guidance: Float) {
@@ -136,10 +136,7 @@ final class ListItem: ObservableObject, Codable, Identifiable {
 
     @RenderActor
     private func handleRender() async -> [CGImage?] {
-        if state.isCancelled {
-            return []
-        }
-        guard case let .ready(pipeline) = pipelineState else {
+        guard !state.isCancelled, case let .ready(pipeline) = await pipelineState else {
             return []
         }
         return try! pipeline.generateImages(

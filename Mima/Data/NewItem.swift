@@ -42,7 +42,6 @@ struct NewItem: View {
     @State private var seedText: String
     @State private var stepText: String
     @State private var guidanceText: String
-    @State private var countText = ""
 
     var body: some View {
         GeometryReader { proxy in
@@ -82,24 +81,18 @@ struct NewItem: View {
                                 Text("Steps")
                                     .font(.caption)
                                     .multilineTextAlignment(.center)
-                                    .frame(width: 55)
+                                    .frame(width: 70)
                                 Text("Guidance")
                                     .font(.caption)
                                     .multilineTextAlignment(.center)
-                                    .frame(width: 55)
-                                Text("Batch Size")
-                                    .font(.caption)
-                                    .multilineTextAlignment(.center)
-                                    .frame(width: 55)
+                                    .frame(width: 70)
                             }
                             GridRow {
                                 TextField("Random", text: $seedText)
                                 TextField("50", text: $stepText)
-                                    .frame(width: 55)
+                                    .frame(width: 70)
                                 TextField("7.5", text: $guidanceText)
-                                    .frame(width: 55)
-                                TextField("1", text: $countText)
-                                    .frame(width: 55)
+                                    .frame(width: 70)
                             }
                             .textFieldStyle(.roundedBorder)
                             .font(.footnote)
@@ -151,8 +144,7 @@ struct NewItem: View {
     private func create() {
         updatePrototype()
         withAnimation {
-            let count = Int(countText) ?? 1
-            Model.shared.createItems(count: count, basedOn: prototype, fromCreator: prototype.state.isCreator)
+            Model.shared.createItem(basedOn: prototype, fromCreator: prototype.state.isCreator)
         }
     }
 }

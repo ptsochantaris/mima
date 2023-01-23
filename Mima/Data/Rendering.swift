@@ -6,13 +6,19 @@ enum PipelineState {
 }
 
 @globalActor
-enum RenderActor {
+enum PipelineActor {
     final actor ActorType {}
     static let shared = ActorType()
 }
 
-@RenderActor
+@PipelineActor
 var pipelineState = PipelineState.warmup
+
+@globalActor
+enum RenderActor {
+    final actor ActorType {}
+    static let shared = ActorType()
+}
 
 @RenderActor
 func startup() {
@@ -22,13 +28,15 @@ func startup() {
     NSLog("Warmup...")
     try? pipeline.prewarmResources()
     NSLog("Pipeline ready")
-    pipelineState = .ready(pipeline)
+    Task { @PipelineActor in
+        pipelineState = .ready(pipeline)
+    }
 }
 
 @RenderActor
 func shutdown() async {
     await Model.shared.save()
-    if case let .ready(pipeline) = pipelineState {
+    if case let .ready(pipeline) = await pipelineState {
         pipeline.unloadResources()
         NSLog("Pipeline shutdown")
     }

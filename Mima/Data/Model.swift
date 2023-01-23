@@ -98,21 +98,19 @@ extension Model {
         NSWorkspace.shared.open(url)
     }
 
-    func createItems(count: Int, basedOn prototype: ListItem, fromCreator: Bool) {
+    func createItem(basedOn prototype: ListItem, fromCreator: Bool) {
         let queueWasEmpty = renderQueue.isEmpty
-        for i in 0 ..< count {
-            let entry = ListItem(prompt: prototype.prompt, negativePrompt: prototype.negativePrompt, seed: prototype.generatedSeed + UInt32(i), steps: prototype.steps, guidance: prototype.guidance, state: .queued)
-            if let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) {
-                if fromCreator {
-                    entries.insert(entry, at: creatorIndex)
-                } else {
-                    entries[creatorIndex] = entry
-                }
+        let entry = prototype.clone(as: .queued)
+        if let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) {
+            if fromCreator {
+                entries.insert(entry, at: creatorIndex)
             } else {
-                entries.insert(entry, at: 0)
+                entries[creatorIndex] = entry
             }
-            renderQueue.append(entry.id)
+        } else {
+            entries.insert(entry, at: 0)
         }
+        renderQueue.append(entry.id)
 
         if queueWasEmpty {
             startRendering()
@@ -141,7 +139,7 @@ extension Model {
 
     func insertCreator(for entry: ListItem) {
         if let index = entries.firstIndex(where: { $0.id == entry.id }) {
-            let newEntry = entry.cloneAsCreator()
+            let newEntry = entry.clone(as: .clonedCreator)
             entries.insert(newEntry, at: index + 1)
             save()
         }

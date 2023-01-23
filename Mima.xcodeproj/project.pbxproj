@@ -95,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				1625572B297B2C9C0027BD4F /* ListItem.swift */,
+				16255735297BFA430027BD4F /* NewItem.swift */,
 				1625572F297B6EAF0027BD4F /* ListItemState.swift */,
 				1625572D297B38EF0027BD4F /* Model.swift */,
 				1661425E2974D15E00BFA494 /* Utils.swift */,
@@ -113,7 +114,6 @@
 				1625573D297C3FD90027BD4F /* GaugeProgressStyle.swift */,
 				166142472974BD5800BFA494 /* MimaApp.swift */,
 				1625573B297C3FBF0027BD4F /* MimaButton.swift */,
-				16255735297BFA430027BD4F /* NewItem.swift */,
 				16622AC6297D996300C8C7F0 /* Mac.swift */,
 				165150E6297DCC5A00124967 /* AboutView.swift */,
 			);
