@@ -6,7 +6,8 @@ final class ListItem: ObservableObject, Codable, Identifiable {
     var prompt: String
     var negativePrompt: String
     var guidance: Float
-    var seed: UInt32
+    var seed: UInt32?
+    var generatedSeed: UInt32
     var steps: Int
 
     @Published var state: State
@@ -20,12 +21,14 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         case uuid
         case state
         case type
+        case generatedSeed
     }
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         id = try values.decode(UUID.self, forKey: .uuid)
-        seed = try values.decode(UInt32.self, forKey: .seed)
+        seed = try values.decode(UInt32?.self, forKey: .seed)
+        generatedSeed = try values.decode(UInt32.self, forKey: .generatedSeed)
         steps = try values.decode(Int.self, forKey: .steps)
         prompt = try values.decode(String.self, forKey: .prompt)
         negativePrompt = try values.decode(String.self, forKey: .negativePrompt)
@@ -41,12 +44,17 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         ListItem(prompt: prompt, negativePrompt: negativePrompt, seed: seed, steps: steps, guidance: guidance, state: .clonedCreator)
     }
     
-    func update(prompt: String, negativePrompt: String, seed: UInt32, steps: Int, guidance: Float) {
+    func update(prompt: String, negativePrompt: String, seed: UInt32?, steps: Int, guidance: Float) {
         self.prompt = prompt
         self.negativePrompt = negativePrompt
         self.seed = seed
         self.steps = steps
         self.guidance = guidance
+        if let seed {
+            generatedSeed = seed
+        } else {
+            generatedSeed = UInt32.random(in: 0 ..< UInt32.max)
+        }
     }
 
     func encode(to encoder: Encoder) throws {
@@ -58,9 +66,10 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         try container.encode(negativePrompt, forKey: .negativePrompt)
         try container.encode(state, forKey: .state)
         try container.encode(guidance, forKey: .guidance)
+        try container.encode(generatedSeed, forKey: .generatedSeed)
     }
 
-    init(id: UUID? = nil, prompt: String, negativePrompt: String, seed: UInt32, steps: Int, guidance: Float, state: State) {
+    init(id: UUID? = nil, prompt: String, negativePrompt: String, seed: UInt32?, steps: Int, guidance: Float, state: State) {
         self.id = id ?? UUID()
         self.prompt = prompt
         self.negativePrompt = negativePrompt
@@ -68,6 +77,11 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         self.steps = steps
         self.guidance = guidance
         self.state = state
+        if let seed {
+            generatedSeed = seed
+        } else {
+            generatedSeed = UInt32.random(in: 0 ..< UInt32.max)
+        }
     }
 
     func nuke() {
@@ -80,7 +94,7 @@ final class ListItem: ObservableObject, Codable, Identifiable {
     }
 
     var exportFilename: String {
-        "\(prompt)-\(seed)-\(steps).png"
+        "\(prompt)-\(generatedSeed)-\(steps).png"
     }
 
     var imageUrl: URL {
@@ -124,7 +138,7 @@ final class ListItem: ObservableObject, Codable, Identifiable {
             negativePrompt: negativePrompt,
             imageCount: 1,
             stepCount: steps,
-            seed: seed,
+            seed: generatedSeed,
             guidanceScale: guidance,
             disableSafety: true
         ) { progress in

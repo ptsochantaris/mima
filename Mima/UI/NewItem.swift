@@ -12,10 +12,10 @@ struct NewItem: View {
 
         negativePromptText = prototype.negativePrompt
 
-        if prototype.seed == 0 {
-            seedText = ""
+        if let seed = prototype.seed {
+            seedText = String(seed)
         } else {
-            seedText = String(prototype.seed)
+            seedText = ""
         }
         
         if prototype.steps == 50 {
@@ -34,7 +34,7 @@ struct NewItem: View {
     private func updatePrototype() {
         prototype.update(prompt: promptText.trimmingCharacters(in: .whitespacesAndNewlines),
                          negativePrompt: negativePromptText.trimmingCharacters(in: .whitespacesAndNewlines),
-                         seed: UInt32(seedText) ?? UInt32.random(in: 0 ..< UInt32.max),
+                         seed: UInt32(seedText),
                          steps: Int(stepText) ?? 50,
                          guidance: Float(guidanceText) ?? 7.5)
     }
@@ -112,6 +112,7 @@ struct NewItem: View {
                         }
                         
                         Button {
+                            updatePrototype()
                             create()
                         } label: {
                             Text("Create")

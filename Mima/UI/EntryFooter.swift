@@ -9,7 +9,7 @@ struct EntryFooter: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text("Seed \(String(entry.seed))")
+            Text("Seed \(String(entry.generatedSeed))")
             Text("Guidance \(entry.guidance, format: .number)")
             Text("\(entry.steps, format: .number) steps")
         }

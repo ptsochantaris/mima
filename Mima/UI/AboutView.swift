@@ -60,7 +60,7 @@ struct AboutView: View {
                 Image("aboutMargin")
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: 16)
+                    .frame(width: 56)
                 
                 Spacer()
             }
@@ -82,8 +82,8 @@ struct AboutView: View {
                         }
                         .multilineTextAlignment(.center)
                         .padding()
-                        .foregroundColor(.white)
-                        .background(.ultraThinMaterial)
+                        .foregroundColor(.black)
+                        .background(.thinMaterial)
                         .cornerRadius(12)
                         .padding()
                     }
@@ -116,7 +116,7 @@ struct AboutView: View {
             .foregroundColor(.black)
             .multilineTextAlignment(.trailing)
         }
-        .frame(width: 680, height: 790)
+        .frame(width: 664, height: 664)
     }
 }
 

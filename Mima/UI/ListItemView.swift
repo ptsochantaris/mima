@@ -51,18 +51,12 @@ struct ListItemView: View {
                         .padding()
                     }
 
-            case let .rendering(step, total):
+            case .rendering:
                 EntryTitle(entry: entry)
                 Color.clear
                     .overlay(alignment: .bottomLeading) {
                         EntryFooter(entry: entry)
                             .padding()
-                    }
-                    .overlay(alignment: .topTrailing) {
-                        ProgressView(value: step, total: total)
-                            .progressViewStyle(GaugeProgressStyle())
-                            .frame(width: 26, height: 26)
-                            .padding(13)
                     }
 
             case .done:
@@ -128,11 +122,62 @@ struct ListItemView: View {
                     .font(.caption)
             }
         }
+        .contextMenu {
+            Button("Render This Next") {
+                model.prioritise(entry)
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification, object: nil)) { _ in
             visibleControls = false
         }
         .overlay(alignment: .topTrailing) {
-            if (visibleControls || entry.state.isWaiting || entry.state.isRendering) && !(entry.state.isCreator) {
+            if !entry.state.isCreator {
+                DismissButton(entry: entry, model: model, visibleControls: visibleControls)
+            }
+        }
+        .onHover { state in
+            visibleControls = state || showPicker
+        }
+        .aspectRatio(1, contentMode: .fill)
+    }
+}
+
+struct DismissButton: View {
+    @ObservedObject private var entry: ListItem
+    private let model: Model
+    private let visibleControls: Bool
+    
+    init(entry: ListItem, model: Model, visibleControls: Bool) {
+        self.entry = entry
+        self.model = model
+        self.visibleControls = visibleControls
+    }
+    
+    var body: some View {
+        switch entry.state {
+        case .queued, .warmup, .clonedCreator, .cancelled, .error, .creating:
+            MimaButon(look: .dismiss)
+                .onTapGesture {
+                    withAnimation {
+                        model.delete(entry)
+                    }
+                }
+            
+        case let .rendering(step, total):
+            ZStack {
+                ProgressView(value: step, total: total)
+                    .progressViewStyle(GaugeProgressStyle())
+                    .frame(width: 26, height: 26)
+                MimaButon(look: .dismiss)
+                    .onTapGesture {
+                        withAnimation {
+                            model.delete(entry)
+                        }
+                    }
+            }
+            
+        case .done:
+            if visibleControls {
                 MimaButon(look: .dismiss)
                     .onTapGesture {
                         withAnimation {
@@ -141,9 +186,5 @@ struct ListItemView: View {
                     }
             }
         }
-        .onHover { state in
-            visibleControls = state || showPicker
-        }
-        .aspectRatio(1, contentMode: .fill)
     }
 }

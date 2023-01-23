@@ -101,7 +101,7 @@ extension Model {
     func createItems(count: Int, basedOn prototype: ListItem, fromCreator: Bool) {
         let queueWasEmpty = renderQueue.isEmpty
         for i in 0 ..< count {
-            let entry = ListItem(prompt: prototype.prompt, negativePrompt: prototype.negativePrompt, seed: prototype.seed + UInt32(i), steps: prototype.steps, guidance: prototype.guidance, state: .queued)
+            let entry = ListItem(prompt: prototype.prompt, negativePrompt: prototype.negativePrompt, seed: prototype.generatedSeed + UInt32(i), steps: prototype.steps, guidance: prototype.guidance, state: .queued)
             if let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) {
                 if fromCreator {
                     entries.insert(entry, at: creatorIndex)
@@ -118,6 +118,12 @@ extension Model {
             startRendering()
         }
         save()
+    }
+    
+    func prioritise(_ item: ListItem) {
+        if let index = renderQueue.firstIndex(of: item.id) {
+            renderQueue.move(fromOffsets: IndexSet(integer: index), toOffset: 0)
+        }
     }
 
     func createRandomVariant(of entry: ListItem) {
