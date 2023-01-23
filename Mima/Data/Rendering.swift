@@ -30,5 +30,6 @@ func shutdown() async {
     await Model.shared.save()
     if case let .ready(pipeline) = pipelineState {
         pipeline.unloadResources()
+        NSLog("Pipeline shutdown")
     }
 }
