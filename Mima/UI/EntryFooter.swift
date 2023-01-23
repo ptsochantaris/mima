@@ -1,16 +1,16 @@
 import SwiftUI
 
 struct EntryFooter: View {
-    private let entry: GalleryEntry
+    private let entry: ListItem
 
-    init(entry: GalleryEntry) {
+    init(entry: ListItem) {
         self.entry = entry
     }
 
     var body: some View {
         VStack(alignment: .leading) {
             Text("Seed \(String(entry.seed))")
-            Text("Guidance scale \(entry.guidance, format: .number)")
+            Text("Guidance \(entry.guidance, format: .number)")
             Text("\(entry.steps, format: .number) steps")
         }
         .foregroundColor(.secondary)

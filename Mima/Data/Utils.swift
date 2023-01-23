@@ -49,9 +49,9 @@ var pipelineState = PipelineState.warmup
 func startup() {
     Task { @RenderActor in
         let url = Bundle.main.url(forResource: "sd15", withExtension: nil)!
-        // NSLog("Constructing pipeline...")
+        NSLog("Constructing pipeline...")
         let pipeline = try! StableDiffusionPipeline(resourcesAt: url, disableSafety: true)
-        // NSLog("Warmup...")
+        NSLog("Warmup...")
         _ = try! pipeline.generateImages(
             prompt: "",
             negativePrompt: "",
@@ -62,8 +62,8 @@ func startup() {
             disableSafety: true,
             progressHandler: { _ in false }
         )
-        // NSLog("Done")
         Task { @MainActor in
+            NSLog("Pipeline ready")
             pipelineState = .ready(pipeline)
         }
     }

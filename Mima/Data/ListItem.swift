@@ -1,15 +1,15 @@
 import Foundation
 import SwiftUI
 
-final class GalleryEntry: ObservableObject, Codable, Identifiable {
+final class ListItem: ObservableObject, Codable, Identifiable {
+    let id: UUID
     let prompt: String
     let negativePrompt: String
     let guidance: Float
     let seed: UInt32
     let steps: Int
-    let id: UUID
 
-    @Published var state = State.queued
+    @Published var state: State
 
     enum CodingKeys: CodingKey {
         case prompt
@@ -19,6 +19,7 @@ final class GalleryEntry: ObservableObject, Codable, Identifiable {
         case steps
         case uuid
         case state
+        case type
     }
 
     init(from decoder: Decoder) throws {
@@ -31,9 +32,9 @@ final class GalleryEntry: ObservableObject, Codable, Identifiable {
         state = try values.decode(State.self, forKey: .state)
         guidance = try values.decode(Float.self, forKey: .guidance)
     }
-
-    func randomVariant() -> GalleryEntry {
-        GalleryEntry(prompt: prompt, negativePrompt: negativePrompt, seed: UInt32.random(in: 0 ..< UInt32.max), steps: steps, guidance: guidance)
+    
+    func randomVariant() -> ListItem {
+        ListItem(prompt: prompt, negativePrompt: negativePrompt, seed: UInt32.random(in: 0 ..< UInt32.max), steps: steps, guidance: guidance, state: .creating)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -47,13 +48,14 @@ final class GalleryEntry: ObservableObject, Codable, Identifiable {
         try container.encode(guidance, forKey: .guidance)
     }
 
-    init(prompt: String, negativePrompt: String, seed: UInt32, steps: Int, guidance: Float) {
+    init(prompt: String, negativePrompt: String, seed: UInt32, steps: Int, guidance: Float, state: State) {
         self.prompt = prompt
         self.negativePrompt = negativePrompt
         self.seed = seed
         self.steps = steps
         self.guidance = guidance
-        id = UUID()
+        self.state = state
+        self.id = UUID()
     }
 
     func nuke() {

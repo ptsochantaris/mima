@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct EntryTitle: View {
-    @ObservedObject private var entry: GalleryEntry
+    @ObservedObject private var entry: ListItem
 
-    init(entry: GalleryEntry) {
+    init(entry: ListItem) {
         self.entry = entry
     }
 

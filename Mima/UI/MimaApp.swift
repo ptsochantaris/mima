@@ -15,10 +15,8 @@ struct ContentView: View {
             LazyVGrid(columns: [
                 GridItem(.adaptive(minimum: 300, maximum: 1024), spacing: 16)
             ], spacing: 16) {
-                NewItem(model: model)
-                    .cornerRadius(21)
                 ForEach(model.entries) { entry in
-                    GalleryImage(entry: entry, model: model)
+                    ListItemView(entry: entry, model: model)
                         .cornerRadius(21)
                 }
             }

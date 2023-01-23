@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1625572C297B2C9C0027BD4F /* GalleryEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625572B297B2C9C0027BD4F /* GalleryEntry.swift */; };
+		1625572C297B2C9C0027BD4F /* ListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625572B297B2C9C0027BD4F /* ListItem.swift */; };
 		1625572E297B38EF0027BD4F /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625572D297B38EF0027BD4F /* Model.swift */; };
 		16255730297B6EAF0027BD4F /* GalleryEntryState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625572F297B6EAF0027BD4F /* GalleryEntryState.swift */; };
-		16255732297BF9BB0027BD4F /* GalleryImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16255731297BF9BB0027BD4F /* GalleryImage.swift */; };
+		16255732297BF9BB0027BD4F /* ListItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16255731297BF9BB0027BD4F /* ListItemView.swift */; };
 		16255734297BF9DC0027BD4F /* EntryFooter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16255733297BF9DC0027BD4F /* EntryFooter.swift */; };
 		16255736297BFA430027BD4F /* NewItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16255735297BFA430027BD4F /* NewItem.swift */; };
 		16255738297C3F840027BD4F /* EntryName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16255737297C3F840027BD4F /* EntryName.swift */; };
@@ -27,10 +27,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1625572B297B2C9C0027BD4F /* GalleryEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryEntry.swift; sourceTree = "<group>"; };
+		1625572B297B2C9C0027BD4F /* ListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListItem.swift; sourceTree = "<group>"; };
 		1625572D297B38EF0027BD4F /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		1625572F297B6EAF0027BD4F /* GalleryEntryState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryEntryState.swift; sourceTree = "<group>"; };
-		16255731297BF9BB0027BD4F /* GalleryImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryImage.swift; sourceTree = "<group>"; };
+		16255731297BF9BB0027BD4F /* ListItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListItemView.swift; sourceTree = "<group>"; };
 		16255733297BF9DC0027BD4F /* EntryFooter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryFooter.swift; sourceTree = "<group>"; };
 		16255735297BFA430027BD4F /* NewItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewItem.swift; sourceTree = "<group>"; };
 		16255737297C3F840027BD4F /* EntryName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryName.swift; sourceTree = "<group>"; };
@@ -90,7 +90,7 @@
 		16622AC2297D82CF00C8C7F0 /* Data */ = {
 			isa = PBXGroup;
 			children = (
-				1625572B297B2C9C0027BD4F /* GalleryEntry.swift */,
+				1625572B297B2C9C0027BD4F /* ListItem.swift */,
 				1625572F297B6EAF0027BD4F /* GalleryEntryState.swift */,
 				1625572D297B38EF0027BD4F /* Model.swift */,
 				1661425E2974D15E00BFA494 /* Utils.swift */,
@@ -104,7 +104,7 @@
 				16255733297BF9DC0027BD4F /* EntryFooter.swift */,
 				16255737297C3F840027BD4F /* EntryName.swift */,
 				16255739297C3FA20027BD4F /* EntryTitle.swift */,
-				16255731297BF9BB0027BD4F /* GalleryImage.swift */,
+				16255731297BF9BB0027BD4F /* ListItemView.swift */,
 				1625573D297C3FD90027BD4F /* GaugeProgressStyle.swift */,
 				166142472974BD5800BFA494 /* MimaApp.swift */,
 				1625573B297C3FBF0027BD4F /* MimaButton.swift */,
@@ -200,10 +200,10 @@
 				16255736297BFA430027BD4F /* NewItem.swift in Sources */,
 				1625573E297C3FD90027BD4F /* GaugeProgressStyle.swift in Sources */,
 				165150E7297DCC5A00124967 /* AboutView.swift in Sources */,
-				16255732297BF9BB0027BD4F /* GalleryImage.swift in Sources */,
+				16255732297BF9BB0027BD4F /* ListItemView.swift in Sources */,
 				16255738297C3F840027BD4F /* EntryName.swift in Sources */,
 				1625572E297B38EF0027BD4F /* Model.swift in Sources */,
-				1625572C297B2C9C0027BD4F /* GalleryEntry.swift in Sources */,
+				1625572C297B2C9C0027BD4F /* ListItem.swift in Sources */,
 				16255734297BF9DC0027BD4F /* EntryFooter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

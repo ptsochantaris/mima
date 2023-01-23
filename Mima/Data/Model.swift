@@ -2,50 +2,28 @@ import Cocoa
 import Foundation
 
 final class Model: ObservableObject, Codable {
-    @Published var entries: ContiguousArray<GalleryEntry>
-    @Published var prompt: String
-    @Published var negativePrompt: String
-    @Published var seed: String
-    @Published var steps: String
-    @Published var count: String
-    @Published var guidance: String
-
+    @Published var entries: ContiguousArray<ListItem>
     private var renderQueue: ContiguousArray<UUID>
 
     @MainActor
     init() {
-        entries = ContiguousArray<GalleryEntry>()
+        entries = [
+            ListItem(prompt: "A bowl of fruit", negativePrompt: "", seed: 0, steps: 50, guidance: 7.5, state: .creating)
+        ]
         renderQueue = ContiguousArray<UUID>()
-        prompt = ""
-        negativePrompt = ""
-        seed = ""
-        steps = ""
-        count = ""
-        guidance = ""
     }
 
     enum CodingKeys: CodingKey {
         case entries
         case renderQueue
-        case prompt
-        case negativePrompt
-        case seed
-        case steps
-        case count
-        case guidance
     }
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
 
-        entries = try values.decode(ContiguousArray<GalleryEntry>.self, forKey: .entries)
+        entries = try values.decode(ContiguousArray<ListItem>.self, forKey: .entries)
         renderQueue = try values.decode(ContiguousArray<UUID>.self, forKey: .renderQueue)
-        prompt = try values.decode(String.self, forKey: .prompt)
-        negativePrompt = try values.decode(String.self, forKey: .negativePrompt)
-        seed = try values.decode(String.self, forKey: .seed)
-        steps = try values.decode(String.self, forKey: .steps)
-        count = try values.decode(String.self, forKey: .count)
-        guidance = try values.decode(String.self, forKey: .guidance)
+                
         if !renderQueue.isEmpty {
             Task { @MainActor in
                 startRendering()
@@ -57,12 +35,6 @@ final class Model: ObservableObject, Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(entries, forKey: .entries)
         try container.encode(renderQueue, forKey: .renderQueue)
-        try container.encode(prompt, forKey: .prompt)
-        try container.encode(negativePrompt, forKey: .negativePrompt)
-        try container.encode(seed, forKey: .seed)
-        try container.encode(steps, forKey: .steps)
-        try container.encode(count, forKey: .count)
-        try container.encode(guidance, forKey: .guidance)
     }
 }
 
@@ -81,15 +53,7 @@ extension Model {
         save()
     }
 
-    func populate(from entry: GalleryEntry) {
-        prompt = String(entry.prompt)
-        negativePrompt = String(entry.negativePrompt)
-        seed = String(entry.seed)
-        steps = String(entry.steps)
-        guidance = String(entry.guidance)
-    }
-
-    func delete(_ entry: GalleryEntry) {
+    func delete(_ entry: ListItem) {
         let id = entry.id
         let wasWarmingUp = entry.state.isWarmup
         if let i = entries.firstIndex(where: { $0.id == id }) {
@@ -103,7 +67,7 @@ extension Model {
         save()
     }
 
-    private func nextEntryToRender() -> GalleryEntry? {
+    private func nextEntryToRender() -> ListItem? {
         while let uuid = renderQueue.first {
             if let entry = entries.first(where: { $0.id == uuid }) {
                 return entry
@@ -134,21 +98,15 @@ extension Model {
         NSWorkspace.shared.open(url)
     }
 
-    func createItems() {
-        var finalSeed = UInt32(seed) ?? UInt32.random(in: 0 ... UInt32.max)
-        let finalPrompt = prompt.isEmpty ? "Mima" : prompt
-        let finalSteps = Int(steps) ?? 50
-        let finalCount = Int(count) ?? 1
-        let finalGuidance = Float(guidance) ?? 7.5
-
+    func createItems(count: Int, basedOn prototype: ListItem) {
         let queueWasEmpty = renderQueue.isEmpty
-
-        for _ in 0 ..< finalCount {
-            let entry = GalleryEntry(prompt: finalPrompt, negativePrompt: negativePrompt, seed: finalSeed, steps: finalSteps, guidance: finalGuidance)
-            if finalSeed < Int.max {
-                finalSeed += 1
+        for i in 0 ..< count {
+            let entry = ListItem(prompt: prototype.prompt, negativePrompt: prototype.negativePrompt, seed: prototype.seed + UInt32(i), steps: prototype.steps, guidance: prototype.guidance, state: .queued)
+            if let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) {
+                entries.insert(entry, at: creatorIndex)
+            } else {
+                entries.insert(entry, at: 0)
             }
-            entries.insert(entry, at: 0)
             renderQueue.append(entry.id)
         }
 
@@ -158,7 +116,7 @@ extension Model {
         save()
     }
 
-    func createRandomVariant(of entry: GalleryEntry) {
+    func createRandomVariant(of entry: ListItem) {
         if let index = entries.firstIndex(where: { $0.id == entry.id }) {
             let randomEntry = entry.randomVariant()
             entries.insert(randomEntry, at: index + 1)
@@ -171,18 +129,27 @@ extension Model {
         }
     }
 
-    private static let indexFileUrl = fileDirectory.appending(path: "index.json", directoryHint: .notDirectory)
+    private static let indexFileUrl = fileDirectory.appending(path: "mima.json", directoryHint: .notDirectory)
 
     func save() {
-        try? JSONEncoder().encode(self).write(to: Model.indexFileUrl)
+        do {
+            try JSONEncoder().encode(self).write(to: Model.indexFileUrl)
+        } catch {
+            NSLog("Error saving state: \(error)")
+        }
     }
 
     static func load() -> Model {
         startup()
-        if let data = try? Data(contentsOf: indexFileUrl),
-           let loaded = try? JSONDecoder().decode(Model.self, from: data) {
-            return loaded
+        guard let data = try? Data(contentsOf: indexFileUrl) else {
+            return Model()
         }
-        return Model()
+        
+        do {
+            return try JSONDecoder().decode(Model.self, from: data)
+        } catch {
+            NSLog("Error loading model: \(error.localizedDescription)")
+            return Model()
+        }
     }
 }

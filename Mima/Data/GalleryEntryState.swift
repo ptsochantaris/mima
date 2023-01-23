@@ -1,14 +1,21 @@
 import Foundation
 
-extension GalleryEntry {
+extension ListItem {
     enum State: Codable {
-        case queued, warmup, rendering(step: Float, total: Float), done, cancelled, error
+        case queued, warmup, rendering(step: Float, total: Float), done, cancelled, error, creating
 
         var isWaiting: Bool {
             if case .queued = self {
                 return true
             }
             return isWarmup
+        }
+        
+        var isCreator: Bool {
+            if case .creating = self {
+                return true
+            }
+            return false
         }
 
         var isWarmup: Bool {
@@ -45,10 +52,11 @@ extension GalleryEntry {
             case ready
             case cancelled
             case error
+            case creating
         }
 
         enum GalleryEntryDecoderError: Error {
-            case decoding
+            case decodingState
         }
 
         init(from decoder: Decoder) throws {
@@ -69,7 +77,11 @@ extension GalleryEntry {
                 self = .done
                 return
             }
-            throw GalleryEntryDecoderError.decoding
+            if (try? values.decode(Bool.self, forKey: .creating)) != nil {
+                self = .creating
+                return
+            }
+            throw GalleryEntryDecoderError.decodingState
         }
 
         func encode(to encoder: Encoder) throws {
@@ -83,6 +95,8 @@ extension GalleryEntry {
                 try container.encode(true, forKey: .error)
             case .done:
                 try container.encode(true, forKey: .ready)
+            case .creating:
+                try container.encode(true, forKey: .creating)
             }
         }
     }

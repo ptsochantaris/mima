@@ -1,12 +1,12 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-struct GalleryImage: View {
-    @ObservedObject private var entry: GalleryEntry
+struct ListItemView: View {
+    @ObservedObject private var entry: ListItem
     private let model: Model
     @State private var showPicker = false
 
-    init(entry: GalleryEntry, model: Model) {
+    init(entry: ListItem, model: Model) {
         self.entry = entry
         self.model = model
     }
@@ -15,8 +15,11 @@ struct GalleryImage: View {
 
     var body: some View {
         ZStack {
-            Color.secondary.opacity(0.3)
+            Color.secondary.opacity(0.1)
             switch entry.state {
+            case .creating:
+                NewItem(prototype: entry, model: model)
+
             case .queued:
                 EntryTitle(entry: entry)
                 Color.clear
@@ -39,7 +42,7 @@ struct GalleryImage: View {
                                 .frame(width: 23, height: 23)
                             VStack(alignment: .leading) {
                                 Text("Warming up the engine…")
-                                Text("This can take a while the first time.")
+                                Text("This takes very long the first time!")
                             }
                         }
                         .foregroundStyle(.tint)
@@ -110,7 +113,7 @@ struct GalleryImage: View {
                         MimaButon(look: .edit)
                             .onTapGesture {
                                 withAnimation {
-                                    model.populate(from: entry)
+                                    // TODO
                                 }
                             }
                     }
