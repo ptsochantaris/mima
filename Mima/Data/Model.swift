@@ -5,7 +5,6 @@ final class Model: ObservableObject, Codable {
     @Published var entries: ContiguousArray<ListItem>
     private var renderQueue: ContiguousArray<UUID>
 
-    @MainActor
     init() {
         entries = [
             ListItem(prompt: "A colorful bowl of fruit on a wooden table", negativePrompt: "Berries", seed: 0, steps: 50, guidance: 7.5, state: .creating)
@@ -25,9 +24,7 @@ final class Model: ObservableObject, Codable {
         renderQueue = try values.decode(ContiguousArray<UUID>.self, forKey: .renderQueue)
 
         if !renderQueue.isEmpty {
-            Task { @MainActor in
-                startRendering()
-            }
+            startRendering()
         }
     }
 
@@ -79,8 +76,8 @@ extension Model {
         return nil
     }
 
-    private func startRendering() {
-        Task {
+    nonisolated private func startRendering() {
+        Task { @MainActor in
             while let entry = nextEntryToRender() {
                 await entry.render()
                 renderQueue.removeAll(where: { $0 == entry.id })
@@ -155,11 +152,9 @@ extension Model {
             NSLog("Error saving state: \(error)")
         }
     }
-
+    
     static let shared: Model = {
-        Task { @RenderActor in
-            startup()
-        }
+        Rendering.startup()
 
         guard let data = try? Data(contentsOf: indexFileUrl) else {
             return Model()

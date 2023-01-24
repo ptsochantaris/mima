@@ -103,16 +103,7 @@ final class ListItem: ObservableObject, Codable, Identifiable {
 
     @MainActor
     func render() async {
-        switch await pipelineState {
-        case .warmup:
-            state = .warmup
-        case .ready:
-            state = .rendering(step: 0, total: Float(steps))
-        }
-
-        let result = await Task.detached(priority: .userInitiated) { @RenderActor [weak self] in
-            await self?.handleRender() ?? []
-        }.value
+        let result = await Rendering.render(self)
 
         if let i = result.first, let i {
             let capturedUUID = id
@@ -125,37 +116,11 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         }
     }
 
-    @MainActor
     func copyImageToPasteboard() {
         guard let url = (imageUrl as NSURL).fileReferenceURL() as NSURL? else { return }
         let pb = NSPasteboard.general
         pb.clearContents()
         pb.writeObjects([url])
         pb.setString(url.relativeString, forType: .fileURL)
-    }
-
-    @RenderActor
-    private func handleRender() async -> [CGImage?] {
-        guard !state.isCancelled, case let .ready(pipeline) = await pipelineState else {
-            return []
-        }
-        return try! pipeline.generateImages(
-            prompt: prompt,
-            negativePrompt: negativePrompt,
-            imageCount: 1,
-            stepCount: steps,
-            seed: generatedSeed,
-            guidanceScale: guidance,
-            disableSafety: true
-        ) { progress in
-            DispatchQueue.main.sync {
-                if self.state.isCancelled {
-                    return false
-                } else {
-                    self.state = .rendering(step: Float(progress.step), total: Float(self.steps))
-                    return true
-                }
-            }
-        }
     }
 }

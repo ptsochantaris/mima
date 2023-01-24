@@ -3,7 +3,7 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         Task {
-            await shutdown()
+            await Rendering.shutdown()
             sender.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater
