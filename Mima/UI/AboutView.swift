@@ -75,7 +75,6 @@ struct AboutView: View {
                         }
                         .multilineTextAlignment(.center)
                         .padding()
-                        .foregroundColor(.black)
                         .background(.thinMaterial)
                         .cornerRadius(12)
                         .padding()
@@ -109,6 +108,7 @@ struct AboutView: View {
             .foregroundColor(.black)
             .multilineTextAlignment(.trailing)
         }
+        .preferredColorScheme(.light)
         .frame(width: 664, height: 664)
     }
 }

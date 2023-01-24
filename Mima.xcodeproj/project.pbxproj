@@ -82,11 +82,11 @@
 		166142462974BD5800BFA494 /* Mima */ = {
 			isa = PBXGroup;
 			children = (
-				169732BC297F0C2700DFF596 /* Info.plist */,
-				16622AC3297D82DA00C8C7F0 /* UI */,
-				16622AC2297D82CF00C8C7F0 /* Data */,
 				1661424D2974BD5900BFA494 /* Mima.entitlements */,
+				169732BC297F0C2700DFF596 /* Info.plist */,
 				1661424B2974BD5900BFA494 /* Assets.xcassets */,
+				16622AC2297D82CF00C8C7F0 /* Data */,
+				16622AC3297D82DA00C8C7F0 /* UI */,
 			);
 			path = Mima;
 			sourceTree = "<group>";
