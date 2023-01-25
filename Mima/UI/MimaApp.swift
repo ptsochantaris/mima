@@ -33,10 +33,17 @@ private struct ContentView: View {
 struct MimaApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate: AppDelegate
     @Environment(\.openWindow) var openWindow
+    @State private var mainIsVisible = false
 
     var body: some Scene {
-        WindowGroup("Mima") {
+        WindowGroup("Mima", id: "main") {
             ContentView()
+                .onAppear {
+                    mainIsVisible = true
+                }
+                .onDisappear {
+                    mainIsVisible = false
+                }
         }.commands {
             CommandGroup(after: .textEditing) {
                 Button("Cancel Queued Items") {
@@ -49,6 +56,14 @@ struct MimaApp: App {
                         Model.shared.removeAll()
                     }
                 }
+            }
+            CommandGroup(replacing: .newItem) {
+                Button("New Window") {
+                    if !mainIsVisible {
+                        openWindow(id: "main")
+                    }
+                }
+                .keyboardShortcut("n")
             }
             CommandGroup(replacing: .appInfo) {
                 Button("About Mima") {
