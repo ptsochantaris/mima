@@ -7,7 +7,7 @@ final class Model: ObservableObject, Codable {
 
     init() {
         entries = [
-            ListItem(prompt: "A colorful bowl of fruit on a wooden table", negativePrompt: "Berries", seed: 0, steps: 50, guidance: 7.5, state: .creating)
+            ListItem(prompt: "A colorful bowl of fruit on a wooden table", negativePrompt: "Berries", seed: nil, steps: 50, guidance: 7.5, state: .creating)
         ]
         renderQueue = ContiguousArray<UUID>()
     }
@@ -43,23 +43,22 @@ extension Model {
     }
 
     func removeAll() {
-        for entry in entries {
-            entry.nuke()
+        entries.removeAll {
+            if $0.state.isCreator {
+                return false
+            }
+            $0.nuke()
+            return true
         }
-        entries.removeAll()
         save()
     }
 
     func delete(_ entry: ListItem) {
         let id = entry.id
-        let wasWarmingUp = entry.state.isWarmup
         if let i = entries.firstIndex(where: { $0.id == id }) {
             let entry = entries[i]
             entries.remove(at: i)
             entry.nuke()
-        }
-        if wasWarmingUp, let nextEntry = nextEntryToRender() {
-            nextEntry.state = .warmup
         }
         save()
     }
@@ -79,7 +78,7 @@ extension Model {
     nonisolated private func startRendering() {
         Task { @MainActor in
             while let entry = nextEntryToRender() {
-                await entry.render()
+                await Rendering.render(entry)
                 renderQueue.removeAll(where: { $0 == entry.id })
                 save()
             }
@@ -142,7 +141,7 @@ extension Model {
         }
     }
 
-    private static let indexFileUrl = fileDirectory.appending(path: "data.json", directoryHint: .notDirectory)
+    private static let indexFileUrl = fileDirectory.appending(path: "entries.json", directoryHint: .notDirectory)
 
     func save() {
         do {

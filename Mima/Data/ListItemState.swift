@@ -2,24 +2,17 @@ import Foundation
 
 extension ListItem {
     enum State: Codable {
-        case queued, warmup, rendering(step: Float, total: Float), done, cancelled, error, creating, clonedCreator
+        case queued, rendering(step: Float, total: Float), done, cancelled, error, creating, clonedCreator
 
         var isWaiting: Bool {
             if case .queued = self {
                 return true
             }
-            return isWarmup
+            return false
         }
 
         var isCreator: Bool {
             if case .creating = self {
-                return true
-            }
-            return false
-        }
-
-        var isWarmup: Bool {
-            if case .warmup = self {
                 return true
             }
             return false
@@ -92,7 +85,7 @@ extension ListItem {
         func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
             switch self {
-            case .queued, .rendering, .warmup:
+            case .queued, .rendering:
                 try container.encode(true, forKey: .queued)
             case .cancelled:
                 try container.encode(true, forKey: .cancelled)

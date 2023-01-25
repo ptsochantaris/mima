@@ -35,13 +35,9 @@ struct MimaApp: App {
     @Environment(\.openWindow) var openWindow
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup("Mima") {
             ContentView()
-                .onDisappear {
-                    NSApplication.shared.terminate(nil)
-                }
         }.commands {
-            CommandGroup(replacing: .newItem, addition: {})
             CommandGroup(after: .textEditing) {
                 Button("Cancel Queued Items") {
                     withAnimation {
@@ -78,8 +74,8 @@ struct MimaApp: App {
             }
         }
         .defaultSize(width: 1024, height: 768)
-
-        Window("About Mima", id: "about") {
+        
+        WindowGroup("About Mima", id: "about") {
             AboutView()
         }
         .windowResizability(.contentSize)

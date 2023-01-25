@@ -1,6 +1,62 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+private struct PipelinePhaseView: View {
+    @ObservedObject var pipeline = PipelineState.shared
+    
+    var body: some View {
+        switch pipeline.phase {
+        case .shutdown, .ready:
+            Color.clear
+        case let .setup(phase):
+            HStack {
+                switch phase {
+                case .booting:
+                    Image(systemName: "clock")
+                        .resizable()
+                        .frame(width: 23, height: 23)
+                    VStack(alignment: .leading) {
+                        Text("Warming up the engine…")
+                        Text("Please wait a moment")
+                    }
+                case let .downloading(progress):
+                    Image(systemName: "clock")
+                        .resizable()
+                        .frame(width: 23, height: 23)
+                    VStack(alignment: .leading) {
+                        Text("Downloading the AI model…")
+                        Text("\(Int(progress * 100))% Complete")
+                    }
+                case let .downloadingError(error):
+                    Image(systemName: "exclamationmark.triangle")
+                        .resizable()
+                        .frame(width: 23, height: 23)
+                    VStack(alignment: .leading) {
+                        Text("There was a download error")
+                        Text(error.localizedDescription)
+                    }
+                case .expanding:
+                    Image(systemName: "clock")
+                        .resizable()
+                        .frame(width: 23, height: 23)
+                    VStack(alignment: .leading) {
+                        Text("Uncompressing the data…")
+                        Text("Please wait a moment")
+                    }
+                case .initialising:
+                    Image(systemName: "clock")
+                        .resizable()
+                        .frame(width: 23, height: 23)
+                    VStack(alignment: .leading) {
+                        Text("Warming up the engine…")
+                        Text("This takes a few minutes the first time!")
+                    }
+                }
+            }
+        }
+    }
+}
+
 struct ListItemView: View {
     @ObservedObject private var entry: ListItem
     @State private var showPicker = false
@@ -25,28 +81,12 @@ struct ListItemView: View {
                         EntryFooter(entry: entry)
                             .padding()
                     }
-
-            case .warmup:
-                EntryTitle(entry: entry)
-                Color.clear
-                    .overlay(alignment: .bottomLeading) {
-                        EntryFooter(entry: entry)
-                            .padding()
-                    }
                     .overlay(alignment: .topLeading) {
-                        HStack {
-                            Image(systemName: "clock")
-                                .resizable()
-                                .frame(width: 23, height: 23)
-                            VStack(alignment: .leading) {
-                                Text("Warming up the engine…")
-                                Text("This takes very long the first time!")
-                            }
-                        }
-                        .foregroundStyle(.tint)
-                        .multilineTextAlignment(.center)
-                        .font(.footnote)
-                        .padding()
+                        PipelinePhaseView()
+                            .foregroundStyle(Color(red: 1, green: 0.2, blue: 0.2))
+                            .multilineTextAlignment(.center)
+                            .font(.footnote)
+                            .padding()
                     }
 
             case .rendering:
@@ -161,7 +201,7 @@ struct DismissButton: View {
 
     var body: some View {
         switch entry.state {
-        case .cancelled, .clonedCreator, .creating, .error, .queued, .warmup:
+        case .cancelled, .clonedCreator, .creating, .error, .queued:
             MimaButon(look: .dismiss)
                 .onTapGesture {
                     withAnimation {

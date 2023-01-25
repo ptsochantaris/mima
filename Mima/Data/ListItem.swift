@@ -101,21 +101,6 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         fileDirectory.appending(path: "\(id.uuidString).png")
     }
 
-    @MainActor
-    func render() async {
-        let result = await Rendering.render(self)
-
-        if let i = result.first, let i {
-            let capturedUUID = id
-            await Task.detached {
-                i.save(uuid: capturedUUID)
-            }.value
-            state = .done
-        } else {
-            state = .cancelled
-        }
-    }
-
     func copyImageToPasteboard() {
         guard let url = (imageUrl as NSURL).fileReferenceURL() as NSURL? else { return }
         let pb = NSPasteboard.general
