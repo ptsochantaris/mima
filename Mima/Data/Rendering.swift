@@ -153,14 +153,14 @@ enum Rendering {
     }
 
     @MainActor
-    static func render(_ item: ListItem) async {
+    static func render(_ item: ListItem) async -> Bool {
         switch PipelineState.shared.phase {
         case .setup:
             break
         case .ready:
             item.state = .rendering(step: 0, total: Float(item.steps))
         case .shutdown:
-            return
+            return false
         }
 
         let result: [CGImage?] = await Task { @RenderActor in
@@ -197,7 +197,10 @@ enum Rendering {
             let capturedUUID = item.id
             i.save(uuid: capturedUUID)
             item.state = .done
+            return true
         }
+        
+        return false
     }
 
     @MainActor

@@ -89,8 +89,7 @@ extension Model {
         }
         rendering = true
         Task { @MainActor in
-            while let entry = nextEntryToRender() {
-                await Rendering.render(entry)
+            while let entry = nextEntryToRender(), await Rendering.render(entry) {
                 renderQueue.removeAll(where: { $0 == entry.id })
                 save()
             }
