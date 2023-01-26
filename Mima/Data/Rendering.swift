@@ -1,8 +1,10 @@
+import AsyncHTTPClient
+import CoreGraphics
 import Foundation
 import StableDiffusion
-import CoreGraphics
-import AsyncHTTPClient
 import ZIPFoundation
+import SwiftUI
+import CoreML
 
 enum WarmUpPhase {
     case booting, downloading(progress: Float), downloadingError(error: Error), initialising, initialisingError(error: Error), expanding
@@ -11,11 +13,20 @@ enum WarmUpPhase {
 @MainActor
 final class PipelineState: ObservableObject {
     static let shared = PipelineState()
-    
+
     enum Phase {
         case setup(warmupPhase: WarmUpPhase), ready(StableDiffusionPipeline), shutdown
+        
+        var showStatus: WarmUpPhase? {
+            switch self {
+            case .ready, .shutdown:
+                return nil
+            case let .setup(warmupPhase):
+                return warmupPhase
+            }
+        }
     }
-    
+
     @Published var phase = Phase.setup(warmupPhase: .booting)
 }
 
@@ -42,11 +53,15 @@ enum Rendering {
         Task { @RenderActor in
             let storageUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
             let storageDirectory = storageUrl.appending(path: "sd15", directoryHint: .isDirectory)
-            let checkFile = storageDirectory.appending(path: "sd15", directoryHint: .notDirectory)
+            let checkFile = storageDirectory.appending(path: "ready", directoryHint: .notDirectory)
             if !FileManager.default.fileExists(atPath: checkFile.path) {
+                #if canImport(Cocoa)
                 let temporaryZip = NSTemporaryDirectory().appending("sd15.zip")
+                #else
+                let temporaryZip = NSTemporaryDirectory().appending("sd15iOS.zip")
+                #endif
                 let tempUrl = URL(fileURLWithPath: temporaryZip)
-                
+
                 do {
                     NSLog("Requesting model...")
                     guard let client = httpClient else {
@@ -57,7 +72,7 @@ enum Rendering {
                     guard response.status == .ok else {
                         throw PipelineStartupError.invalidCode("Received code \(response.status) from the server")
                     }
-                    
+
                     NSLog("Downloading model...")
                     if FileManager.default.fileExists(atPath: temporaryZip) {
                         try FileManager.default.removeItem(at: tempUrl)
@@ -81,18 +96,18 @@ enum Rendering {
                     try file.close()
                     try await client.shutdown()
                     httpClient = nil
-                    
+
                     Task { @MainActor in
                         PipelineState.shared.phase = .setup(warmupPhase: .expanding)
                     }
-                    
+
                     NSLog("Decompressing model...")
-                    if FileManager.default.fileExists(atPath: storageUrl.path) {
-                        try FileManager.default.removeItem(at: storageUrl)
+                    if FileManager.default.fileExists(atPath: storageDirectory.path) {
+                        try FileManager.default.removeItem(at: storageDirectory)
                     }
                     try FileManager.default.unzipItem(at: tempUrl, to: storageUrl)
                     NSLog("Cleaning up...")
-                    try? FileManager.default.removeItem(at: tempUrl)
+                    try FileManager.default.removeItem(at: tempUrl)
                     FileManager.default.createFile(atPath: checkFile.path, contents: nil)
 
                 } catch {
@@ -107,15 +122,25 @@ enum Rendering {
             Task { @MainActor in
                 PipelineState.shared.phase = .setup(warmupPhase: .initialising)
             }
-            
+
             do {
                 NSLog("Constructing pipeline...")
-                let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, disableSafety: true)
+                let config = MLModelConfiguration()
+                #if canImport(Cocoa)
+                config.computeUnits = .all
+                let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, configuration: config, disableSafety: true)
+                #else
+                config.computeUnits = .cpuAndNeuralEngine
+                let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, configuration: config, disableSafety: true, reduceMemory: true)
+                #endif
                 NSLog("Warmup...")
                 try pipeline.prewarmResources()
                 NSLog("Pipeline ready")
                 Task { @MainActor in
-                    PipelineState.shared.phase = .ready(pipeline)
+                    withAnimation {
+                        PipelineState.shared.phase = .ready(pipeline)
+                    }
+                    Model.shared.startRenderingIfNeeded()
                 }
             } catch {
                 Task { @MainActor in
@@ -126,7 +151,7 @@ enum Rendering {
             }
         }
     }
-    
+
     @MainActor
     static func render(_ item: ListItem) async {
         switch PipelineState.shared.phase {
@@ -137,12 +162,12 @@ enum Rendering {
         case .shutdown:
             return
         }
-        
+
         let result: [CGImage?] = await Task { @RenderActor in
             guard case let .ready(pipeline) = await PipelineState.shared.phase, !item.state.isCancelled else {
                 return []
             }
-            
+
             Task { @MainActor in
                 NSLog("Starting render of item \(item.id)")
                 item.state = .rendering(step: 0, total: Float(item.steps))
@@ -157,7 +182,7 @@ enum Rendering {
                 guidanceScale: item.guidance,
                 disableSafety: true
             ) { progress in
-                return DispatchQueue.main.sync {
+                DispatchQueue.main.sync {
                     if item.state.isCancelled {
                         return false
                     } else {
@@ -167,14 +192,14 @@ enum Rendering {
                 }
             }
         }.value
-        
+
         if let i = result.first, let i {
             let capturedUUID = item.id
             i.save(uuid: capturedUUID)
             item.state = .done
         }
     }
-    
+
     @MainActor
     static func shutdown() async {
         Model.shared.save()

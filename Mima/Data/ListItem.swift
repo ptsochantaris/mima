@@ -102,10 +102,16 @@ final class ListItem: ObservableObject, Codable, Identifiable {
     }
 
     func copyImageToPasteboard() {
+#if canImport(Cocoa)
         guard let url = (imageUrl as NSURL).fileReferenceURL() as NSURL? else { return }
         let pb = NSPasteboard.general
         pb.clearContents()
         pb.writeObjects([url])
         pb.setString(url.relativeString, forType: .fileURL)
+#elseif canImport(UIKit)
+        guard let image = UIImage(contentsOfFile: imageUrl.path) else { return }
+        let pb = UIPasteboard.general
+        pb.image = image
+#endif
     }
 }

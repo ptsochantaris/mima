@@ -18,6 +18,9 @@
 		1625573C297C3FBF0027BD4F /* MimaButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625573B297C3FBF0027BD4F /* MimaButton.swift */; };
 		1625573E297C3FD90027BD4F /* GaugeProgressStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625573D297C3FD90027BD4F /* GaugeProgressStyle.swift */; };
 		1630C9A12981B68B005A0688 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 1630C9A02981B68B005A0688 /* ZIPFoundation */; };
+		164DD47C2982EF97006B8D6F /* PipelinePhaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164DD47B2982EF97006B8D6F /* PipelinePhaseView.swift */; };
+		164DD47E2982F05A006B8D6F /* DismissButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164DD47D2982F05A006B8D6F /* DismissButton.swift */; };
+		164DD48029831728006B8D6F /* ButtonBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164DD47F29831728006B8D6F /* ButtonBackground.swift */; };
 		165150E7297DCC5A00124967 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165150E6297DCC5A00124967 /* AboutView.swift */; };
 		166142482974BD5800BFA494 /* MimaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166142472974BD5800BFA494 /* MimaApp.swift */; };
 		1661424C2974BD5900BFA494 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1661424B2974BD5900BFA494 /* Assets.xcassets */; };
@@ -39,6 +42,9 @@
 		16255739297C3FA20027BD4F /* EntryTitle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryTitle.swift; sourceTree = "<group>"; };
 		1625573B297C3FBF0027BD4F /* MimaButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MimaButton.swift; sourceTree = "<group>"; };
 		1625573D297C3FD90027BD4F /* GaugeProgressStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaugeProgressStyle.swift; sourceTree = "<group>"; };
+		164DD47B2982EF97006B8D6F /* PipelinePhaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PipelinePhaseView.swift; sourceTree = "<group>"; };
+		164DD47D2982F05A006B8D6F /* DismissButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DismissButton.swift; sourceTree = "<group>"; };
+		164DD47F29831728006B8D6F /* ButtonBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonBackground.swift; sourceTree = "<group>"; };
 		165150E6297DCC5A00124967 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		166142442974BD5800BFA494 /* Mima.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mima.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		166142472974BD5800BFA494 /* MimaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MimaApp.swift; sourceTree = "<group>"; };
@@ -96,11 +102,10 @@
 			isa = PBXGroup;
 			children = (
 				1625572B297B2C9C0027BD4F /* ListItem.swift */,
-				16255735297BFA430027BD4F /* NewItem.swift */,
 				1625572F297B6EAF0027BD4F /* ListItemState.swift */,
 				1625572D297B38EF0027BD4F /* Model.swift */,
-				1661425E2974D15E00BFA494 /* Utils.swift */,
 				166A262D297EE7C600A1BB50 /* Rendering.swift */,
+				1661425E2974D15E00BFA494 /* Utils.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -108,15 +113,19 @@
 		16622AC3297D82DA00C8C7F0 /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				165150E6297DCC5A00124967 /* AboutView.swift */,
 				16255733297BF9DC0027BD4F /* EntryFooter.swift */,
 				16255737297C3F840027BD4F /* EntryName.swift */,
 				16255739297C3FA20027BD4F /* EntryTitle.swift */,
-				16255731297BF9BB0027BD4F /* ListItemView.swift */,
 				1625573D297C3FD90027BD4F /* GaugeProgressStyle.swift */,
+				16255731297BF9BB0027BD4F /* ListItemView.swift */,
+				16622AC6297D996300C8C7F0 /* Mac.swift */,
 				166142472974BD5800BFA494 /* MimaApp.swift */,
 				1625573B297C3FBF0027BD4F /* MimaButton.swift */,
-				16622AC6297D996300C8C7F0 /* Mac.swift */,
-				165150E6297DCC5A00124967 /* AboutView.swift */,
+				164DD47F29831728006B8D6F /* ButtonBackground.swift */,
+				16255735297BFA430027BD4F /* NewItem.swift */,
+				164DD47B2982EF97006B8D6F /* PipelinePhaseView.swift */,
+				164DD47D2982F05A006B8D6F /* DismissButton.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -204,6 +213,8 @@
 				16622AC7297D996300C8C7F0 /* Mac.swift in Sources */,
 				1625573A297C3FA20027BD4F /* EntryTitle.swift in Sources */,
 				16255730297B6EAF0027BD4F /* ListItemState.swift in Sources */,
+				164DD47C2982EF97006B8D6F /* PipelinePhaseView.swift in Sources */,
+				164DD47E2982F05A006B8D6F /* DismissButton.swift in Sources */,
 				1625573C297C3FBF0027BD4F /* MimaButton.swift in Sources */,
 				166A262E297EE7C600A1BB50 /* Rendering.swift in Sources */,
 				166142482974BD5800BFA494 /* MimaApp.swift in Sources */,
@@ -211,6 +222,7 @@
 				1625573E297C3FD90027BD4F /* GaugeProgressStyle.swift in Sources */,
 				165150E7297DCC5A00124967 /* AboutView.swift in Sources */,
 				16255732297BF9BB0027BD4F /* ListItemView.swift in Sources */,
+				164DD48029831728006B8D6F /* ButtonBackground.swift in Sources */,
 				16255738297C3F840027BD4F /* EntryName.swift in Sources */,
 				1625572E297B38EF0027BD4F /* Model.swift in Sources */,
 				1625572C297B2C9C0027BD4F /* ListItem.swift in Sources */,

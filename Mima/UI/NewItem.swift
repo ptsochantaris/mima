@@ -46,7 +46,7 @@ struct NewItem: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                Color.secondary.opacity(0.1)
+                ItemBackground()
                 HStack {
                     Spacer()
                     VStack(alignment: .center, spacing: 30) {
@@ -131,7 +131,7 @@ struct NewItem: View {
         }
         .overlay(alignment: .topTrailing) {
             if !prototype.state.isCreator {
-                MimaButon(look: .dismiss)
+                MimaButon(look: .dismiss(.button))
                     .onTapGesture {
                         Model.shared.delete(prototype)
                     }

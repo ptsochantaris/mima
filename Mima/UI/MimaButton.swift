@@ -1,25 +1,36 @@
 import SwiftUI
 
-struct ButtonBackground: View {
-    var body: some View {
-        Group {
-            if NSApp.isActive {
-                Circle()
-                    .foregroundStyle(.ultraThinMaterial)
-            } else {
-                Circle()
-                    .foregroundStyle(.ultraThinMaterial.opacity(0.2))
+struct MimaButon: View {
+    enum Strength {
+        case overlay, progress, button
+    }
+    
+    private struct ButtonBackground: View {
+        var strength: Strength
+        var body: some View {
+            switch strength {
+            case .overlay:
+                ButtonOverlayBackground()
+            case .progress:
+                ButtonStandardBackground()
+            case .button:
+                ButtonStandardBackground()
             }
         }
-        .frame(width: 26, height: 26)
-        .padding(13)
     }
-}
-
-struct MimaButon: View {
+    
     enum Look {
-        case share, dismiss, encore, edit
+        case share, dismiss(Strength), encore, edit
 
+        var strength: Strength {
+            switch self {
+            case .share, .encore, .edit:
+                return .overlay
+            case let .dismiss(strength):
+                return strength
+            }
+        }
+        
         var systemName: String {
             switch self {
             case .dismiss: return "xmark"
@@ -37,7 +48,7 @@ struct MimaButon: View {
     }
 
     var body: some View {
-        ButtonBackground()
+        ButtonBackground(strength: look.strength)
             .overlay {
                 Image(systemName: look.systemName)
                     .fontWeight(.bold)

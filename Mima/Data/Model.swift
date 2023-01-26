@@ -1,4 +1,6 @@
+#if canImport(Cocoa)
 import Cocoa
+#endif
 import Foundation
 
 final class Model: ObservableObject, Codable {
@@ -23,8 +25,8 @@ final class Model: ObservableObject, Codable {
         entries = try values.decode(ContiguousArray<ListItem>.self, forKey: .entries)
         renderQueue = try values.decode(ContiguousArray<UUID>.self, forKey: .renderQueue)
 
-        if !renderQueue.isEmpty {
-            startRendering()
+        Task { @MainActor in
+            startRenderingIfNeeded()
         }
     }
 
@@ -33,6 +35,9 @@ final class Model: ObservableObject, Codable {
         try container.encode(entries, forKey: .entries)
         try container.encode(renderQueue, forKey: .renderQueue)
     }
+
+    @MainActor
+    private var rendering = false
 }
 
 @MainActor
@@ -72,16 +77,24 @@ extension Model {
                 renderQueue.removeFirst()
             }
         }
+        if let rescuedItem = entries.first(where: { $0.state.isWaiting }) {
+            return rescuedItem
+        }
         return nil
     }
 
-    nonisolated private func startRendering() {
+    func startRenderingIfNeeded() {
+        if rendering {
+            return
+        }
+        rendering = true
         Task { @MainActor in
             while let entry = nextEntryToRender() {
                 await Rendering.render(entry)
                 renderQueue.removeAll(where: { $0 == entry.id })
                 save()
             }
+            rendering = false
         }
     }
 
@@ -91,11 +104,12 @@ extension Model {
             let destination = url.appending(path: entry.exportFilename, directoryHint: .notDirectory)
             try? fm.copyItem(at: entry.imageUrl, to: destination)
         }
+        #if canImport(Cocoa)
         NSWorkspace.shared.open(url)
+        #endif
     }
 
     func createItem(basedOn prototype: ListItem, fromCreator: Bool) {
-        let queueWasEmpty = renderQueue.isEmpty
         let entry = prototype.clone(as: .queued)
         if let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) {
             if fromCreator {
@@ -107,10 +121,7 @@ extension Model {
             entries.insert(entry, at: 0)
         }
         renderQueue.append(entry.id)
-
-        if queueWasEmpty {
-            startRendering()
-        }
+        startRenderingIfNeeded()
         save()
     }
 
@@ -124,11 +135,8 @@ extension Model {
         if let index = entries.firstIndex(where: { $0.id == entry.id }) {
             let randomEntry = entry.randomVariant()
             entries.insert(randomEntry, at: index + 1)
-            let queueWasEmpty = renderQueue.isEmpty
             renderQueue.append(randomEntry.id)
-            if queueWasEmpty {
-                startRendering()
-            }
+            startRenderingIfNeeded()
             save()
         }
     }
@@ -151,7 +159,7 @@ extension Model {
             NSLog("Error saving state: \(error)")
         }
     }
-    
+
     static let shared: Model = {
         Rendering.startup()
 
