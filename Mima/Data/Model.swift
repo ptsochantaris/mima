@@ -145,7 +145,7 @@ extension Model {
 
     func save() {
         do {
-            try JSONEncoder().encode(self).write(to: Model.indexFileUrl)
+            try JSONEncoder().encode(self).write(to: Model.indexFileUrl, options: .atomic)
             NSLog("State saved")
         } catch {
             NSLog("Error saving state: \(error)")

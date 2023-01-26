@@ -35,6 +35,14 @@ private struct PipelinePhaseView: View {
                         Text("There was a download error")
                         Text(error.localizedDescription)
                     }
+                case let .initialisingError(error):
+                    Image(systemName: "exclamationmark.triangle")
+                        .resizable()
+                        .frame(width: 23, height: 23)
+                    VStack(alignment: .leading) {
+                        Text("There was an error starting up")
+                        Text(error.localizedDescription)
+                    }
                 case .expanding:
                     Image(systemName: "clock")
                         .resizable()

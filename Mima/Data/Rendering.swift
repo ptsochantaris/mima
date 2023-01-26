@@ -5,7 +5,7 @@ import AsyncHTTPClient
 import ZIPFoundation
 
 enum WarmUpPhase {
-    case booting, downloading(progress: Float), downloadingError(error: Error), initialising, expanding
+    case booting, downloading(progress: Float), downloadingError(error: Error), initialising, initialisingError(error: Error), expanding
 }
 
 @MainActor
@@ -42,7 +42,8 @@ enum Rendering {
         Task { @RenderActor in
             let storageUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
             let storageDirectory = storageUrl.appending(path: "sd15", directoryHint: .isDirectory)
-            if !FileManager.default.fileExists(atPath: storageDirectory.path) {
+            let checkFile = storageDirectory.appending(path: "sd15", directoryHint: .notDirectory)
+            if !FileManager.default.fileExists(atPath: checkFile.path) {
                 let temporaryZip = NSTemporaryDirectory().appending("sd15.zip")
                 let tempUrl = URL(fileURLWithPath: temporaryZip)
                 
@@ -51,7 +52,7 @@ enum Rendering {
                     guard let client = httpClient else {
                         throw PipelineStartupError.invalidState("HTTP client setup failed")
                     }
-                    let request = HTTPClientRequest(url: "https://sd-models.eu-central-1.linodeobjects.com/sd15.zip")
+                    let request = HTTPClientRequest(url: "https://pub-51bef0e5d3e547d399bb6ca8d76a7d70.r2.dev/sd15.zip")
                     let response = try await client.execute(request, timeout: .seconds(120))
                     guard response.status == .ok else {
                         throw PipelineStartupError.invalidCode("Received code \(response.status) from the server")
@@ -86,10 +87,14 @@ enum Rendering {
                     }
                     
                     NSLog("Decompressing model...")
+                    if FileManager.default.fileExists(atPath: storageUrl.path) {
+                        try FileManager.default.removeItem(at: storageUrl)
+                    }
                     try FileManager.default.unzipItem(at: tempUrl, to: storageUrl)
                     NSLog("Cleaning up...")
                     try? FileManager.default.removeItem(at: tempUrl)
-                    
+                    FileManager.default.createFile(atPath: checkFile.path, contents: nil)
+
                 } catch {
                     Task { @MainActor in
                         PipelineState.shared.phase = .setup(warmupPhase: .downloadingError(error: error))
@@ -102,13 +107,22 @@ enum Rendering {
             Task { @MainActor in
                 PipelineState.shared.phase = .setup(warmupPhase: .initialising)
             }
-            NSLog("Constructing pipeline...")
-            let pipeline = try! StableDiffusionPipeline(resourcesAt: storageDirectory, disableSafety: true)
-            NSLog("Warmup...")
-            try? pipeline.prewarmResources()
-            NSLog("Pipeline ready")
-            Task { @MainActor in
-                PipelineState.shared.phase = .ready(pipeline)
+            
+            do {
+                NSLog("Constructing pipeline...")
+                let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, disableSafety: true)
+                NSLog("Warmup...")
+                try pipeline.prewarmResources()
+                NSLog("Pipeline ready")
+                Task { @MainActor in
+                    PipelineState.shared.phase = .ready(pipeline)
+                }
+            } catch {
+                Task { @MainActor in
+                    PipelineState.shared.phase = .setup(warmupPhase: .initialisingError(error: error))
+                }
+                NSLog("Error setting up the model: \(error.localizedDescription)")
+                return
             }
         }
     }
@@ -129,8 +143,11 @@ enum Rendering {
                 return []
             }
             
-            NSLog("Starting render of item \(item.id)")
-            
+            Task { @MainActor in
+                NSLog("Starting render of item \(item.id)")
+                item.state = .rendering(step: 0, total: Float(item.steps))
+            }
+
             return try! pipeline.generateImages(
                 prompt: item.prompt,
                 negativePrompt: item.negativePrompt,
