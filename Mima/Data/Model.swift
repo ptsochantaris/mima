@@ -24,7 +24,7 @@ final class Model: ObservableObject, Codable {
 
         entries = try values.decode(ContiguousArray<ListItem>.self, forKey: .entries)
         renderQueue = try values.decode(ContiguousArray<UUID>.self, forKey: .renderQueue)
-
+                
         Task { @MainActor in
             startRenderingIfNeeded()
         }
@@ -77,20 +77,16 @@ extension Model {
                 renderQueue.removeFirst()
             }
         }
-        if let rescuedItem = entries.first(where: { $0.state.isWaiting }) {
-            return rescuedItem
-        }
         return nil
     }
 
     func startRenderingIfNeeded() {
-        if rendering {
+        if rendering || renderQueue.isEmpty {
             return
         }
         rendering = true
         Task { @MainActor in
             while let entry = nextEntryToRender(), await Rendering.render(entry) {
-                renderQueue.removeAll(where: { $0 == entry.id })
                 save()
             }
             rendering = false
@@ -107,6 +103,12 @@ extension Model {
         NSWorkspace.shared.open(url)
         #endif
     }
+    
+    private func submitToQueue(_ id: UUID) {
+        renderQueue.append(id)
+        startRenderingIfNeeded()
+        save()
+    }
 
     func createItem(basedOn prototype: ListItem, fromCreator: Bool) {
         let entry = prototype.clone(as: .queued)
@@ -119,9 +121,7 @@ extension Model {
         } else {
             entries.insert(entry, at: 0)
         }
-        renderQueue.append(entry.id)
-        startRenderingIfNeeded()
-        save()
+        submitToQueue(entry.id)
     }
 
     func prioritise(_ item: ListItem) {
@@ -134,9 +134,7 @@ extension Model {
         if let index = entries.firstIndex(where: { $0.id == entry.id }) {
             let randomEntry = entry.randomVariant()
             entries.insert(randomEntry, at: index + 1)
-            renderQueue.append(randomEntry.id)
-            startRenderingIfNeeded()
-            save()
+            submitToQueue(randomEntry.id)
         }
     }
 
@@ -152,6 +150,8 @@ extension Model {
 
     func save() {
         do {
+            let entryIds = Set(entries.filter { $0.state.shouldStayInRenderQueue }.map { $0.id })
+            renderQueue.removeAll { !entryIds.contains($0) }
             try JSONEncoder().encode(self).write(to: Model.indexFileUrl, options: .atomic)
             NSLog("State saved")
         } catch {

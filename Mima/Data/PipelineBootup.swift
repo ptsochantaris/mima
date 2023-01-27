@@ -128,8 +128,8 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
                 PipelineState.shared.phase = .ready(pipeline)
             }
         }
-        Task {
-            await Model.shared.startRenderingIfNeeded()
+        Task { @MainActor in
+            Model.shared.startRenderingIfNeeded()
         }
     }
 }

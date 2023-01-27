@@ -4,6 +4,25 @@ extension ListItem {
     enum State: Codable {
         case queued, rendering(step: Float, total: Float), done, cancelled, error, creating, clonedCreator
 
+        var shouldStayInRenderQueue: Bool {
+            switch self {
+            case .error:
+                return false
+            case .cancelled:
+                return false
+            case .clonedCreator:
+                return false
+            case .creating:
+                return false
+            case .queued:
+                return true
+            case .rendering:
+                return true
+            case .done:
+                return false
+            }
+        }
+        
         var isWaiting: Bool {
             if case .queued = self {
                 return true
