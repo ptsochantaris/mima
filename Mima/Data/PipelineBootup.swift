@@ -93,7 +93,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         }
         
         NSLog("Decompressing model...")
-        let storageDirectory = PipelineBootup.appDocumentsUrl
+        let storageDirectory = PipelineBootup.storageDirectory
         if FileManager.default.fileExists(atPath: storageDirectory.path) {
             try FileManager.default.removeItem(at: storageDirectory)
         }
