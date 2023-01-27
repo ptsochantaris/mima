@@ -51,7 +51,7 @@ struct PipelinePhaseView: View {
             case .expanding:
                 Icon(name: "clock")
                 VStack(alignment: .leading) {
-                    Text("Uncompressing the AI model data…")
+                    Text("Expanding the AI model data…")
                     Text("Please wait a moment")
                 }
             case .initialising:
@@ -67,6 +67,6 @@ struct PipelinePhaseView: View {
         .foregroundColor(.white.opacity(0.9))
         .font(.callout)
         .padding()
-        .background(.tint.opacity(0.5))
+        .background(.tint.opacity(0.7))
     }
 }

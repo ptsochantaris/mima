@@ -160,7 +160,17 @@ extension Model {
     }
 
     static let shared: Model = {
-        Rendering.startup()
+        Task {
+            do {
+                try await PipelineBootup().startup()
+            } catch {
+                Task { @PipelineActor in
+                    PipelineState.shared.phase = .setup(warmupPhase: .initialisingError(error: error))
+                }
+                NSLog("Error setting up the model: \(error.localizedDescription)")
+                return
+            }
+        }
 
         guard let data = try? Data(contentsOf: indexFileUrl) else {
             return Model()

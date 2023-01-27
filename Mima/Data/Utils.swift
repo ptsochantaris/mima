@@ -3,14 +3,7 @@ import Foundation
 import ImageIO
 import UniformTypeIdentifiers
 
-let fileDirectory: URL = {
-    let fm = FileManager.default
-    let directory = fm.urls(for: .documentDirectory, in: .userDomainMask).first!.appending(path: "Mima", directoryHint: .isDirectory)
-    if !fm.fileExists(atPath: directory.path, isDirectory: nil) {
-        try! fm.createDirectory(at: directory, withIntermediateDirectories: true)
-    }
-    return directory
-}()
+let fileDirectory: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 
 extension CGImage {
     func save(uuid: UUID) {

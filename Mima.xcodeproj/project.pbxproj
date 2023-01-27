@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1610EFC4298443DE00266EEA /* PipelineBootup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1610EFC3298443DE00266EEA /* PipelineBootup.swift */; };
 		1625572C297B2C9C0027BD4F /* ListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625572B297B2C9C0027BD4F /* ListItem.swift */; };
 		1625572E297B38EF0027BD4F /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625572D297B38EF0027BD4F /* Model.swift */; };
 		16255730297B6EAF0027BD4F /* ListItemState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625572F297B6EAF0027BD4F /* ListItemState.swift */; };
@@ -28,10 +29,10 @@
 		1661425F2974D15E00BFA494 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1661425E2974D15E00BFA494 /* Utils.swift */; };
 		16622AC7297D996300C8C7F0 /* Mac.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16622AC6297D996300C8C7F0 /* Mac.swift */; };
 		166A262E297EE7C600A1BB50 /* Rendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166A262D297EE7C600A1BB50 /* Rendering.swift */; };
-		167EE19A2981A8EA001F7CEB /* AsyncHTTPClient in Frameworks */ = {isa = PBXBuildFile; productRef = 167EE1992981A8EA001F7CEB /* AsyncHTTPClient */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1610EFC3298443DE00266EEA /* PipelineBootup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PipelineBootup.swift; sourceTree = "<group>"; };
 		1625572B297B2C9C0027BD4F /* ListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListItem.swift; sourceTree = "<group>"; };
 		1625572D297B38EF0027BD4F /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		1625572F297B6EAF0027BD4F /* ListItemState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListItemState.swift; sourceTree = "<group>"; };
@@ -61,7 +62,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				167EE19A2981A8EA001F7CEB /* AsyncHTTPClient in Frameworks */,
 				166142582974BDA900BFA494 /* StableDiffusion in Frameworks */,
 				1630C9A12981B68B005A0688 /* ZIPFoundation in Frameworks */,
 			);
@@ -106,6 +106,7 @@
 				1625572D297B38EF0027BD4F /* Model.swift */,
 				166A262D297EE7C600A1BB50 /* Rendering.swift */,
 				1661425E2974D15E00BFA494 /* Utils.swift */,
+				1610EFC3298443DE00266EEA /* PipelineBootup.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -148,7 +149,6 @@
 			name = Mima;
 			packageProductDependencies = (
 				166142572974BDA900BFA494 /* StableDiffusion */,
-				167EE1992981A8EA001F7CEB /* AsyncHTTPClient */,
 				1630C9A02981B68B005A0688 /* ZIPFoundation */,
 			);
 			productName = Mima;
@@ -181,7 +181,6 @@
 			mainGroup = 1661423B2974BD5800BFA494;
 			packageReferences = (
 				166142562974BDA900BFA494 /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */,
-				167EE1982981A8EA001F7CEB /* XCRemoteSwiftPackageReference "async-http-client" */,
 				1630C99F2981B68B005A0688 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			productRefGroup = 166142452974BD5800BFA494 /* Products */;
@@ -223,6 +222,7 @@
 				165150E7297DCC5A00124967 /* AboutView.swift in Sources */,
 				16255732297BF9BB0027BD4F /* ListItemView.swift in Sources */,
 				164DD48029831728006B8D6F /* ButtonBackground.swift in Sources */,
+				1610EFC4298443DE00266EEA /* PipelineBootup.swift in Sources */,
 				16255738297C3F840027BD4F /* EntryName.swift in Sources */,
 				1625572E297B38EF0027BD4F /* Model.swift in Sources */,
 				1625572C297B2C9C0027BD4F /* ListItem.swift in Sources */,
@@ -469,14 +469,6 @@
 				kind = branch;
 			};
 		};
-		167EE1982981A8EA001F7CEB /* XCRemoteSwiftPackageReference "async-http-client" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/swift-server/async-http-client.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -489,11 +481,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 166142562974BDA900BFA494 /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */;
 			productName = StableDiffusion;
-		};
-		167EE1992981A8EA001F7CEB /* AsyncHTTPClient */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 167EE1982981A8EA001F7CEB /* XCRemoteSwiftPackageReference "async-http-client" */;
-			productName = AsyncHTTPClient;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

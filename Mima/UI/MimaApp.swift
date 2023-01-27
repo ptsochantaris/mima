@@ -27,7 +27,7 @@ private struct ContentView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                if let phase = pipeline.phase.showStatus {
+                if let phase = pipeline.reportedPhase.showStatus {
                     PipelinePhaseView(phase: phase)
                 }
                 LazyVGrid(columns: [
