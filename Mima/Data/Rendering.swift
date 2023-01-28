@@ -109,8 +109,7 @@ enum Rendering {
         }.value
 
         if let i = result.first, let i {
-            let capturedUUID = item.id
-            i.save(uuid: capturedUUID)
+            i.save(from: item)
             item.state = .done
             return true
         }

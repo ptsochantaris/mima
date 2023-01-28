@@ -25,8 +25,8 @@ final class Model: ObservableObject, Codable {
         entries = try values.decode(ContiguousArray<ListItem>.self, forKey: .entries)
         renderQueue = try values.decode(ContiguousArray<UUID>.self, forKey: .renderQueue)
                 
-        Task { @MainActor in
-            startRenderingIfNeeded()
+        Task {
+            await startRenderingIfNeeded()
         }
     }
 
@@ -80,8 +80,18 @@ extension Model {
         return nil
     }
 
-    func startRenderingIfNeeded() {
-        if rendering || renderQueue.isEmpty {
+    @MainActor
+    func startRenderingIfNeeded() async {
+        if rendering {
+            NSLog("Already rendering")
+            return
+        }
+        if renderQueue.isEmpty {
+            NSLog("Nothing to render")
+            return
+        }
+        if case .setup = await PipelineState.shared.phase {
+            NSLog("Pipeline not ready")
             return
         }
         rendering = true
@@ -106,7 +116,9 @@ extension Model {
     
     private func submitToQueue(_ id: UUID) {
         renderQueue.append(id)
-        startRenderingIfNeeded()
+        Task {
+            await startRenderingIfNeeded()
+        }
         save()
     }
 

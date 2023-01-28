@@ -23,7 +23,7 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         case type
         case generatedSeed
     }
-
+    
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         id = try values.decode(UUID.self, forKey: .uuid)
