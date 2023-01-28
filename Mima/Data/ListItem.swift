@@ -2,6 +2,9 @@ import Foundation
 import SwiftUI
 
 final class ListItem: ObservableObject, Codable, Identifiable {
+    static let defaultSteps = 50
+    static let defaultGuidance: Float = 7.5
+    
     var id: UUID
     var prompt: String
     var negativePrompt: String
@@ -48,7 +51,7 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         self.prompt = prompt
         self.negativePrompt = negativePrompt
         self.seed = seed
-        self.steps = steps
+        self.steps = max(1, steps)
         self.guidance = guidance
         if let seed {
             generatedSeed = seed
@@ -74,7 +77,7 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         self.prompt = prompt
         self.negativePrompt = negativePrompt
         self.seed = seed
-        self.steps = steps
+        self.steps = max(2, steps)
         self.guidance = guidance
         self.state = state
         if let seed {

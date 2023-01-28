@@ -10,6 +10,22 @@ struct Icon: View {
     }
 }
 
+struct RetryButton: View {
+    var body: some View {
+        VStack(spacing: 3) {
+            Icon(name: "arrow.clockwise.circle")
+            Text("Retry")
+                .font(.caption)
+        }
+        .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+        .onTapGesture {
+            Task { @RenderActor in
+                await PipelineBootup().startup()
+            }
+        }
+    }
+}
+
 struct PipelinePhaseView: View {
     var phase: WarmUpPhase
     
@@ -29,7 +45,9 @@ struct PipelinePhaseView: View {
                         .layoutPriority(2)
                     GeometryReader { proxy in
                         HStack(spacing: 0) {
-                            Color.white.opacity(0.9).frame(width: proxy.size.width * CGFloat(progress))
+                            if progress > 0 {
+                                Color.white.opacity(0.9).frame(width: proxy.size.width * CGFloat(progress))
+                            }
                             Color.black.opacity(0.2)
                         }
                         .cornerRadius(3)
@@ -37,13 +55,13 @@ struct PipelinePhaseView: View {
                     }
                 }
             case let .downloadingError(error):
-                Icon(name: "exclamationmark.triangle")
+                RetryButton()
                 VStack(alignment: .leading) {
                     Text("There was a download error!")
                     Text(error.localizedDescription)
                 }
             case let .initialisingError(error):
-                Icon(name: "exclamationmark.triangle")
+                RetryButton()
                 VStack(alignment: .leading) {
                     Text("There was an error starting up the AI model!")
                     Text(error.localizedDescription)
@@ -61,12 +79,11 @@ struct PipelinePhaseView: View {
                     Text("This can take a few minutes or more the first time!")
                 }
             }
-            
             Spacer()
         }
         .foregroundColor(.white.opacity(0.9))
         .font(.callout)
         .padding()
-        .background(.tint.opacity(0.7))
+        .background(.tint)
     }
 }

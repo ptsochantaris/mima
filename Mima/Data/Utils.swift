@@ -2,33 +2,81 @@ import CoreGraphics
 import Foundation
 import ImageIO
 import UniformTypeIdentifiers
+import SwiftUI
 
 let fileDirectory: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 
 extension CGImage {
     func save(from item: ListItem) {
         let url = fileDirectory.appending(path: "\(item.id.uuidString).png")
-        if let destination = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) {
-            let metadata = CGImageMetadataCreateMutable()
-            
-            let tag1 = CGImageMetadataTagCreate(kCGImageMetadataNamespaceXMPBasic, nil, "Mima" as CFString, .string, item.prompt as CFString)!
-            CGImageMetadataSetTagWithPath(metadata, nil, "xmp:Mima-Prompt" as CFString, tag1)
-
-            let tag2 = CGImageMetadataTagCreate(kCGImageMetadataNamespaceXMPBasic, nil, "Mima" as CFString, .string, item.negativePrompt as CFString)!
-            CGImageMetadataSetTagWithPath(metadata, nil, "xmp:Mima-Negative-Prompt" as CFString, tag2)
-
-            let tag3 = CGImageMetadataTagCreate(kCGImageMetadataNamespaceXMPBasic, nil, "Mima" as CFString, .string, String(item.generatedSeed) as CFString)!
-            CGImageMetadataSetTagWithPath(metadata, nil, "xmp:Mima-Seed" as CFString, tag3)
-
-            let tag4 = CGImageMetadataTagCreate(kCGImageMetadataNamespaceXMPBasic, nil, "Mima" as CFString, .string, String(item.steps) as CFString)!
-            CGImageMetadataSetTagWithPath(metadata, nil, "xmp:Mima-Steps" as CFString, tag4)
-
-            let tag5 = CGImageMetadataTagCreate(kCGImageMetadataNamespaceXMPBasic, nil, "Mima" as CFString, .string, String(item.guidance) as CFString)!
-            CGImageMetadataSetTagWithPath(metadata, nil, "xmp:Mima-Guidance" as CFString, tag5)
-
-            CGImageDestinationAddImageAndMetadata(destination, self, metadata, nil)
-            CGImageDestinationFinalize(destination)
+        guard let destination = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) else {
+            return
         }
+        
+        let tags: [String: String] = [
+            "Prompt": item.prompt,
+            "NegativePrompt": item.negativePrompt,
+            "Seed": String(item.generatedSeed),
+            "Steps": String(item.steps),
+            "Guidance": String(item.guidance)
+        ]
+        
+        let metadata = CGImageMetadataCreateMutable()
+        let nameSpace = "Mima" as CFString
+        let mima = "mima" as CFString
+        CGImageMetadataRegisterNamespaceForPrefix(metadata, nameSpace, mima, nil)
+        for kv in tags {
+            let tag = CGImageMetadataTagCreate(nameSpace, mima, nameSpace, .string, kv.value as CFString)!
+            CGImageMetadataSetTagWithPath(metadata, nil, "mima:\(kv.key)" as CFString, tag)
+        }
+        CGImageDestinationAddImageAndMetadata(destination, self, metadata, nil)
+        CGImageDestinationFinalize(destination)
+    }
+    
+    static func checkForEntry(from url: URL) -> ListItem? {
+        if url.path.hasPrefix(NSTemporaryDirectory()) {
+            NSLog("Mima to Mima drop ignored")
+            return nil
+        }
+        guard let imageSource = CGImageSourceCreateWithURL(url as CFURL, nil) else {
+            return nil
+        }
+        guard let metadata = CGImageSourceCopyMetadataAtIndex(imageSource, 0, nil) else {
+            return nil
+        }
+
+        func getValue(for tagName: String) -> String {
+            guard let tag = CGImageMetadataCopyTagWithPath(metadata, nil, "mima:\(tagName)" as CFString) else {
+                return ""
+            }
+            return CGImageMetadataTagCopyValue(tag) as? String ?? ""
+        }
+        
+        return ListItem(prompt: getValue(for: "Prompt"),
+                        negativePrompt: getValue(for: "NegativePrompt"),
+                        seed: UInt32(getValue(for: "Seed")),
+                        steps: Int(getValue(for: "Steps")) ?? ListItem.defaultSteps,
+                        guidance: Float(getValue(for: "Guidance")) ?? ListItem.defaultGuidance,
+                        state: .clonedCreator)
+    }
+}
+
+final class ImageDropDelegate: DropDelegate {
+    func performDrop(info: DropInfo) -> Bool {
+        guard let provider = info.itemProviders(for: [.image]).first else {
+            return false
+        }
+        provider.loadFileRepresentation(forTypeIdentifier: UTType.image.identifier) { url, _ in
+            guard let url else {
+                return
+            }
+            if let entry = CGImage.checkForEntry(from: url) {
+                Task { @MainActor in
+                    Model.shared.add(entry: entry)
+                }
+            }
+        }
+        return true
     }
 }
 

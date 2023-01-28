@@ -10,13 +10,19 @@ import CoreML
 import StableDiffusion
 import SwiftUI
 
-@RenderActor
+@globalActor
+enum BootupActor {
+    final actor ActorType {}
+    static let shared = ActorType()
+}
+
 final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
 #if canImport(Cocoa)
-    private static let temporaryZip = NSTemporaryDirectory().appending("sd15.zip")
+    private static let archiveName = "sd15.zip"
 #else
-    private static let temporaryZip = NSTemporaryDirectory().appending("sd15iOS.zip")
+    private static let archiveName = "sd15iOS.zip"
 #endif
+    private static let temporaryZip = NSTemporaryDirectory().appending(archiveName)
     private static let appDocumentsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     private static let storageDirectory = appDocumentsUrl.appending(path: "sd15", directoryHint: .isDirectory)
 
@@ -25,19 +31,35 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
 
     private lazy var backgroundSession = URLSession(configuration: .background(withIdentifier: "build.bru.mima.urlSession"), delegate: self, delegateQueue: nil)
 
-    nonisolated func urlSession(_ session: URLSession, didCreateTask task: URLSessionTask) {
+    func urlSession(_ session: URLSession, didCreateTask task: URLSessionTask) {
         NSLog("Download task created: \(task.taskIdentifier)")
     }
     
-    nonisolated func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
+    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
         Task { @PipelineActor in
             PipelineState.shared.phase = .setup(warmupPhase: .downloading(progress: progress))
         }
     }
-
-    nonisolated func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
+    
+    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         try? FileManager.default.moveItem(at: location, to: tempUrl)
+    }
+    
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        if let error {
+            Task { @PipelineActor in
+                PipelineState.shared.phase = .setup(warmupPhase: .downloadingError(error: error))
+            }
+            return
+        }
+        if let response = task.response as? HTTPURLResponse, response.statusCode >= 400 {
+            Task { @PipelineActor in
+                let error = NSError(domain: "build.bru.mima.network", code: 1, userInfo: [NSLocalizedDescriptionKey: "Server returned code \(response.statusCode)"])
+                PipelineState.shared.phase = .setup(warmupPhase: .downloadingError(error: error))
+            }
+            return
+        }
         Task {
             do {
                 try await modelDownloaded()
@@ -50,16 +72,23 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         }
     }
     
-    nonisolated func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        if let error {
+    @BootupActor
+    func startup() async {
+        Task { @PipelineActor in
+            PipelineState.shared.phase = .setup(warmupPhase: .booting)
+        }
+        do {
+            try await boot()
+        } catch {
             Task { @PipelineActor in
-                PipelineState.shared.phase = .setup(warmupPhase: .downloadingError(error: error))
+                PipelineState.shared.phase = .setup(warmupPhase: .initialisingError(error: error))
             }
-            return
+            NSLog("Error setting up the model: \(error.localizedDescription)")
         }
     }
 
-    func startup() async throws {
+    @BootupActor
+    private func boot() async throws {
         if FileManager.default.fileExists(atPath: checkFile.path) {
             try modelReady()
         } else {
@@ -73,11 +102,11 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
                     PipelineState.shared.phase = .setup(warmupPhase: .downloading(progress: 0))
                 }
                 
-                if await backgroundSession.tasks.2.first != nil {
-                    NSLog("Continuing existing transfer...")
+                if let existingTask = await backgroundSession.tasks.2.first {
+                    NSLog("Continuing existing transfer (\(existingTask.taskIdentifier))...")
                 } else {
                     NSLog("Requesting new model transfer...")
-                    let downloadUrl = URL(string: "https://pub-51bef0e5d3e547d399bb6ca8d76a7d70.r2.dev/sd15.zip")!
+                    let downloadUrl = URL(string: "https://bruvault.net/\(PipelineBootup.archiveName)")!
                     let task = backgroundSession.downloadTask(with: downloadUrl)
                     task.resume()
                 }
@@ -85,6 +114,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         }
     }
     
+    @BootupActor
     private func modelDownloaded() throws {
         NSLog("Downloaded model...")
         
@@ -105,6 +135,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         try modelReady()
     }
     
+    @BootupActor
     private func modelReady() throws {
         
         Task { @PipelineActor in

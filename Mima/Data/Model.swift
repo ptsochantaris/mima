@@ -9,7 +9,7 @@ final class Model: ObservableObject, Codable {
 
     init() {
         entries = [
-            ListItem(prompt: "A colorful bowl of fruit on a wooden table", negativePrompt: "Berries", seed: nil, steps: 50, guidance: 7.5, state: .creating)
+            ListItem(prompt: "A colorful bowl of fruit on a wooden table", negativePrompt: "Berries", seed: nil, steps: ListItem.defaultSteps, guidance: ListItem.defaultGuidance, state: .creating)
         ]
         renderQueue = ContiguousArray<UUID>()
     }
@@ -135,6 +135,11 @@ extension Model {
         }
         submitToQueue(entry.id)
     }
+    
+    func add(entry: ListItem) {
+        entries.insert(entry, at: 0)
+        submitToQueue(entry.id)
+    }
 
     func prioritise(_ item: ListItem) {
         if let index = renderQueue.firstIndex(of: item.id) {
@@ -172,18 +177,10 @@ extension Model {
     }
 
     static let shared: Model = {
-        Task {
-            do {
-                try await PipelineBootup().startup()
-            } catch {
-                Task { @PipelineActor in
-                    PipelineState.shared.phase = .setup(warmupPhase: .initialisingError(error: error))
-                }
-                NSLog("Error setting up the model: \(error.localizedDescription)")
-                return
-            }
+        Task { @RenderActor in
+            await PipelineBootup().startup()
         }
-
+        
         guard let data = try? Data(contentsOf: indexFileUrl) else {
             return Model()
         }

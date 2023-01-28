@@ -3,11 +3,11 @@ import UniformTypeIdentifiers
 
 struct ItemBackground: View {
     var body: some View {
-        #if canImport(Cocoa)
+#if canImport(Cocoa)
         Color.secondary.opacity(0.1)
-        #else
+#else
         Color.secondary.opacity(0.4)
-        #endif
+#endif
     }
 }
 
@@ -28,7 +28,7 @@ struct ListItemView: View {
             switch entry.state {
             case .clonedCreator, .creating:
                 NewItem(prototype: entry)
-
+                
             case .queued:
                 EntryTitle(entry: entry)
                 Color.clear
@@ -36,7 +36,7 @@ struct ListItemView: View {
                         EntryFooter(entry: entry)
                             .padding()
                     }
-
+                
             case .rendering:
                 EntryTitle(entry: entry)
                 Color.clear
@@ -44,13 +44,18 @@ struct ListItemView: View {
                         EntryFooter(entry: entry)
                             .padding()
                     }
-
+                
             case .done:
                 let sourceUrl = entry.imageUrl
                 AsyncImage(url: sourceUrl) { phase in
                     switch phase {
                     case let .success(img):
                         img.resizable()
+#if canImport(Cocoa)
+                            .overlay {
+                                AcceptingFirstMouse()
+                            }
+#endif
                             .onDrag {
                                 let name = entry.exportFilename
                                 let destUrl = URL(fileURLWithPath: NSTemporaryDirectory() + name)
@@ -75,10 +80,9 @@ struct ListItemView: View {
                             .onTapGesture {
                                 showPicker = true
                             }
-                        #if canImport(Cocoa)
+#if canImport(Cocoa)
                             .background(SharePicker(isPresented: $showPicker, sharingItems: [sourceUrl]))
-                        // TODO
-                        #endif
+#endif
                     }
                 }
                 .overlay(alignment: .bottomLeading) {
@@ -101,36 +105,42 @@ struct ListItemView: View {
                             }
                     }
                 }
-
+                
             case .cancelled:
                 Text("Cancelled")
                     .font(.caption)
-
+                
             case .error:
                 Text("Error generating")
                     .font(.caption)
             }
         }
         .contextMenu {
-            Button("Cut") {
-                entry.copyImageToPasteboard()
-                Model.shared.delete(entry)
+            if entry.state.isDone {
+                Button("Cut") {
+                    entry.copyImageToPasteboard()
+                    Model.shared.delete(entry)
+                }
+                Button("Copy") {
+                    entry.copyImageToPasteboard()
+                }
             }
-            Button("Copy") {
-                entry.copyImageToPasteboard()
+            if !entry.state.isCreator {
+                Button(entry.state.isRendering ? "Cancel" : "Remove") {
+                    Model.shared.delete(entry)
+                }
             }
-            Button("Delete") {
-                Model.shared.delete(entry)
-            }
-            Button("Render This Next") {
-                Model.shared.prioritise(entry)
+            if entry.state.isWaiting {
+                Button("Render This Next") {
+                    Model.shared.prioritise(entry)
+                }
             }
         }
-        #if canImport(Cocoa)
+#if canImport(Cocoa)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification, object: nil)) { _ in
             visibleControls = false
         }
-        #endif
+#endif
         .overlay(alignment: .topTrailing) {
             if !entry.state.isCreator {
                 DismissButton(entry: entry, visibleControls: visibleControls)

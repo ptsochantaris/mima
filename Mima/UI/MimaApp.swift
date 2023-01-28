@@ -41,6 +41,7 @@ private struct ContentView: View {
                 .padding()
             }
         }
+        .onDrop(of: [.image], delegate: ImageDropDelegate())
         .frame(minWidth: 360)
     }
 }

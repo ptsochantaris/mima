@@ -16,13 +16,13 @@ struct NewItem: View {
             seedText = ""
         }
 
-        if prototype.steps == 50 {
+        if prototype.steps == ListItem.defaultSteps {
             stepText = ""
         } else {
             stepText = String(prototype.steps)
         }
 
-        if prototype.guidance == 7.5 {
+        if prototype.guidance == ListItem.defaultGuidance {
             guidanceText = ""
         } else {
             guidanceText = String(prototype.guidance)
@@ -33,8 +33,8 @@ struct NewItem: View {
         prototype.update(prompt: promptText.trimmingCharacters(in: .whitespacesAndNewlines),
                          negativePrompt: negativePromptText.trimmingCharacters(in: .whitespacesAndNewlines),
                          seed: UInt32(seedText),
-                         steps: Int(stepText) ?? 50,
-                         guidance: Float(guidanceText) ?? 7.5)
+                         steps: Int(stepText) ?? ListItem.defaultSteps,
+                         guidance: Float(guidanceText) ?? ListItem.defaultGuidance)
     }
 
     @State private var promptText: String
@@ -89,9 +89,9 @@ struct NewItem: View {
                             }
                             GridRow {
                                 TextField("Random", text: $seedText)
-                                TextField("50", text: $stepText)
+                                TextField(String(ListItem.defaultSteps), text: $stepText)
                                     .frame(width: 70)
-                                TextField("7.5", text: $guidanceText)
+                                TextField(String(ListItem.defaultGuidance), text: $guidanceText)
                                     .frame(width: 70)
                             }
                             .textFieldStyle(.roundedBorder)
