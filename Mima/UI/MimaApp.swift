@@ -1,23 +1,24 @@
 import SwiftUI
 
 #if canImport(Cocoa)
-final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
-    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        Task {
-            await Rendering.shutdown()
-            sender.reply(toApplicationShouldTerminate: true)
+    final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
+        func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+            Task {
+                await Rendering.shutdown()
+                sender.reply(toApplicationShouldTerminate: true)
+            }
+            return .terminateLater
         }
-        return .terminateLater
     }
-}
+
 #elseif canImport(UIKit)
-final class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
-    func applicationWillTerminate(_ application: UIApplication) {
-        Task {
-            await Rendering.shutdown()
+    final class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
+        func applicationWillTerminate(_: UIApplication) {
+            Task {
+                await Rendering.shutdown()
+            }
         }
     }
-}
 #endif
 
 private struct ContentView: View {
@@ -49,11 +50,11 @@ private struct ContentView: View {
 @main
 struct MimaApp: App {
     #if canImport(Cocoa)
-    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate: AppDelegate
+        @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate: AppDelegate
     #elseif canImport(UIKit)
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate: AppDelegate
+        @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate: AppDelegate
     #endif
-    
+
     @Environment(\.openWindow) var openWindow
     @State private var mainIsVisible = false
 
@@ -62,6 +63,10 @@ struct MimaApp: App {
             ContentView()
                 .onAppear {
                     mainIsVisible = true
+                    if !UserDefaults.standard.bool(forKey: "InitialHelpShown") {
+                        openWindow(id: "help")
+                        UserDefaults.standard.set(true, forKey: "InitialHelpShown")
+                    }
                 }
                 .onDisappear {
                     mainIsVisible = false
@@ -92,34 +97,42 @@ struct MimaApp: App {
                     openWindow(id: "about")
                 }
             }
-#if canImport(Cocoa)
-            CommandGroup(replacing: .importExport) {
-                Button("Export All Items") {
-                    Task {
-                        let panel = NSOpenPanel()
-                        panel.canChooseFiles = false
-                        panel.canCreateDirectories = true
-                        panel.canChooseDirectories = true
-                        panel.allowsMultipleSelection = false
-                        panel.prompt = "Export \(Model.shared.entries.count) Items"
-                        if panel.runModal() == .OK {
-                            if let url = panel.url {
-                                Model.shared.exportAll(to: url)
+            CommandGroup(replacing: .help) {
+                Button("Mima Help") {
+                    openWindow(id: "help")
+                }
+            }
+            #if canImport(Cocoa)
+                CommandGroup(replacing: .importExport) {
+                    Button("Export All Items") {
+                        Task {
+                            let panel = NSOpenPanel()
+                            panel.canChooseFiles = false
+                            panel.canCreateDirectories = true
+                            panel.canChooseDirectories = true
+                            panel.allowsMultipleSelection = false
+                            panel.prompt = "Export \(Model.shared.entries.count) Items"
+                            if panel.runModal() == .OK {
+                                if let url = panel.url {
+                                    Model.shared.exportAll(to: url)
+                                }
                             }
                         }
-                    }
-                }.keyboardShortcut("e")
-            }
-#endif
+                    }.keyboardShortcut("e")
+                }
+            #endif
         }
-#if canImport(Cocoa)
+        #if canImport(Cocoa)
         .defaultSize(width: 1024, height: 768)
-#endif
+        #endif
         WindowGroup("About Mima", id: "about") {
             AboutView()
         }
-#if canImport(Cocoa)
+        WindowGroup("Mima Help", id: "help") {
+            HelpView()
+        }
+        #if canImport(Cocoa)
         .windowResizability(.contentSize)
-#endif
+        #endif
     }
 }

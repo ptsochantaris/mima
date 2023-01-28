@@ -1,5 +1,5 @@
 #if canImport(Cocoa)
-import Cocoa
+    import Cocoa
 #endif
 import Foundation
 
@@ -24,7 +24,7 @@ final class Model: ObservableObject, Codable {
 
         entries = try values.decode(ContiguousArray<ListItem>.self, forKey: .entries)
         renderQueue = try values.decode(ContiguousArray<UUID>.self, forKey: .renderQueue)
-                
+
         Task {
             await startRenderingIfNeeded()
         }
@@ -110,10 +110,10 @@ extension Model {
             try? fm.copyItem(at: entry.imageUrl, to: destination)
         }
         #if canImport(Cocoa)
-        NSWorkspace.shared.open(url)
+            NSWorkspace.shared.open(url)
         #endif
     }
-    
+
     private func submitToQueue(_ id: UUID) {
         renderQueue.append(id)
         Task {
@@ -135,7 +135,7 @@ extension Model {
         }
         submitToQueue(entry.id)
     }
-    
+
     func add(entry: ListItem) {
         entries.insert(entry, at: 0)
         submitToQueue(entry.id)
@@ -167,7 +167,7 @@ extension Model {
 
     func save() {
         do {
-            let entryIds = Set(entries.filter { $0.state.shouldStayInRenderQueue }.map { $0.id })
+            let entryIds = Set(entries.filter(\.state.shouldStayInRenderQueue).map(\.id))
             renderQueue.removeAll { !entryIds.contains($0) }
             try JSONEncoder().encode(self).write(to: Model.indexFileUrl, options: .atomic)
             NSLog("State saved")
@@ -180,7 +180,7 @@ extension Model {
         Task { @RenderActor in
             await PipelineBootup().startup()
         }
-        
+
         guard let data = try? Data(contentsOf: indexFileUrl) else {
             return Model()
         }

@@ -22,7 +22,7 @@ extension ListItem {
                 return false
             }
         }
-        
+
         var isWaiting: Bool {
             if case .queued = self {
                 return true

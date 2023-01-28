@@ -1,9 +1,9 @@
 import CoreGraphics
+import CoreML
 import Foundation
 import StableDiffusion
-import ZIPFoundation
 import SwiftUI
-import CoreML
+import ZIPFoundation
 
 enum WarmUpPhase {
     case booting, downloading(progress: Float), downloadingError(error: Error), initialising, initialisingError(error: Error), expanding
@@ -18,10 +18,10 @@ enum PipelineActor {
 @PipelineActor
 final class PipelineState: ObservableObject {
     static let shared = PipelineState()
-    
+
     enum Phase {
         case setup(warmupPhase: WarmUpPhase), ready(StableDiffusionPipeline), shutdown
-        
+
         var showStatus: WarmUpPhase? {
             switch self {
             case .ready, .shutdown:
@@ -31,7 +31,7 @@ final class PipelineState: ObservableObject {
             }
         }
     }
-    
+
     var phase = Phase.setup(warmupPhase: .booting) {
         didSet {
             let p = phase
@@ -40,9 +40,9 @@ final class PipelineState: ObservableObject {
             }
         }
     }
-    
+
     @MainActor @Published var reportedPhase = Phase.setup(warmupPhase: .booting)
-    
+
     func shutDown() {
         if case let .ready(pipeline) = phase {
             phase = .shutdown
@@ -113,7 +113,7 @@ enum Rendering {
             item.state = .done
             return true
         }
-        
+
         return false
     }
 

@@ -19,6 +19,7 @@
 		1625573C297C3FBF0027BD4F /* MimaButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625573B297C3FBF0027BD4F /* MimaButton.swift */; };
 		1625573E297C3FD90027BD4F /* GaugeProgressStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625573D297C3FD90027BD4F /* GaugeProgressStyle.swift */; };
 		1630C9A12981B68B005A0688 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 1630C9A02981B68B005A0688 /* ZIPFoundation */; };
+		1646F2AE2985E05900C75C1C /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1646F2AD2985E05900C75C1C /* HelpView.swift */; };
 		164DD47C2982EF97006B8D6F /* PipelinePhaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164DD47B2982EF97006B8D6F /* PipelinePhaseView.swift */; };
 		164DD47E2982F05A006B8D6F /* DismissButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164DD47D2982F05A006B8D6F /* DismissButton.swift */; };
 		164DD48029831728006B8D6F /* ButtonBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164DD47F29831728006B8D6F /* ButtonBackground.swift */; };
@@ -43,6 +44,7 @@
 		16255739297C3FA20027BD4F /* EntryTitle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryTitle.swift; sourceTree = "<group>"; };
 		1625573B297C3FBF0027BD4F /* MimaButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MimaButton.swift; sourceTree = "<group>"; };
 		1625573D297C3FD90027BD4F /* GaugeProgressStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaugeProgressStyle.swift; sourceTree = "<group>"; };
+		1646F2AD2985E05900C75C1C /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
 		164DD47B2982EF97006B8D6F /* PipelinePhaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PipelinePhaseView.swift; sourceTree = "<group>"; };
 		164DD47D2982F05A006B8D6F /* DismissButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DismissButton.swift; sourceTree = "<group>"; };
 		164DD47F29831728006B8D6F /* ButtonBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonBackground.swift; sourceTree = "<group>"; };
@@ -127,6 +129,7 @@
 				16255735297BFA430027BD4F /* NewItem.swift */,
 				164DD47B2982EF97006B8D6F /* PipelinePhaseView.swift */,
 				164DD47D2982F05A006B8D6F /* DismissButton.swift */,
+				1646F2AD2985E05900C75C1C /* HelpView.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -221,6 +224,7 @@
 				1625573E297C3FD90027BD4F /* GaugeProgressStyle.swift in Sources */,
 				165150E7297DCC5A00124967 /* AboutView.swift in Sources */,
 				16255732297BF9BB0027BD4F /* ListItemView.swift in Sources */,
+				1646F2AE2985E05900C75C1C /* HelpView.swift in Sources */,
 				164DD48029831728006B8D6F /* ButtonBackground.swift in Sources */,
 				1610EFC4298443DE00266EEA /* PipelineBootup.swift in Sources */,
 				16255738297C3F840027BD4F /* EntryName.swift in Sources */,

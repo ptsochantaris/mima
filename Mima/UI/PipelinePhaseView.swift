@@ -28,7 +28,7 @@ struct RetryButton: View {
 
 struct PipelinePhaseView: View {
     var phase: WarmUpPhase
-    
+
     var body: some View {
         HStack {
             switch phase {

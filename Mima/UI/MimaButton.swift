@@ -4,7 +4,7 @@ struct MimaButon: View {
     enum Strength {
         case overlay, progress, button
     }
-    
+
     private struct ButtonBackground: View {
         var strength: Strength
         var body: some View {
@@ -18,19 +18,19 @@ struct MimaButon: View {
             }
         }
     }
-    
+
     enum Look {
         case share, dismiss(Strength), encore, edit
 
         var strength: Strength {
             switch self {
-            case .share, .encore, .edit:
+            case .edit, .encore, .share:
                 return .overlay
             case let .dismiss(strength):
                 return strength
             }
         }
-        
+
         var systemName: String {
             switch self {
             case .dismiss: return "xmark"

@@ -4,7 +4,7 @@ import SwiftUI
 final class ListItem: ObservableObject, Codable, Identifiable {
     static let defaultSteps = 50
     static let defaultGuidance: Float = 7.5
-    
+
     var id: UUID
     var prompt: String
     var negativePrompt: String
@@ -26,7 +26,7 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         case type
         case generatedSeed
     }
-    
+
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         id = try values.decode(UUID.self, forKey: .uuid)
@@ -105,16 +105,16 @@ final class ListItem: ObservableObject, Codable, Identifiable {
     }
 
     func copyImageToPasteboard() {
-#if canImport(Cocoa)
-        guard let url = (imageUrl as NSURL).fileReferenceURL() as NSURL? else { return }
-        let pb = NSPasteboard.general
-        pb.clearContents()
-        pb.writeObjects([url])
-        pb.setString(url.relativeString, forType: .fileURL)
-#elseif canImport(UIKit)
-        guard let image = UIImage(contentsOfFile: imageUrl.path) else { return }
-        let pb = UIPasteboard.general
-        pb.image = image
-#endif
+        #if canImport(Cocoa)
+            guard let url = (imageUrl as NSURL).fileReferenceURL() as NSURL? else { return }
+            let pb = NSPasteboard.general
+            pb.clearContents()
+            pb.writeObjects([url])
+            pb.setString(url.relativeString, forType: .fileURL)
+        #elseif canImport(UIKit)
+            guard let image = UIImage(contentsOfFile: imageUrl.path) else { return }
+            let pb = UIPasteboard.general
+            pb.image = image
+        #endif
     }
 }

@@ -1,8 +1,8 @@
 import CoreGraphics
 import Foundation
 import ImageIO
-import UniformTypeIdentifiers
 import SwiftUI
+import UniformTypeIdentifiers
 
 let fileDirectory: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 
@@ -12,7 +12,7 @@ extension CGImage {
         guard let destination = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) else {
             return
         }
-        
+
         let tags: [String: String] = [
             "Prompt": item.prompt,
             "NegativePrompt": item.negativePrompt,
@@ -20,7 +20,7 @@ extension CGImage {
             "Steps": String(item.steps),
             "Guidance": String(item.guidance)
         ]
-        
+
         let metadata = CGImageMetadataCreateMutable()
         let nameSpace = "Mima" as CFString
         let mima = "mima" as CFString
@@ -32,7 +32,7 @@ extension CGImage {
         CGImageDestinationAddImageAndMetadata(destination, self, metadata, nil)
         CGImageDestinationFinalize(destination)
     }
-    
+
     static func checkForEntry(from url: URL) -> ListItem? {
         if url.path.hasPrefix(NSTemporaryDirectory()) {
             NSLog("Mima to Mima drop ignored")
@@ -51,7 +51,7 @@ extension CGImage {
             }
             return CGImageMetadataTagCopyValue(tag) as? String ?? ""
         }
-        
+
         return ListItem(prompt: getValue(for: "Prompt"),
                         negativePrompt: getValue(for: "NegativePrompt"),
                         seed: UInt32(getValue(for: "Seed")),
