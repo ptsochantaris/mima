@@ -94,11 +94,8 @@ struct AboutView: View {
                         Text("Paul Tsochantaris")
                             .font(.headline)
                     }
-                    VStack(alignment: .trailing) {
-                        Text("Mima uses Stable")
-                        Text("Diffusion v1.5")
-                    }
-                    Text("Usage of this app and the model is subject to the Stable Diffusion license which can be found at https://raw.githubusercontent.com/CompVis/stable-diffusion/main/LICENSE")
+                    Text("If you have feature suggestions or bug reports, please email paul@bru.build")
+                    Text("Mima uses Stable Diffusion v1.5. Usage of this app and the model is subject to the Stable Diffusion license which can be found at https://raw.githubusercontent.com/CompVis/stable-diffusion/main/LICENSE")
                     Spacer()
                     TipList()
                 }
@@ -112,7 +109,7 @@ struct AboutView: View {
             .multilineTextAlignment(.trailing)
         }
         .preferredColorScheme(.light)
-        .frame(width: 664, height: 664)
+        .frame(width: 600, height: 664)
     }
 }
 

@@ -63,14 +63,11 @@ extension CGImage {
 
 final class ImageDropDelegate: DropDelegate {
     func performDrop(info: DropInfo) -> Bool {
-        guard let provider = info.itemProviders(for: [.image]).first else {
+        guard let provider = info.itemProviders(for: [.url]).first else {
             return false
         }
-        provider.loadFileRepresentation(forTypeIdentifier: UTType.image.identifier) { url, _ in
-            guard let url else {
-                return
-            }
-            if let entry = CGImage.checkForEntry(from: url) {
+        provider.loadObject(ofClass: NSURL.self) { url, error in
+            if let url = url as? URL, let entry = CGImage.checkForEntry(from: url) {
                 Task { @MainActor in
                     Model.shared.add(entry: entry)
                 }
