@@ -5,6 +5,8 @@ import Foundation
 
 final class Model: ObservableObject, Codable {
     @Published var entries: ContiguousArray<ListItem>
+    @Published var tipJar = TipJar()
+
     private var renderQueue: ContiguousArray<UUID>
 
     init() {

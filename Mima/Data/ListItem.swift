@@ -5,7 +5,7 @@ final class ListItem: ObservableObject, Codable, Identifiable {
     static let defaultSteps = 50
     static let defaultGuidance: Float = 7.5
 
-    var id: UUID
+    let id: UUID
     var prompt: String
     var negativePrompt: String
     var guidance: Float
@@ -58,6 +58,7 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         } else {
             generatedSeed = UInt32.random(in: 0 ..< UInt32.max)
         }
+        objectWillChange.send() // ensure swiftui knows this prompt has changed
     }
 
     func encode(to encoder: Encoder) throws {

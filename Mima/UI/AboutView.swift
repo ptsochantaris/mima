@@ -58,7 +58,7 @@ struct AboutView: View {
                 Spacer()
             }
 
-            HStack(alignment: .top) {
+            HStack {
                 VStack {
                     ScrollView(showsIndicators: false) {
                         VStack {
@@ -69,9 +69,10 @@ struct AboutView: View {
                                     .bold()
                                     .font(.caption)
                             }
-                            .padding(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                            .padding(EdgeInsets(top: 4, leading: 0, bottom: 7, trailing: 0))
                             Text(aboutText)
                                 .font(.footnote)
+                            Spacer(minLength: 5)
                         }
                         .multilineTextAlignment(.center)
                         .padding()
@@ -98,6 +99,8 @@ struct AboutView: View {
                         Text("Diffusion v1.5")
                     }
                     Text("Usage of this app and the model is subject to the Stable Diffusion license which can be found at https://raw.githubusercontent.com/CompVis/stable-diffusion/main/LICENSE")
+                    Spacer()
+                    TipList()
                 }
                 .foregroundColor(.black.opacity(0.9))
                 .padding()

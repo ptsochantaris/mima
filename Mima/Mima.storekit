@@ -1,0 +1,21 @@
+{
+  "identifier" : "4AE712E1",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "1667149683",
+    "_developerTeamID" : "X727JSJUGJ",
+    "_lastSynchronizedDate" : 696690558.27908194
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 2,
+    "minor" : 0
+  }
+}

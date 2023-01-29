@@ -125,9 +125,14 @@ struct MimaApp: App {
         #if canImport(Cocoa)
         .defaultSize(width: 1024, height: 768)
         #endif
+
         WindowGroup("About Mima", id: "about") {
             AboutView()
         }
+        #if canImport(Cocoa)
+        .windowResizability(.contentSize)
+        #endif
+
         WindowGroup("Mima Help", id: "help") {
             HelpView()
         }

@@ -19,6 +19,9 @@
 		1625573C297C3FBF0027BD4F /* MimaButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625573B297C3FBF0027BD4F /* MimaButton.swift */; };
 		1625573E297C3FD90027BD4F /* GaugeProgressStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625573D297C3FD90027BD4F /* GaugeProgressStyle.swift */; };
 		1630C9A12981B68B005A0688 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 1630C9A02981B68B005A0688 /* ZIPFoundation */; };
+		1635F76229869EBB00B6FC6A /* TipJar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1635F76129869EBB00B6FC6A /* TipJar.swift */; };
+		16398DBB2986C408002214EA /* TipList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16398DBA2986C408002214EA /* TipList.swift */; };
+		16398DBD2986C41B002214EA /* TipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16398DBC2986C41B002214EA /* TipView.swift */; };
 		1646F2AE2985E05900C75C1C /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1646F2AD2985E05900C75C1C /* HelpView.swift */; };
 		164DD47C2982EF97006B8D6F /* PipelinePhaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164DD47B2982EF97006B8D6F /* PipelinePhaseView.swift */; };
 		164DD47E2982F05A006B8D6F /* DismissButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164DD47D2982F05A006B8D6F /* DismissButton.swift */; };
@@ -44,6 +47,10 @@
 		16255739297C3FA20027BD4F /* EntryTitle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryTitle.swift; sourceTree = "<group>"; };
 		1625573B297C3FBF0027BD4F /* MimaButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MimaButton.swift; sourceTree = "<group>"; };
 		1625573D297C3FD90027BD4F /* GaugeProgressStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaugeProgressStyle.swift; sourceTree = "<group>"; };
+		1635F76129869EBB00B6FC6A /* TipJar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipJar.swift; sourceTree = "<group>"; };
+		1635F7632986A07C00B6FC6A /* Mima.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Mima.storekit; sourceTree = "<group>"; };
+		16398DBA2986C408002214EA /* TipList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipList.swift; sourceTree = "<group>"; };
+		16398DBC2986C41B002214EA /* TipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipView.swift; sourceTree = "<group>"; };
 		1646F2AD2985E05900C75C1C /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
 		164DD47B2982EF97006B8D6F /* PipelinePhaseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PipelinePhaseView.swift; sourceTree = "<group>"; };
 		164DD47D2982F05A006B8D6F /* DismissButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DismissButton.swift; sourceTree = "<group>"; };
@@ -93,6 +100,7 @@
 			children = (
 				1661424D2974BD5900BFA494 /* Mima.entitlements */,
 				169732BC297F0C2700DFF596 /* Info.plist */,
+				1635F7632986A07C00B6FC6A /* Mima.storekit */,
 				1661424B2974BD5900BFA494 /* Assets.xcassets */,
 				16622AC2297D82CF00C8C7F0 /* Data */,
 				16622AC3297D82DA00C8C7F0 /* UI */,
@@ -109,6 +117,7 @@
 				166A262D297EE7C600A1BB50 /* Rendering.swift */,
 				1661425E2974D15E00BFA494 /* Utils.swift */,
 				1610EFC3298443DE00266EEA /* PipelineBootup.swift */,
+				1635F76129869EBB00B6FC6A /* TipJar.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -130,6 +139,8 @@
 				164DD47B2982EF97006B8D6F /* PipelinePhaseView.swift */,
 				164DD47D2982F05A006B8D6F /* DismissButton.swift */,
 				1646F2AD2985E05900C75C1C /* HelpView.swift */,
+				16398DBA2986C408002214EA /* TipList.swift */,
+				16398DBC2986C41B002214EA /* TipView.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -213,10 +224,13 @@
 			files = (
 				1661425F2974D15E00BFA494 /* Utils.swift in Sources */,
 				16622AC7297D996300C8C7F0 /* Mac.swift in Sources */,
+				1635F76229869EBB00B6FC6A /* TipJar.swift in Sources */,
+				16398DBD2986C41B002214EA /* TipView.swift in Sources */,
 				1625573A297C3FA20027BD4F /* EntryTitle.swift in Sources */,
 				16255730297B6EAF0027BD4F /* ListItemState.swift in Sources */,
 				164DD47C2982EF97006B8D6F /* PipelinePhaseView.swift in Sources */,
 				164DD47E2982F05A006B8D6F /* DismissButton.swift in Sources */,
+				16398DBB2986C408002214EA /* TipList.swift in Sources */,
 				1625573C297C3FBF0027BD4F /* MimaButton.swift in Sources */,
 				166A262E297EE7C600A1BB50 /* Rendering.swift in Sources */,
 				166142482974BD5800BFA494 /* MimaApp.swift in Sources */,
