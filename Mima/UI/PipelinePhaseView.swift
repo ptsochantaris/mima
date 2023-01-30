@@ -41,7 +41,7 @@ struct PipelinePhaseView: View {
             case let .downloading(progress):
                 Icon(name: "clock")
                 VStack(alignment: .leading) {
-                    Text("Downloading the AI model files, this is only needed after the first installation…")
+                    Text("Downloading the AI engine, this is only needed for the first installation…")
                         .layoutPriority(2)
                     GeometryReader { proxy in
                         HStack(spacing: 0) {
@@ -69,7 +69,7 @@ struct PipelinePhaseView: View {
             case .expanding:
                 Icon(name: "clock")
                 VStack(alignment: .leading) {
-                    Text("Expanding the AI model data…")
+                    Text("Expanding the AI engine data…")
                     Text("Please wait a moment")
                 }
             case .initialising:

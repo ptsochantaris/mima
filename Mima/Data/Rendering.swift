@@ -30,6 +30,15 @@ final class PipelineState: ObservableObject {
                 return warmupPhase
             }
         }
+        
+        var booting: Bool {
+            switch self {
+            case .ready:
+                return false
+            case .shutdown, .setup:
+                return true
+            }
+        }
     }
 
     var phase = Phase.setup(warmupPhase: .booting) {
@@ -98,7 +107,7 @@ enum Rendering {
                 disableSafety: true
             ) { progress in
                 DispatchQueue.main.sync {
-                    if item.state.isCancelled {
+                    if item.state.isCancelled || item.state.isWaiting {
                         return false
                     } else {
                         item.state = .rendering(step: Float(progress.step), total: Float(item.steps))

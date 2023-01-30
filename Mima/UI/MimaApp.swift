@@ -57,6 +57,7 @@ struct MimaApp: App {
 
     @Environment(\.openWindow) var openWindow
     @State private var mainIsVisible = false
+    @ObservedObject private var pipeline = PipelineState.shared
 
     var body: some Scene {
         WindowGroup("Mima", id: "main") {
@@ -100,6 +101,21 @@ struct MimaApp: App {
             CommandGroup(replacing: .help) {
                 Button("Mima Help") {
                     openWindow(id: "help")
+                }
+            }
+            CommandGroup(replacing: .appSettings) {
+                Menu("Engine Version…") {
+                    ForEach([ModelVersion.sd14, ModelVersion.sd15, ModelVersion.sd21]) { version in
+                        Button(version.displayName) {
+                            Task { @RenderActor in
+                                await PipelineState.shared.shutDown()
+                                PipelineBootup.persistedModelVersion = version
+                                await PipelineBootup().startup()
+                            }
+                            Model.shared.cancelAllRendering()
+                        }
+                        .disabled(version == PipelineBootup.persistedModelVersion || pipeline.reportedPhase.booting)
+                    }
                 }
             }
             #if canImport(Cocoa)

@@ -9,21 +9,66 @@ enum BootupActor {
     static let shared = ActorType()
 }
 
+enum ModelVersion: String, Identifiable {
+    case sd14, sd15, sd21
+        
+    var zipName: String {
+#if canImport(Cocoa)
+        "\(rawValue).zip"
+#else
+        "\(rawValue)iOS.zip"
+#endif
+    }
+    
+    var displayName: String {
+        switch self {
+        case .sd14: return "Stable Diffusion 1.4"
+        case .sd15: return "Stable Diffusion 1.5"
+        case .sd21: return "Stable Diffusion 2.1"
+        }
+    }
+    
+    var id: String {
+        rawValue
+    }
+}
+
 final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
-    #if canImport(Cocoa)
-        private static let archiveName = "sd15.zip"
-    #else
-        private static let archiveName = "sd15iOS.zip"
-    #endif
-    private static let temporaryZip = NSTemporaryDirectory().appending(archiveName)
-    private static let appDocumentsUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-    private static let storageDirectory = appDocumentsUrl.appending(path: "sd15", directoryHint: .isDirectory)
+    private let modelVersion: ModelVersion
+    private let temporaryZip: String
+    private let storageDirectory: URL
+    private let appDocumentsUrl: URL
+    private let checkFile: URL
+    private lazy var tempUrl = URL(fileURLWithPath: temporaryZip)
 
-    private let tempUrl = URL(fileURLWithPath: temporaryZip)
-    private let checkFile = storageDirectory.appending(path: "ready", directoryHint: .notDirectory)
+    static var persistedModelVersion: ModelVersion {
+        get {
+            if let value = UserDefaults.standard.string(forKey: "SelectedModelVersion"), let version = ModelVersion(rawValue: value) {
+                return version
+            }
+            return .sd15
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: "SelectedModelVersion")
+        }
+    }
 
-    private lazy var backgroundSession = URLSession(configuration: .background(withIdentifier: "build.bru.mima.urlSession"), delegate: self, delegateQueue: nil)
+    override init() {
+        modelVersion = PipelineBootup.persistedModelVersion
 
+        temporaryZip = NSTemporaryDirectory().appending(modelVersion.zipName)
+
+        let docUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        appDocumentsUrl = docUrl
+        
+        let storeUrl = docUrl.appending(path: modelVersion.rawValue, directoryHint: .isDirectory)
+        storageDirectory = storeUrl
+
+        checkFile = storeUrl.appending(path: "ready", directoryHint: .notDirectory)
+        
+        super.init()
+    }
+    
     func urlSession(_: URLSession, didCreateTask task: URLSessionTask) {
         NSLog("Download task created: \(task.taskIdentifier)")
     }
@@ -79,14 +124,17 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
             NSLog("Error setting up the model: \(error.localizedDescription)")
         }
     }
-
+    
+    @BootupActor
+    private lazy var urlSession = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
+    
     @BootupActor
     private func boot() async throws {
         if FileManager.default.fileExists(atPath: checkFile.path) {
             try modelReady()
         } else {
             NSLog("Need to fetch model...")
-            if FileManager.default.fileExists(atPath: PipelineBootup.temporaryZip) {
+            if FileManager.default.fileExists(atPath: temporaryZip) {
                 try FileManager.default.removeItem(at: tempUrl)
             }
 
@@ -95,14 +143,10 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
                     PipelineState.shared.phase = .setup(warmupPhase: .downloading(progress: 0))
                 }
 
-                if let existingTask = await backgroundSession.tasks.2.first {
-                    NSLog("Continuing existing transfer (\(existingTask.taskIdentifier))...")
-                } else {
-                    NSLog("Requesting new model transfer...")
-                    let downloadUrl = URL(string: "https://bruvault.net/\(PipelineBootup.archiveName)")!
-                    let task = backgroundSession.downloadTask(with: downloadUrl)
-                    task.resume()
-                }
+                NSLog("Requesting new model transfer...")
+                let downloadUrl = URL(string: "https://bruvault.net/\(modelVersion.zipName)")!
+                let task = urlSession.downloadTask(with: downloadUrl)
+                task.resume()
             }
         }
     }
@@ -116,11 +160,10 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         }
 
         NSLog("Decompressing model...")
-        let storageDirectory = PipelineBootup.storageDirectory
         if FileManager.default.fileExists(atPath: storageDirectory.path) {
             try FileManager.default.removeItem(at: storageDirectory)
         }
-        try FileManager.default.unzipItem(at: tempUrl, to: PipelineBootup.appDocumentsUrl)
+        try FileManager.default.unzipItem(at: tempUrl, to: appDocumentsUrl)
 
         NSLog("Cleaning up...")
         try FileManager.default.removeItem(at: tempUrl)
@@ -138,10 +181,10 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         let config = MLModelConfiguration()
         #if canImport(Cocoa)
             config.computeUnits = .all
-            let pipeline = try StableDiffusionPipeline(resourcesAt: PipelineBootup.storageDirectory, configuration: config, disableSafety: true)
+            let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, configuration: config, disableSafety: true)
         #else
             config.computeUnits = .cpuAndNeuralEngine
-            let pipeline = try StableDiffusionPipeline(resourcesAt: PipelineBootup.storageDirectory, configuration: config, disableSafety: true, reduceMemory: true)
+            let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, configuration: config, disableSafety: true, reduceMemory: true)
         #endif
         NSLog("Warmup...")
         try pipeline.prewarmResources()

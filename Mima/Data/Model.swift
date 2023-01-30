@@ -48,6 +48,12 @@ extension Model {
         entries.removeAll { $0.state.isWaiting }
         save()
     }
+    
+    func cancelAllRendering() {
+        for entry in entries where entry.state.isRendering {
+            entry.state = .queued
+        }
+    }
 
     func removeAll() {
         entries.removeAll {
