@@ -35,8 +35,15 @@ final class PipelineState: ObservableObject {
             switch self {
             case .ready:
                 return false
-            case .shutdown, .setup:
+            case .shutdown:
                 return true
+            case let .setup(warmupPhase):
+                switch warmupPhase {
+                case .booting, .expanding, .initialising, .downloading:
+                    return true
+                case .downloadingError, .initialisingError:
+                    return false
+                }
             }
         }
     }

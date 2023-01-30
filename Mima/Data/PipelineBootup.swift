@@ -10,7 +10,7 @@ enum BootupActor {
 }
 
 enum ModelVersion: String, Identifiable {
-    case sd14, sd15, sd21
+    case sd14, sd15, sd20, sd21
         
     var zipName: String {
 #if canImport(Cocoa)
@@ -24,6 +24,7 @@ enum ModelVersion: String, Identifiable {
         switch self {
         case .sd14: return "Stable Diffusion 1.4"
         case .sd15: return "Stable Diffusion 1.5"
+        case .sd20: return "Stable Diffusion 2.0"
         case .sd21: return "Stable Diffusion 2.1"
         }
     }

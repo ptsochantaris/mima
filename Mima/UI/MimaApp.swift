@@ -26,11 +26,11 @@ private struct ContentView: View {
     @ObservedObject private var pipeline = PipelineState.shared
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                if let phase = pipeline.reportedPhase.showStatus {
-                    PipelinePhaseView(phase: phase)
-                }
+        VStack(spacing: 0) {
+            if let phase = pipeline.reportedPhase.showStatus {
+                PipelinePhaseView(phase: phase)
+            }
+            ScrollView {
                 LazyVGrid(columns: [
                     GridItem(.adaptive(minimum: 300, maximum: 1024), spacing: 16)
                 ], spacing: 16) {
