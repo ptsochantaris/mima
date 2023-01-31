@@ -181,7 +181,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         NSLog("Constructing pipeline...")
         let config = MLModelConfiguration()
         #if canImport(Cocoa)
-            config.computeUnits = .all
+            config.computeUnits = .cpuAndGPU
             let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, configuration: config, disableSafety: true)
         #else
             config.computeUnits = .cpuAndNeuralEngine
