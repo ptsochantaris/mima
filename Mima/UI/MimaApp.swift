@@ -41,6 +41,7 @@ private struct ContentView: View {
                 }
                 .padding()
             }
+            .layoutPriority(2)
         }
         .onDrop(of: [.image], delegate: ImageDropDelegate())
         .frame(minWidth: 360)
@@ -57,7 +58,7 @@ struct MimaApp: App {
 
     @Environment(\.openWindow) var openWindow
     @State private var mainIsVisible = false
-    @ObservedObject private var pipeline = PipelineState.shared
+    @StateObject private var bootWatcher = BootWatcher()
 
     var body: some Scene {
         WindowGroup("Mima", id: "main") {
@@ -105,7 +106,7 @@ struct MimaApp: App {
             }
             CommandGroup(replacing: .appSettings) {
                 Menu("Engine Version…") {
-                    ForEach([ModelVersion.sd14, ModelVersion.sd15, ModelVersion.sd21]) { version in
+                    ForEach([ModelVersion.sd14, ModelVersion.sd15, ModelVersion.sd20, ModelVersion.sd21]) { version in
                         Button(version.displayName) {
                             Task { @RenderActor in
                                 await PipelineState.shared.shutDown()
@@ -114,7 +115,7 @@ struct MimaApp: App {
                             }
                             Model.shared.cancelAllRendering()
                         }
-                        .disabled(version == PipelineBootup.persistedModelVersion || pipeline.reportedPhase.booting)
+                        .disabled(version == PipelineBootup.persistedModelVersion || bootWatcher.booting)
                     }
                 }
             }
@@ -144,6 +145,13 @@ struct MimaApp: App {
 
         WindowGroup("About Mima", id: "about") {
             AboutView()
+                .onAppear {
+                    Task {
+                        if let wnd = NSApp.windows.first(where: { $0.title == "About Mima" }) {
+                            wnd.makeKeyAndOrderFront(self)
+                        }
+                    }
+                }
         }
         #if canImport(Cocoa)
         .windowResizability(.contentSize)
@@ -151,6 +159,13 @@ struct MimaApp: App {
 
         WindowGroup("Mima Help", id: "help") {
             HelpView()
+                .onAppear {
+                    Task {
+                        if let wnd = NSApp.windows.first(where: { $0.title == "Mima Help" }) {
+                            wnd.makeKeyAndOrderFront(self)
+                        }
+                    }
+                }
         }
         #if canImport(Cocoa)
         .windowResizability(.contentSize)

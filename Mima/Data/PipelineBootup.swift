@@ -9,7 +9,7 @@ enum BootupActor {
     static let shared = ActorType()
 }
 
-enum ModelVersion: String, Identifiable {
+enum ModelVersion: String, Identifiable, CaseIterable {
     case sd14, sd15, sd20, sd21
         
     var zipName: String {

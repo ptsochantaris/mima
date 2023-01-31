@@ -33,6 +33,7 @@
 		1661425F2974D15E00BFA494 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1661425E2974D15E00BFA494 /* Utils.swift */; };
 		16622AC7297D996300C8C7F0 /* Mac.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16622AC6297D996300C8C7F0 /* Mac.swift */; };
 		166A262E297EE7C600A1BB50 /* Rendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166A262D297EE7C600A1BB50 /* Rendering.swift */; };
+		16F195A629889AD300E2862C /* BootWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F195A529889AD300E2862C /* BootWatcher.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -64,6 +65,7 @@
 		16622AC6297D996300C8C7F0 /* Mac.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mac.swift; sourceTree = "<group>"; };
 		166A262D297EE7C600A1BB50 /* Rendering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rendering.swift; sourceTree = "<group>"; };
 		169732BC297F0C2700DFF596 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		16F195A529889AD300E2862C /* BootWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootWatcher.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +120,7 @@
 				1661425E2974D15E00BFA494 /* Utils.swift */,
 				1610EFC3298443DE00266EEA /* PipelineBootup.swift */,
 				1635F76129869EBB00B6FC6A /* TipJar.swift */,
+				16F195A529889AD300E2862C /* BootWatcher.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -236,6 +239,7 @@
 				166142482974BD5800BFA494 /* MimaApp.swift in Sources */,
 				16255736297BFA430027BD4F /* NewItem.swift in Sources */,
 				1625573E297C3FD90027BD4F /* GaugeProgressStyle.swift in Sources */,
+				16F195A629889AD300E2862C /* BootWatcher.swift in Sources */,
 				165150E7297DCC5A00124967 /* AboutView.swift in Sources */,
 				16255732297BF9BB0027BD4F /* ListItemView.swift in Sources */,
 				1646F2AE2985E05900C75C1C /* HelpView.swift in Sources */,
