@@ -15,8 +15,7 @@ enum PipelineActor {
     static let shared = ActorType()
 }
 
-@PipelineActor
-final class PipelineState: ObservableObject {
+final actor PipelineState: ObservableObject {
     static let shared = PipelineState()
 
     enum Phase {
@@ -48,19 +47,22 @@ final class PipelineState: ObservableObject {
         }
     }
 
-    var phase = Phase.setup(warmupPhase: .booting) {
-        didSet {
-            let p = phase
-            Task { @MainActor in
-                reportedPhase = p
+    private(set) var phase = Phase.setup(warmupPhase: .booting)
+    
+    func setPhase(to newPhase: Phase) {
+        phase = newPhase
+        Task { @MainActor in
+            withAnimation {
+                reportedPhase = newPhase
             }
         }
     }
 
-    @MainActor @Published var reportedPhase = Phase.setup(warmupPhase: .booting)
+    @MainActor @Published private(set) var reportedPhase = Phase.setup(warmupPhase: .booting)
 
     func shutDown() {
         if case let .ready(pipeline) = phase {
+            setPhase(to: .shutdown)
             phase = .shutdown
             pipeline.unloadResources()
             NSLog("Pipeline shutdown")

@@ -76,8 +76,8 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
 
     func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask, didWriteData _: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
-        Task { @PipelineActor in
-            PipelineState.shared.phase = .setup(warmupPhase: .downloading(progress: progress))
+        Task {
+            await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloading(progress: progress)))
         }
     }
 
@@ -87,15 +87,15 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
 
     func urlSession(_: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         if let error {
-            Task { @PipelineActor in
-                PipelineState.shared.phase = .setup(warmupPhase: .downloadingError(error: error))
+            Task {
+                await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
             }
             return
         }
         if let response = task.response as? HTTPURLResponse, response.statusCode >= 400 {
-            Task { @PipelineActor in
+            Task {
                 let error = NSError(domain: "build.bru.mima.network", code: 1, userInfo: [NSLocalizedDescriptionKey: "Server returned code \(response.statusCode)"])
-                PipelineState.shared.phase = .setup(warmupPhase: .downloadingError(error: error))
+                await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
             }
             return
         }
@@ -103,26 +103,20 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
             do {
                 try await modelDownloaded()
             } catch {
-                Task { @PipelineActor in
-                    PipelineState.shared.phase = .setup(warmupPhase: .downloadingError(error: error))
-                }
                 NSLog("Error setting up the model: \(error.localizedDescription)")
+                await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
             }
         }
     }
 
     @BootupActor
     func startup() async {
-        Task { @PipelineActor in
-            PipelineState.shared.phase = .setup(warmupPhase: .booting)
-        }
+        await PipelineState.shared.setPhase(to: .setup(warmupPhase: .booting))
         do {
             try await boot()
         } catch {
-            Task { @PipelineActor in
-                PipelineState.shared.phase = .setup(warmupPhase: .initialisingError(error: error))
-            }
             NSLog("Error setting up the model: \(error.localizedDescription)")
+            await PipelineState.shared.setPhase(to: .setup(warmupPhase: .initialisingError(error: error)))
         }
     }
     
@@ -132,7 +126,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
     @BootupActor
     private func boot() async throws {
         if FileManager.default.fileExists(atPath: checkFile.path) {
-            try modelReady()
+            try await modelReady()
         } else {
             NSLog("Need to fetch model...")
             if FileManager.default.fileExists(atPath: temporaryZip) {
@@ -140,10 +134,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
             }
 
             do {
-                Task { @PipelineActor in
-                    PipelineState.shared.phase = .setup(warmupPhase: .downloading(progress: 0))
-                }
-
+                await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloading(progress: 0)))
                 NSLog("Requesting new model transfer...")
                 let downloadUrl = URL(string: "https://bruvault.net/\(modelVersion.zipName)")!
                 let task = urlSession.downloadTask(with: downloadUrl)
@@ -153,13 +144,9 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
     }
 
     @BootupActor
-    private func modelDownloaded() throws {
+    private func modelDownloaded() async throws {
         NSLog("Downloaded model...")
-
-        Task { @PipelineActor in
-            PipelineState.shared.phase = .setup(warmupPhase: .expanding)
-        }
-
+        await PipelineState.shared.setPhase(to: .setup(warmupPhase: .expanding))
         NSLog("Decompressing model...")
         if FileManager.default.fileExists(atPath: storageDirectory.path) {
             try FileManager.default.removeItem(at: storageDirectory)
@@ -169,15 +156,12 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         NSLog("Cleaning up...")
         try FileManager.default.removeItem(at: tempUrl)
         FileManager.default.createFile(atPath: checkFile.path, contents: nil)
-        try modelReady()
+        try await modelReady()
     }
 
     @BootupActor
-    private func modelReady() throws {
-        Task { @PipelineActor in
-            PipelineState.shared.phase = .setup(warmupPhase: .initialising)
-        }
-
+    private func modelReady() async throws {
+        await PipelineState.shared.setPhase(to: .setup(warmupPhase: .initialising))
         NSLog("Constructing pipeline...")
         let config = MLModelConfiguration()
         #if canImport(Cocoa)
@@ -190,11 +174,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         NSLog("Warmup...")
         try pipeline.prewarmResources()
         NSLog("Pipeline ready")
-        Task { @PipelineActor in
-            withAnimation {
-                PipelineState.shared.phase = .ready(pipeline)
-            }
-        }
+        await PipelineState.shared.setPhase(to: .ready(pipeline))
         Task {
             await Model.shared.startRenderingIfNeeded()
         }
