@@ -172,7 +172,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
             let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, configuration: config, disableSafety: true, reduceMemory: true)
         #endif
         NSLog("Warmup...")
-        try pipeline.prewarmResources()
+        try pipeline.loadResources()
         NSLog("Pipeline ready")
         await PipelineState.shared.setPhase(to: .ready(pipeline))
         Task {
