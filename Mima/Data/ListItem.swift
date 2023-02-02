@@ -57,10 +57,10 @@ final class ListItem: ObservableObject, Codable, Identifiable {
     func update(prompt: String, imagePath: String, strength: Float, negativePrompt: String, seed: UInt32?, steps: Int, guidance: Float) {
         self.prompt = prompt
         self.imagePath = imagePath
-        self.strength = strength
+        self.strength = max(0, min(1, strength))
         self.negativePrompt = negativePrompt
         self.seed = seed
-        self.steps = max(1, steps)
+        self.steps = max(2, steps)
         self.guidance = guidance
         if let seed {
             generatedSeed = seed
@@ -88,7 +88,7 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         self.id = id ?? UUID()
         self.prompt = prompt
         self.imagePath = imagePath
-        self.strength = strength
+        self.strength = max(0, min(1, strength))
         self.negativePrompt = negativePrompt
         self.seed = seed
         self.steps = max(2, steps)

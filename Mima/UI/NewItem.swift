@@ -21,7 +21,7 @@ struct NewItem: View {
         if prototype.strength == ListItem.defaultStrength {
             strengthText = ""
         } else {
-            strengthText = String(prototype.strength)
+            strengthText = String(prototype.strength * 100)
         }
 
         if prototype.steps == ListItem.defaultSteps {
@@ -38,13 +38,19 @@ struct NewItem: View {
     }
 
     private func updatePrototype() {
+        let convertedStrength: Float
+        if let s = Float(strengthText.trimmingCharacters(in: .whitespacesAndNewlines)) {
+            convertedStrength = s / 100.0
+        } else {
+            convertedStrength = ListItem.defaultStrength
+        }
         prototype.update(prompt: promptText.trimmingCharacters(in: .whitespacesAndNewlines),
                          imagePath: imagePath.trimmingCharacters(in: .whitespacesAndNewlines),
-                         strength: Float(strengthText) ?? ListItem.defaultStrength,
+                         strength: convertedStrength,
                          negativePrompt: negativePromptText.trimmingCharacters(in: .whitespacesAndNewlines),
-                         seed: UInt32(seedText),
-                         steps: Int(stepText) ?? ListItem.defaultSteps,
-                         guidance: Float(guidanceText) ?? ListItem.defaultGuidance)
+                         seed: UInt32(seedText.trimmingCharacters(in: .whitespacesAndNewlines)),
+                         steps: Int(stepText.trimmingCharacters(in: .whitespacesAndNewlines)) ?? ListItem.defaultSteps,
+                         guidance: Float(guidanceText.trimmingCharacters(in: .whitespacesAndNewlines)) ?? ListItem.defaultGuidance)
     }
 
     @State private var promptText: String
@@ -66,22 +72,30 @@ struct NewItem: View {
                             GridRow {
                                 Text("Include")
                                     .font(.caption)
-                                TextField("Random", text: $promptText)
-                                    .textFieldStyle(.roundedBorder)
-                                    .font(.caption)
-                                    .onSubmit {
-                                        create()
+                                TextField("Random", text: $promptText, onEditingChanged: { editing in
+                                    if !editing {
+                                        updatePrototype()
                                     }
+                                })
+                                .textFieldStyle(.roundedBorder)
+                                .font(.caption)
+                                .onSubmit {
+                                    create()
+                                }
                             }
                             GridRow {
                                 Text("Exclude")
                                     .font(.caption)
-                                TextField("", text: $negativePromptText)
-                                    .textFieldStyle(.roundedBorder)
-                                    .font(.caption)
-                                    .onSubmit {
-                                        create()
+                                TextField("", text: $negativePromptText, onEditingChanged: { editing in
+                                    if !editing {
+                                        updatePrototype()
                                     }
+                                })
+                                .textFieldStyle(.roundedBorder)
+                                .font(.caption)
+                                .onSubmit {
+                                    create()
+                                }
                             }
                         }
                         
@@ -90,14 +104,22 @@ struct NewItem: View {
                                 Text("Source Image")
                                     .font(.caption)
                                     .multilineTextAlignment(.center)
-                                Text("Mix Strength")
+                                Text("Mix %")
                                     .font(.caption)
                                     .multilineTextAlignment(.center)
                             }
                             GridRow {
-                                TextField("No Source Image", text: $imagePath)
-                                TextField(String(ListItem.defaultStrength), text: $strengthText)
-                                    .frame(width: 70)
+                                TextField("No Source Image", text: $imagePath, onEditingChanged: { editing in
+                                    if !editing {
+                                        updatePrototype()
+                                    }
+                                })
+                                TextField(String(ListItem.defaultStrength * 100), text: $strengthText, onEditingChanged: { editing in
+                                    if !editing {
+                                        updatePrototype()
+                                    }
+                                })
+                                .frame(width: 70)
                             }
                             .onSubmit {
                                 create()
@@ -106,7 +128,7 @@ struct NewItem: View {
                         .textFieldStyle(.roundedBorder)
                         .font(.footnote)
                         .multilineTextAlignment(.center)
-
+                        
                         Grid {
                             GridRow(alignment: .bottom) {
                                 Text("Seed")
@@ -122,11 +144,23 @@ struct NewItem: View {
                                     .frame(width: 70)
                             }
                             GridRow {
-                                TextField("Random", text: $seedText)
-                                TextField(String(ListItem.defaultSteps), text: $stepText)
-                                    .frame(width: 70)
-                                TextField(String(ListItem.defaultGuidance), text: $guidanceText)
-                                    .frame(width: 70)
+                                TextField("Random", text: $seedText, onEditingChanged: { editing in
+                                    if !editing {
+                                        updatePrototype()
+                                    }
+                                })
+                                TextField(String(ListItem.defaultSteps), text: $stepText, onEditingChanged: { editing in
+                                    if !editing {
+                                        updatePrototype()
+                                    }
+                                })
+                                .frame(width: 70)
+                                TextField(String(ListItem.defaultGuidance), text: $guidanceText, onEditingChanged: { editing in
+                                    if !editing {
+                                        updatePrototype()
+                                    }
+                                })
+                                .frame(width: 70)
                             }
                             .onSubmit {
                                 create()
@@ -135,7 +169,7 @@ struct NewItem: View {
                         .textFieldStyle(.roundedBorder)
                         .font(.footnote)
                         .multilineTextAlignment(.center)
-
+                        
                         Button {
                             create()
                         } label: {
@@ -147,24 +181,6 @@ struct NewItem: View {
                     Spacer()
                 }
             }
-        }
-        .onChange(of: imagePath) { _ in
-            updatePrototype()
-        }
-        .onChange(of: promptText) { _ in
-            updatePrototype()
-        }
-        .onChange(of: negativePromptText) { _ in
-            updatePrototype()
-        }
-        .onChange(of: seedText) { _ in
-            updatePrototype()
-        }
-        .onChange(of: stepText) { _ in
-            updatePrototype()
-        }
-        .onChange(of: guidanceText) { _ in
-            updatePrototype()
         }
         .overlay(alignment: .topTrailing) {
             if !prototype.state.isCreator {

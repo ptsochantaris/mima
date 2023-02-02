@@ -106,16 +106,22 @@ struct MimaApp: App {
             }
             CommandGroup(replacing: .appSettings) {
                 Menu("Engine Version…") {
-                    ForEach([ModelVersion.sd14, ModelVersion.sd15, ModelVersion.sd20, ModelVersion.sd21]) { version in
-                        Button(version.displayName) {
-                            Task { @RenderActor in
-                                await PipelineState.shared.shutDown()
-                                PipelineBootup.persistedModelVersion = version
-                                await PipelineBootup().startup()
-                            }
-                            Model.shared.cancelAllRendering()
-                        }
-                        .disabled(version == PipelineBootup.persistedModelVersion || bootWatcher.booting)
+                    ForEach(ModelVersion.allCases) { version in
+                        let isOn = Binding<Bool>(
+                            get: { version == PipelineBootup.persistedModelVersion },
+                            set: { newValue, _ in
+                                guard newValue else {
+                                    return
+                                }
+                                Task { @RenderActor in
+                                    await PipelineState.shared.shutDown()
+                                    PipelineBootup.persistedModelVersion = version
+                                    await PipelineBootup().startup()
+                                }
+                                Model.shared.cancelAllRendering()
+                            })
+                        Toggle(version.displayName, isOn: isOn)
+                            .disabled(isOn.wrappedValue || bootWatcher.booting)
                     }
                 }
             }
