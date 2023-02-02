@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct NewItem: View {
     private var prototype: ListItem
@@ -77,7 +78,6 @@ struct NewItem: View {
                                         updatePrototype()
                                     }
                                 })
-                                .textFieldStyle(.roundedBorder)
                                 .font(.caption)
                                 .onSubmit {
                                     create()
@@ -91,85 +91,79 @@ struct NewItem: View {
                                         updatePrototype()
                                     }
                                 })
-                                .textFieldStyle(.roundedBorder)
                                 .font(.caption)
                                 .onSubmit {
                                     create()
                                 }
                             }
                         }
-                        
-                        Grid {
-                            GridRow(alignment: .bottom) {
-                                Text("Source Image")
-                                    .font(.caption)
-                                    .multilineTextAlignment(.center)
-                                Text("Mix %")
-                                    .font(.caption)
-                                    .multilineTextAlignment(.center)
+                         
+                        VStack {
+                            Grid {
+                                GridRow(alignment: .bottom) {
+                                    Text("Seed")
+                                        .font(.caption)
+                                    Text("Steps")
+                                        .font(.caption)
+                                        .frame(width: 70)
+                                    Text("Guidance")
+                                        .font(.caption)
+                                        .frame(width: 70)
+                                }
+                                GridRow {
+                                    TextField("Random", text: $seedText, onEditingChanged: { editing in
+                                        if !editing {
+                                            updatePrototype()
+                                        }
+                                    })
+                                    TextField(String(ListItem.defaultSteps), text: $stepText, onEditingChanged: { editing in
+                                        if !editing {
+                                            updatePrototype()
+                                        }
+                                    })
+                                    .frame(width: 70)
+                                    TextField(String(ListItem.defaultGuidance), text: $guidanceText, onEditingChanged: { editing in
+                                        if !editing {
+                                            updatePrototype()
+                                        }
+                                    })
+                                    .frame(width: 70)
+                                }
+                                .onSubmit {
+                                    create()
+                                }
                             }
-                            GridRow {
-                                TextField("No Source Image", text: $imagePath, onEditingChanged: { editing in
-                                    if !editing {
-                                        updatePrototype()
+                            
+                            if !imagePath.isEmpty {
+                                Grid {
+                                    GridRow {
+                                        TextField("No Source Image", text: $imagePath, onEditingChanged: { editing in
+                                            if !editing {
+                                                updatePrototype()
+                                            }
+                                        })
+                                        TextField(String(ListItem.defaultStrength * 100), text: $strengthText, onEditingChanged: { editing in
+                                            if !editing {
+                                                updatePrototype()
+                                            }
+                                        })
+                                        .frame(width: 70)
                                     }
-                                })
-                                TextField(String(ListItem.defaultStrength * 100), text: $strengthText, onEditingChanged: { editing in
-                                    if !editing {
-                                        updatePrototype()
+                                    .onSubmit {
+                                        create()
                                     }
-                                })
-                                .frame(width: 70)
-                            }
-                            .onSubmit {
-                                create()
+                                    GridRow(alignment: .bottom) {
+                                        Text("Source Image")
+                                            .font(.caption)
+                                        Text("Mix %")
+                                            .font(.caption)
+                                    }
+                                }
                             }
                         }
-                        .textFieldStyle(.roundedBorder)
                         .font(.footnote)
                         .multilineTextAlignment(.center)
-                        
-                        Grid {
-                            GridRow(alignment: .bottom) {
-                                Text("Seed")
-                                    .font(.caption)
-                                    .multilineTextAlignment(.center)
-                                Text("Steps")
-                                    .font(.caption)
-                                    .multilineTextAlignment(.center)
-                                    .frame(width: 70)
-                                Text("Guidance")
-                                    .font(.caption)
-                                    .multilineTextAlignment(.center)
-                                    .frame(width: 70)
-                            }
-                            GridRow {
-                                TextField("Random", text: $seedText, onEditingChanged: { editing in
-                                    if !editing {
-                                        updatePrototype()
-                                    }
-                                })
-                                TextField(String(ListItem.defaultSteps), text: $stepText, onEditingChanged: { editing in
-                                    if !editing {
-                                        updatePrototype()
-                                    }
-                                })
-                                .frame(width: 70)
-                                TextField(String(ListItem.defaultGuidance), text: $guidanceText, onEditingChanged: { editing in
-                                    if !editing {
-                                        updatePrototype()
-                                    }
-                                })
-                                .frame(width: 70)
-                            }
-                            .onSubmit {
-                                create()
-                            }
-                        }
-                        .textFieldStyle(.roundedBorder)
-                        .font(.footnote)
-                        .multilineTextAlignment(.center)
-                        
+
                         Button {
                             create()
                         } label: {
@@ -180,6 +174,7 @@ struct NewItem: View {
                     .frame(width: 100 + proxy.size.width * 0.6)
                     Spacer()
                 }
+                .textFieldStyle(.roundedBorder)
             }
         }
         .overlay(alignment: .topTrailing) {
@@ -190,7 +185,29 @@ struct NewItem: View {
                     }
             }
         }
+        .onDrop(of: [.image], delegate: CreatorDropDelegate(prototype: prototype))
         .aspectRatio(1, contentMode: .fill)
+    }
+    
+    private final class CreatorDropDelegate: DropDelegate {
+        let prototype: ListItem
+        init(prototype: ListItem) {
+            self.prototype = prototype
+        }
+        func performDrop(info: DropInfo) -> Bool {
+            guard let provider = info.itemProviders(for: [.image]).first else {
+                return false
+            }
+            provider.loadInPlaceFileRepresentation(forTypeIdentifier: UTType.image.identifier) { [weak self] url, _, _ in
+                if let self, let path = url?.path {
+                    Task { @MainActor in
+                        self.prototype.imagePath = path
+                        self.prototype.objectWillChange.send()
+                    }
+                }
+            }
+            return true
+        }
     }
 
     @MainActor
