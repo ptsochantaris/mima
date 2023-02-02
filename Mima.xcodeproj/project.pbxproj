@@ -29,9 +29,9 @@
 		165150E7297DCC5A00124967 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165150E6297DCC5A00124967 /* AboutView.swift */; };
 		166142482974BD5800BFA494 /* MimaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166142472974BD5800BFA494 /* MimaApp.swift */; };
 		1661424C2974BD5900BFA494 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1661424B2974BD5900BFA494 /* Assets.xcassets */; };
-		166142582974BDA900BFA494 /* StableDiffusion in Frameworks */ = {isa = PBXBuildFile; productRef = 166142572974BDA900BFA494 /* StableDiffusion */; };
 		1661425F2974D15E00BFA494 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1661425E2974D15E00BFA494 /* Utils.swift */; };
 		16622AC7297D996300C8C7F0 /* Mac.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16622AC6297D996300C8C7F0 /* Mac.swift */; };
+		16642E5C298B14C900D7BB6B /* StableDiffusion in Frameworks */ = {isa = PBXBuildFile; productRef = 16642E5B298B14C900D7BB6B /* StableDiffusion */; };
 		166A262E297EE7C600A1BB50 /* Rendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166A262D297EE7C600A1BB50 /* Rendering.swift */; };
 		16F195A629889AD300E2862C /* BootWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F195A529889AD300E2862C /* BootWatcher.swift */; };
 /* End PBXBuildFile section */
@@ -73,8 +73,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				166142582974BDA900BFA494 /* StableDiffusion in Frameworks */,
 				1630C9A12981B68B005A0688 /* ZIPFoundation in Frameworks */,
+				16642E5C298B14C900D7BB6B /* StableDiffusion in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -165,8 +165,8 @@
 			);
 			name = Mima;
 			packageProductDependencies = (
-				166142572974BDA900BFA494 /* StableDiffusion */,
 				1630C9A02981B68B005A0688 /* ZIPFoundation */,
+				16642E5B298B14C900D7BB6B /* StableDiffusion */,
 			);
 			productName = Mima;
 			productReference = 166142442974BD5800BFA494 /* Mima.app */;
@@ -197,8 +197,8 @@
 			);
 			mainGroup = 1661423B2974BD5800BFA494;
 			packageReferences = (
-				166142562974BDA900BFA494 /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */,
 				1630C99F2981B68B005A0688 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+				16642E5A298B14C900D7BB6B /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */,
 			);
 			productRefGroup = 166142452974BD5800BFA494 /* Products */;
 			projectDirPath = "";
@@ -483,11 +483,11 @@
 				minimumVersion = 0.9.9;
 			};
 		};
-		166142562974BDA900BFA494 /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */ = {
+		16642E5A298B14C900D7BB6B /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/ml-stable-diffusion";
+			repositoryURL = "https://github.com/littleowl/ml-stable-diffusion";
 			requirement = {
-				branch = main;
+				branch = "image2image-swift";
 				kind = branch;
 			};
 		};
@@ -499,9 +499,9 @@
 			package = 1630C99F2981B68B005A0688 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
 		};
-		166142572974BDA900BFA494 /* StableDiffusion */ = {
+		16642E5B298B14C900D7BB6B /* StableDiffusion */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 166142562974BDA900BFA494 /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */;
+			package = 16642E5A298B14C900D7BB6B /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */;
 			productName = StableDiffusion;
 		};
 /* End XCSwiftPackageProductDependency section */

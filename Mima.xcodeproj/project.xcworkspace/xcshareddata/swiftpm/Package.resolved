@@ -3,10 +3,10 @@
     {
       "identity" : "ml-stable-diffusion",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/ml-stable-diffusion",
+      "location" : "https://github.com/littleowl/ml-stable-diffusion",
       "state" : {
-        "branch" : "main",
-        "revision" : "fb1fa01c9d30e9b2e02a8b7ed35d905e272a0262"
+        "branch" : "image2image-swift",
+        "revision" : "088bdc1dc45aa027e69c279c21242ff872e17765"
       }
     },
     {

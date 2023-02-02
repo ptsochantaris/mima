@@ -7,6 +7,8 @@ struct NewItem: View {
         self.prototype = prototype
 
         promptText = prototype.prompt
+                
+        imagePath = prototype.imagePath
 
         negativePromptText = prototype.negativePrompt
 
@@ -14,6 +16,12 @@ struct NewItem: View {
             seedText = String(seed)
         } else {
             seedText = ""
+        }
+
+        if prototype.strength == ListItem.defaultStrength {
+            strengthText = ""
+        } else {
+            strengthText = String(prototype.strength)
         }
 
         if prototype.steps == ListItem.defaultSteps {
@@ -31,6 +39,8 @@ struct NewItem: View {
 
     private func updatePrototype() {
         prototype.update(prompt: promptText.trimmingCharacters(in: .whitespacesAndNewlines),
+                         imagePath: imagePath.trimmingCharacters(in: .whitespacesAndNewlines),
+                         strength: Float(strengthText) ?? ListItem.defaultStrength,
                          negativePrompt: negativePromptText.trimmingCharacters(in: .whitespacesAndNewlines),
                          seed: UInt32(seedText),
                          steps: Int(stepText) ?? ListItem.defaultSteps,
@@ -38,6 +48,8 @@ struct NewItem: View {
     }
 
     @State private var promptText: String
+    @State private var imagePath: String
+    @State private var strengthText: String
     @State private var negativePromptText: String
     @State private var seedText: String
     @State private var stepText: String
@@ -49,7 +61,7 @@ struct NewItem: View {
                 ItemBackground()
                 HStack {
                     Spacer()
-                    VStack(alignment: .center, spacing: 30) {
+                    VStack(alignment: .center, spacing: 20) {
                         Grid(alignment: .trailing) {
                             GridRow {
                                 Text("Include")
@@ -72,6 +84,28 @@ struct NewItem: View {
                                     }
                             }
                         }
+                        
+                        Grid {
+                            GridRow(alignment: .bottom) {
+                                Text("Source Image")
+                                    .font(.caption)
+                                    .multilineTextAlignment(.center)
+                                Text("Mix Strength")
+                                    .font(.caption)
+                                    .multilineTextAlignment(.center)
+                            }
+                            GridRow {
+                                TextField("No Source Image", text: $imagePath)
+                                TextField(String(ListItem.defaultStrength), text: $strengthText)
+                                    .frame(width: 70)
+                            }
+                            .onSubmit {
+                                create()
+                            }
+                        }
+                        .textFieldStyle(.roundedBorder)
+                        .font(.footnote)
+                        .multilineTextAlignment(.center)
 
                         Grid {
                             GridRow(alignment: .bottom) {
@@ -94,13 +128,13 @@ struct NewItem: View {
                                 TextField(String(ListItem.defaultGuidance), text: $guidanceText)
                                     .frame(width: 70)
                             }
-                            .textFieldStyle(.roundedBorder)
-                            .font(.footnote)
-                            .multilineTextAlignment(.center)
                             .onSubmit {
                                 create()
                             }
                         }
+                        .textFieldStyle(.roundedBorder)
+                        .font(.footnote)
+                        .multilineTextAlignment(.center)
 
                         Button {
                             create()
@@ -113,6 +147,9 @@ struct NewItem: View {
                     Spacer()
                 }
             }
+        }
+        .onChange(of: imagePath) { _ in
+            updatePrototype()
         }
         .onChange(of: promptText) { _ in
             updatePrototype()

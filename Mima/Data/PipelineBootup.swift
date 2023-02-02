@@ -14,9 +14,9 @@ enum ModelVersion: String, Identifiable, CaseIterable {
         
     var zipName: String {
 #if canImport(Cocoa)
-        "\(rawValue).zip"
+        "\(rawValue).1.zip"
 #else
-        "\(rawValue)iOS.zip"
+        "\(rawValue).iOS.1.zip"
 #endif
     }
     
@@ -65,7 +65,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         let storeUrl = docUrl.appending(path: modelVersion.rawValue, directoryHint: .isDirectory)
         storageDirectory = storeUrl
 
-        checkFile = storeUrl.appending(path: "ready", directoryHint: .notDirectory)
+        checkFile = storeUrl.appending(path: "ready.1", directoryHint: .notDirectory)
         
         super.init()
     }

@@ -11,7 +11,7 @@ final class Model: ObservableObject, Codable {
 
     init() {
         entries = [
-            ListItem(prompt: "A colorful bowl of fruit on a wooden table", negativePrompt: "Berries", seed: nil, steps: ListItem.defaultSteps, guidance: ListItem.defaultGuidance, state: .creating)
+            ListItem(prompt: "A colorful bowl of fruit on a wooden table", imagePath: "", strength: ListItem.defaultStrength, negativePrompt: "Berries", seed: nil, steps: ListItem.defaultSteps, guidance: ListItem.defaultGuidance, state: .creating)
         ]
         renderQueue = ContiguousArray<UUID>()
     }

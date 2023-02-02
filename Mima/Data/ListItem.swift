@@ -4,6 +4,7 @@ import SwiftUI
 final class ListItem: ObservableObject, Codable, Identifiable {
     static let defaultSteps = 50
     static let defaultGuidance: Float = 7.5
+    static let defaultStrength: Float = 0.5
 
     let id: UUID
     var prompt: String
@@ -12,6 +13,8 @@ final class ListItem: ObservableObject, Codable, Identifiable {
     var seed: UInt32?
     var generatedSeed: UInt32
     var steps: Int
+    var imagePath: String
+    var strength: Float
 
     @Published var state: State
 
@@ -25,6 +28,8 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         case state
         case type
         case generatedSeed
+        case imagePath
+        case strength
     }
 
     init(from decoder: Decoder) throws {
@@ -37,18 +42,22 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         negativePrompt = try values.decode(String.self, forKey: .negativePrompt)
         state = try values.decode(State.self, forKey: .state)
         guidance = try values.decode(Float.self, forKey: .guidance)
+        imagePath = try values.decodeIfPresent(String.self, forKey: .imagePath) ?? ""
+        strength = try values.decodeIfPresent(Float.self, forKey: .strength) ?? ListItem.defaultStrength
     }
 
     func randomVariant() -> ListItem {
-        ListItem(prompt: prompt, negativePrompt: negativePrompt, seed: UInt32.random(in: 0 ..< UInt32.max), steps: steps, guidance: guidance, state: .queued)
+        ListItem(prompt: prompt, imagePath: imagePath, strength: strength, negativePrompt: negativePrompt, seed: UInt32.random(in: 0 ..< UInt32.max), steps: steps, guidance: guidance, state: .queued)
     }
 
     func clone(as newState: State) -> ListItem {
-        ListItem(prompt: prompt, negativePrompt: negativePrompt, seed: generatedSeed, steps: steps, guidance: guidance, state: newState)
+        ListItem(prompt: prompt, imagePath: imagePath, strength: strength, negativePrompt: negativePrompt, seed: generatedSeed, steps: steps, guidance: guidance, state: newState)
     }
 
-    func update(prompt: String, negativePrompt: String, seed: UInt32?, steps: Int, guidance: Float) {
+    func update(prompt: String, imagePath: String, strength: Float, negativePrompt: String, seed: UInt32?, steps: Int, guidance: Float) {
         self.prompt = prompt
+        self.imagePath = imagePath
+        self.strength = strength
         self.negativePrompt = negativePrompt
         self.seed = seed
         self.steps = max(1, steps)
@@ -71,11 +80,15 @@ final class ListItem: ObservableObject, Codable, Identifiable {
         try container.encode(state, forKey: .state)
         try container.encode(guidance, forKey: .guidance)
         try container.encode(generatedSeed, forKey: .generatedSeed)
+        try container.encode(imagePath, forKey: .imagePath)
+        try container.encode(strength, forKey: .strength)
     }
 
-    init(id: UUID? = nil, prompt: String, negativePrompt: String, seed: UInt32?, steps: Int, guidance: Float, state: State) {
+    init(id: UUID? = nil, prompt: String, imagePath: String, strength: Float, negativePrompt: String, seed: UInt32?, steps: Int, guidance: Float, state: State) {
         self.id = id ?? UUID()
         self.prompt = prompt
+        self.imagePath = imagePath
+        self.strength = strength
         self.negativePrompt = negativePrompt
         self.seed = seed
         self.steps = max(2, steps)

@@ -18,7 +18,9 @@ extension CGImage {
             "NegativePrompt": item.negativePrompt,
             "Seed": String(item.generatedSeed),
             "Steps": String(item.steps),
-            "Guidance": String(item.guidance)
+            "Guidance": String(item.guidance),
+            "I2IPath": String(item.imagePath),
+            "I2IStrength": String(item.strength)
         ]
 
         let metadata = CGImageMetadataCreateMutable()
@@ -53,6 +55,8 @@ extension CGImage {
         }
 
         return ListItem(prompt: getValue(for: "Prompt"),
+                        imagePath: getValue(for: "I2IPath"),
+                        strength: Float(getValue(for: "I2IStrength")) ?? ListItem.defaultStrength,
                         negativePrompt: getValue(for: "NegativePrompt"),
                         seed: UInt32(getValue(for: "Seed")),
                         steps: Int(getValue(for: "Steps")) ?? ListItem.defaultSteps,

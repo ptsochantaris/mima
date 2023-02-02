@@ -84,6 +84,38 @@ enum FetchError: Error {
     case noDataDownloaded(String)
 }
 
+extension CGImage {
+    func scaled(to sideLength: CGFloat) -> CGImage? {
+        let scaledImageSize: CGSize
+        let W = CGFloat(width)
+        let H = CGFloat(height)
+        if width < height {
+            let lateralScale = sideLength / W
+            scaledImageSize = CGSize(width: sideLength, height: H * lateralScale)
+        } else {
+            let verticalScale = sideLength / H
+            scaledImageSize = CGSize(width: W * verticalScale, height: sideLength)
+        }
+        
+        let c = CGContext(data: nil,
+                          width: Int(sideLength),
+                          height: Int(sideLength),
+                          bitsPerComponent: 8,
+                          bytesPerRow: Int(sideLength) * 4,
+                          space: CGColorSpaceCreateDeviceRGB(),
+                          bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGImageByteOrderInfo.order32Little.rawValue)!
+        c.interpolationQuality = .high
+
+        let scaledImageRect = CGRect(x: (sideLength - scaledImageSize.width) * 0.5,
+                                     y: (sideLength - scaledImageSize.height) * 0.5,
+                                     width: scaledImageSize.width,
+                                     height: scaledImageSize.height)
+        
+        c.draw(self, in: scaledImageRect)
+        return c.makeImage()
+    }
+}
+
 enum Rendering {
     @MainActor
     static func render(_ item: ListItem) async -> Bool {
@@ -105,16 +137,21 @@ enum Rendering {
                 NSLog("Starting render of item \(item.id)")
                 item.state = .rendering(step: 0, total: Float(item.steps))
             }
+            
+            var config = StableDiffusionPipeline.Configuration(prompt: item.prompt)
+            if !item.imagePath.isEmpty, let img = NSImage(contentsOfFile: item.imagePath) {
+                NSLog("Loading starting image from \(item.imagePath)")
+                let scaled = img.cgImage(forProposedRect: nil, context: nil, hints: nil)?.scaled(to: 512)
+                config.startingImage = scaled
+                config.strength = item.strength
+            }
+            config.negativePrompt = item.negativePrompt
+            config.stepCount = item.steps
+            config.seed = item.generatedSeed
+            config.guidanceScale = item.guidance
+            config.disableSafety = true
 
-            return try! pipeline.generateImages(
-                prompt: item.prompt,
-                negativePrompt: item.negativePrompt,
-                imageCount: 1,
-                stepCount: item.steps,
-                seed: item.generatedSeed,
-                guidanceScale: item.guidance,
-                disableSafety: true
-            ) { progress in
+            return try! pipeline.generateImages(configuration: config) { progress in
                 DispatchQueue.main.sync {
                     if item.state.isCancelled || item.state.isWaiting {
                         return false
