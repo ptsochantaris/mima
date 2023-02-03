@@ -11,6 +11,8 @@ struct EntryName: View {
         VStack(spacing: 4) {
             if entry.prompt.isEmpty, entry.negativePrompt.isEmpty {
                 Text("Random prompt")
+                    .font(.headline)
+
             } else if !entry.prompt.isEmpty, !entry.negativePrompt.isEmpty {
                 Text(entry.prompt)
                 Text("Excluding: " + entry.negativePrompt)
@@ -18,11 +20,19 @@ struct EntryName: View {
             } else {
                 if !entry.prompt.isEmpty {
                     Text(entry.prompt)
+                        .font(.headline)
                 }
                 if !entry.negativePrompt.isEmpty {
                     Text("Random, excluding: " + entry.negativePrompt)
+                        .font(.headline)
                 }
             }
+
+            if !entry.imagePath.isEmpty {
+                Text("Cloning \(URL(filePath: entry.imagePath).lastPathComponent) at \(Int(entry.strength * 100))%")
+                    .font(.caption)
+            }
+
         }
         .multilineTextAlignment(.center)
     }

@@ -4,7 +4,7 @@ import SwiftUI
 final class ListItem: ObservableObject, Codable, Identifiable {
     static let defaultSteps = 50
     static let defaultGuidance: Float = 7.5
-    static let defaultStrength: Float = 0.5
+    static let defaultStrength: Float = 0.6
 
     let id: UUID
     var prompt: String
@@ -57,17 +57,16 @@ final class ListItem: ObservableObject, Codable, Identifiable {
     func update(prompt: String, imagePath: String, strength: Float, negativePrompt: String, seed: UInt32?, steps: Int, guidance: Float) {
         self.prompt = prompt
         self.imagePath = imagePath
-        self.strength = max(0, min(1, strength))
+        self.strength = max(0, min(100, strength * 100)).rounded() / 100
         self.negativePrompt = negativePrompt
         self.seed = seed
         self.steps = max(2, steps)
-        self.guidance = guidance
+        self.guidance = (guidance * 1000).rounded() / 1000
         if let seed {
             generatedSeed = seed
         } else {
             generatedSeed = UInt32.random(in: 0 ..< UInt32.max)
         }
-        objectWillChange.send() // ensure swiftui knows this prompt has changed
     }
 
     func encode(to encoder: Encoder) throws {

@@ -12,10 +12,6 @@ struct EntryFooter: View {
             Text("Seed \(String(entry.generatedSeed))")
             Text("Guidance \(entry.guidance, format: .number)")
             Text("\(entry.steps, format: .number) steps")
-            if !entry.imagePath.isEmpty {
-                Text("Mix: \(entry.strength, format: .number)")
-                Text("Source Image: \(entry.imagePath)")
-            }
         }
         .foregroundColor(.secondary)
         .font(.footnote)

@@ -19,7 +19,6 @@ struct EntryTitle: View {
             Spacer()
                 .frame(height: 1)
         }
-        .font(.headline)
         .padding(EdgeInsets(top: 0, leading: 50, bottom: 0, trailing: 50))
     }
 }

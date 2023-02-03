@@ -1,12 +1,25 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-struct NewItem: View {
-    private var prototype: ListItem
+@MainActor
+final class NewItemModel: ObservableObject {
+    var prototype: ListItem
+
+    @Published var promptText: String = ""
+    @Published var imagePath: String = ""
+    @Published var strengthText: String = ""
+    @Published var negativePromptText: String = ""
+    @Published var seedText: String = ""
+    @Published var stepText: String = ""
+    @Published var guidanceText: String = ""
 
     init(prototype: ListItem) {
         self.prototype = prototype
-
+        refreshFromPrototype()
+    }
+    
+    func refreshFromPrototype() {
+        NSLog("Loading latest prototype data")
         promptText = prototype.prompt
                 
         imagePath = prototype.imagePath
@@ -22,7 +35,7 @@ struct NewItem: View {
         if prototype.strength == ListItem.defaultStrength {
             strengthText = ""
         } else {
-            strengthText = String(prototype.strength * 100)
+            strengthText = String(Int(prototype.strength * 100))
         }
 
         if prototype.steps == ListItem.defaultSteps {
@@ -37,8 +50,8 @@ struct NewItem: View {
             guidanceText = String(prototype.guidance)
         }
     }
-
-    private func updatePrototype() {
+    
+    func updatePrototype() {
         let convertedStrength: Float
         if let s = Float(strengthText.trimmingCharacters(in: .whitespacesAndNewlines)) {
             convertedStrength = s / 100.0
@@ -52,15 +65,22 @@ struct NewItem: View {
                          seed: UInt32(seedText.trimmingCharacters(in: .whitespacesAndNewlines)),
                          steps: Int(stepText.trimmingCharacters(in: .whitespacesAndNewlines)) ?? ListItem.defaultSteps,
                          guidance: Float(guidanceText.trimmingCharacters(in: .whitespacesAndNewlines)) ?? ListItem.defaultGuidance)
+        Task {
+            try await Task.sleep(for: .milliseconds(100))
+            refreshFromPrototype()
+        }
     }
+    
+    func create() {
+        updatePrototype()
+        withAnimation {
+            Model.shared.createItem(basedOn: prototype, fromCreator: prototype.state.isCreator)
+        }
+    }
+}
 
-    @State private var promptText: String
-    @State private var imagePath: String
-    @State private var strengthText: String
-    @State private var negativePromptText: String
-    @State private var seedText: String
-    @State private var stepText: String
-    @State private var guidanceText: String
+struct NewItem: View {
+    @StateObject var newItemInfo: NewItemModel
 
     var body: some View {
         GeometryReader { proxy in
@@ -72,32 +92,46 @@ struct NewItem: View {
                         Grid(alignment: .trailing) {
                             GridRow {
                                 Text("Include")
-                                    .font(.caption)
-                                TextField("Random", text: $promptText, onEditingChanged: { editing in
+                                TextField("Random", text: $newItemInfo.promptText, onEditingChanged: { editing in
                                     if !editing {
-                                        updatePrototype()
+                                        newItemInfo.updatePrototype()
                                     }
                                 })
-                                .font(.caption)
-                                .onSubmit {
-                                    create()
-                                }
                             }
                             GridRow {
                                 Text("Exclude")
-                                    .font(.caption)
-                                TextField("", text: $negativePromptText, onEditingChanged: { editing in
+                                TextField("", text: $newItemInfo.negativePromptText, onEditingChanged: { editing in
                                     if !editing {
-                                        updatePrototype()
+                                        newItemInfo.updatePrototype()
                                     }
                                 })
-                                .font(.caption)
-                                .onSubmit {
-                                    create()
+                            }
+                            if !newItemInfo.imagePath.isEmpty {
+                                GridRow {
+                                    Text("Clone")
+                                    HStack(spacing: 4) {
+                                        TextField("No Source Image", text: $newItemInfo.imagePath, onEditingChanged: { editing in
+                                            if !editing {
+                                                newItemInfo.updatePrototype()
+                                            }
+                                        })
+                                        Text("at")
+                                        TextField(String(Int(ListItem.defaultStrength * 100)) + "%", text: $newItemInfo.strengthText, onEditingChanged: { editing in
+                                            if !editing {
+                                                newItemInfo.updatePrototype()
+                                            }
+                                        })
+                                        .multilineTextAlignment(.center)
+                                        .frame(width: 50)
+                                    }
                                 }
                             }
                         }
-                         
+                        .font(.caption)
+                        .onSubmit {
+                            newItemInfo.create()
+                        }
+
                         VStack {
                             Grid {
                                 GridRow(alignment: .bottom) {
@@ -111,53 +145,26 @@ struct NewItem: View {
                                         .frame(width: 70)
                                 }
                                 GridRow {
-                                    TextField("Random", text: $seedText, onEditingChanged: { editing in
+                                    TextField("Random", text: $newItemInfo.seedText, onEditingChanged: { editing in
                                         if !editing {
-                                            updatePrototype()
+                                            newItemInfo.updatePrototype()
                                         }
                                     })
-                                    TextField(String(ListItem.defaultSteps), text: $stepText, onEditingChanged: { editing in
+                                    TextField(String(ListItem.defaultSteps), text: $newItemInfo.stepText, onEditingChanged: { editing in
                                         if !editing {
-                                            updatePrototype()
+                                            newItemInfo.updatePrototype()
                                         }
                                     })
                                     .frame(width: 70)
-                                    TextField(String(ListItem.defaultGuidance), text: $guidanceText, onEditingChanged: { editing in
+                                    TextField(String(ListItem.defaultGuidance), text: $newItemInfo.guidanceText, onEditingChanged: { editing in
                                         if !editing {
-                                            updatePrototype()
+                                            newItemInfo.updatePrototype()
                                         }
                                     })
                                     .frame(width: 70)
                                 }
                                 .onSubmit {
-                                    create()
-                                }
-                            }
-                            
-                            if !imagePath.isEmpty {
-                                Grid {
-                                    GridRow {
-                                        TextField("No Source Image", text: $imagePath, onEditingChanged: { editing in
-                                            if !editing {
-                                                updatePrototype()
-                                            }
-                                        })
-                                        TextField(String(ListItem.defaultStrength * 100), text: $strengthText, onEditingChanged: { editing in
-                                            if !editing {
-                                                updatePrototype()
-                                            }
-                                        })
-                                        .frame(width: 70)
-                                    }
-                                    .onSubmit {
-                                        create()
-                                    }
-                                    GridRow(alignment: .bottom) {
-                                        Text("Source Image")
-                                            .font(.caption)
-                                        Text("Mix %")
-                                            .font(.caption)
-                                    }
+                                    newItemInfo.create()
                                 }
                             }
                         }
@@ -165,7 +172,7 @@ struct NewItem: View {
                         .multilineTextAlignment(.center)
 
                         Button {
-                            create()
+                            newItemInfo.create()
                         } label: {
                             Text("Create")
                         }
@@ -178,21 +185,21 @@ struct NewItem: View {
             }
         }
         .overlay(alignment: .topTrailing) {
-            if !prototype.state.isCreator {
+            if !newItemInfo.prototype.state.isCreator {
                 MimaButon(look: .dismiss(.button))
                     .onTapGesture {
-                        Model.shared.delete(prototype)
+                        Model.shared.delete(newItemInfo.prototype)
                     }
             }
         }
-        .onDrop(of: [.image], delegate: CreatorDropDelegate(prototype: prototype))
+        .onDrop(of: [.image], delegate: CreatorDropDelegate(newItemInfo: newItemInfo))
         .aspectRatio(1, contentMode: .fill)
     }
     
     private final class CreatorDropDelegate: DropDelegate {
-        let prototype: ListItem
-        init(prototype: ListItem) {
-            self.prototype = prototype
+        let newItemInfo: NewItemModel
+        init(newItemInfo: NewItemModel) {
+            self.newItemInfo = newItemInfo
         }
         func performDrop(info: DropInfo) -> Bool {
             guard let provider = info.itemProviders(for: [.image]).first else {
@@ -201,20 +208,13 @@ struct NewItem: View {
             provider.loadInPlaceFileRepresentation(forTypeIdentifier: UTType.image.identifier) { [weak self] url, _, _ in
                 if let self, let path = url?.path {
                     Task { @MainActor in
-                        self.prototype.imagePath = path
-                        self.prototype.objectWillChange.send()
+                        NSLog("Adding an attached image path: \(path)")
+                        self.newItemInfo.imagePath = path
+                        self.newItemInfo.updatePrototype()
                     }
                 }
             }
             return true
-        }
-    }
-
-    @MainActor
-    private func create() {
-        updatePrototype()
-        withAnimation {
-            Model.shared.createItem(basedOn: prototype, fromCreator: prototype.state.isCreator)
         }
     }
 }

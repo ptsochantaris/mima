@@ -141,8 +141,7 @@ enum Rendering {
             var config = StableDiffusionPipeline.Configuration(prompt: item.prompt)
             if !item.imagePath.isEmpty, let img = NSImage(contentsOfFile: item.imagePath) {
                 NSLog("Loading starting image from \(item.imagePath)")
-                let scaled = img.cgImage(forProposedRect: nil, context: nil, hints: nil)?.scaled(to: 512)
-                config.startingImage = scaled
+                config.startingImage = img.cgImage(forProposedRect: nil, context: nil, hints: nil)?.scaled(to: 512)
                 config.strength = item.strength
             }
             config.negativePrompt = item.negativePrompt
@@ -166,10 +165,11 @@ enum Rendering {
         if let i = result.first, let i {
             i.save(from: item)
             item.state = .done
-            return true
+        } else {
+            item.state = .error
         }
-
-        return false
+        
+        return true
     }
 
     @MainActor

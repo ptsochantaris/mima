@@ -27,7 +27,7 @@ struct ListItemView: View {
 
             switch entry.state {
             case .clonedCreator, .creating:
-                NewItem(prototype: entry)
+                NewItem(newItemInfo: NewItemModel(prototype: entry))
 
             case .queued:
                 EntryTitle(entry: entry)
