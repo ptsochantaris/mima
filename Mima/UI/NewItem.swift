@@ -90,22 +90,6 @@ struct NewItem: View {
                     Spacer()
                     VStack(alignment: .center, spacing: 20) {
                         Grid(alignment: .trailing) {
-                            GridRow {
-                                Text("Include")
-                                TextField("Random", text: $newItemInfo.promptText, onEditingChanged: { editing in
-                                    if !editing {
-                                        newItemInfo.updatePrototype()
-                                    }
-                                })
-                            }
-                            GridRow {
-                                Text("Exclude")
-                                TextField("", text: $newItemInfo.negativePromptText, onEditingChanged: { editing in
-                                    if !editing {
-                                        newItemInfo.updatePrototype()
-                                    }
-                                })
-                            }
                             if !newItemInfo.imagePath.isEmpty {
                                 GridRow {
                                     Text("Clone")
@@ -125,6 +109,22 @@ struct NewItem: View {
                                         .frame(width: 50)
                                     }
                                 }
+                            }
+                            GridRow {
+                                Text("Include")
+                                TextField("Random", text: $newItemInfo.promptText, onEditingChanged: { editing in
+                                    if !editing {
+                                        newItemInfo.updatePrototype()
+                                    }
+                                })
+                            }
+                            GridRow {
+                                Text("Exclude")
+                                TextField("", text: $newItemInfo.negativePromptText, onEditingChanged: { editing in
+                                    if !editing {
+                                        newItemInfo.updatePrototype()
+                                    }
+                                })
                             }
                         }
                         .font(.caption)

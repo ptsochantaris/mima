@@ -47,21 +47,29 @@ extension CGImage {
             return nil
         }
 
+        var notFoundCount = 0
         func getValue(for tagName: String) -> String {
             guard let tag = CGImageMetadataCopyTagWithPath(metadata, nil, "mima:\(tagName)" as CFString) else {
+                notFoundCount += 1
                 return ""
             }
             return CGImageMetadataTagCopyValue(tag) as? String ?? ""
         }
+                
+        let item = ListItem(prompt: getValue(for: "Prompt"),
+                            imagePath: getValue(for: "I2IPath"),
+                            strength: Float(getValue(for: "I2IStrength")) ?? ListItem.defaultStrength,
+                            negativePrompt: getValue(for: "NegativePrompt"),
+                            seed: UInt32(getValue(for: "Seed")),
+                            steps: Int(getValue(for: "Steps")) ?? ListItem.defaultSteps,
+                            guidance: Float(getValue(for: "Guidance")) ?? ListItem.defaultGuidance,
+                            state: .clonedCreator)
+        
+        if notFoundCount == 7 {
+            item.imagePath = url.path
+        }
 
-        return ListItem(prompt: getValue(for: "Prompt"),
-                        imagePath: getValue(for: "I2IPath"),
-                        strength: Float(getValue(for: "I2IStrength")) ?? ListItem.defaultStrength,
-                        negativePrompt: getValue(for: "NegativePrompt"),
-                        seed: UInt32(getValue(for: "Seed")),
-                        steps: Int(getValue(for: "Steps")) ?? ListItem.defaultSteps,
-                        guidance: Float(getValue(for: "Guidance")) ?? ListItem.defaultGuidance,
-                        state: .clonedCreator)
+        return item
     }
 }
 
