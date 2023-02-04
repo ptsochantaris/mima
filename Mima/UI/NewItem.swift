@@ -6,7 +6,9 @@ final class NewItemModel: ObservableObject {
     var prototype: ListItem
 
     @Published var promptText: String = ""
+    @Published var imageName: String = ""
     @Published var imagePath: String = ""
+    @Published var originalImagePath: String = ""
     @Published var strengthText: String = ""
     @Published var negativePromptText: String = ""
     @Published var seedText: String = ""
@@ -22,7 +24,9 @@ final class NewItemModel: ObservableObject {
         NSLog("Loading latest prototype data")
         promptText = prototype.prompt
                 
+        imageName = prototype.imageName
         imagePath = prototype.imagePath
+        originalImagePath = prototype.originalImagePath
 
         negativePromptText = prototype.negativePrompt
 
@@ -59,7 +63,9 @@ final class NewItemModel: ObservableObject {
             convertedStrength = ListItem.defaultStrength
         }
         prototype.update(prompt: promptText.trimmingCharacters(in: .whitespacesAndNewlines),
-                         imagePath: imagePath.trimmingCharacters(in: .whitespacesAndNewlines),
+                         imagePath: imagePath,
+                         originalImagePath: originalImagePath,
+                         imageName: imagePath.isEmpty ? "" : imageName,
                          strength: convertedStrength,
                          negativePrompt: negativePromptText.trimmingCharacters(in: .whitespacesAndNewlines),
                          seed: UInt32(seedText.trimmingCharacters(in: .whitespacesAndNewlines)),
@@ -90,11 +96,11 @@ struct NewItem: View {
                     Spacer()
                     VStack(alignment: .center, spacing: 20) {
                         Grid(alignment: .trailing) {
-                            if !newItemInfo.imagePath.isEmpty {
+                            if !newItemInfo.imageName.isEmpty {
                                 GridRow {
                                     Text("Clone")
                                     HStack(spacing: 4) {
-                                        TextField("No Source Image", text: $newItemInfo.imagePath, onEditingChanged: { editing in
+                                        TextField("No Source Image", text: $newItemInfo.imageName, onEditingChanged: { editing in
                                             if !editing {
                                                 newItemInfo.updatePrototype()
                                             }
@@ -192,29 +198,7 @@ struct NewItem: View {
                     }
             }
         }
-        .onDrop(of: [.image], delegate: CreatorDropDelegate(newItemInfo: newItemInfo))
+        .onDrop(of: [.image], delegate: ImageDropDelegate(newItemInfo: newItemInfo))
         .aspectRatio(1, contentMode: .fill)
-    }
-    
-    private final class CreatorDropDelegate: DropDelegate {
-        let newItemInfo: NewItemModel
-        init(newItemInfo: NewItemModel) {
-            self.newItemInfo = newItemInfo
-        }
-        func performDrop(info: DropInfo) -> Bool {
-            guard let provider = info.itemProviders(for: [.image]).first else {
-                return false
-            }
-            provider.loadInPlaceFileRepresentation(forTypeIdentifier: UTType.image.identifier) { [weak self] url, _, _ in
-                if let self, let path = url?.path {
-                    Task { @MainActor in
-                        NSLog("Adding an attached image path: \(path)")
-                        self.newItemInfo.imagePath = path
-                        self.newItemInfo.updatePrototype()
-                    }
-                }
-            }
-            return true
-        }
     }
 }

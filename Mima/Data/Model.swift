@@ -11,7 +11,7 @@ final class Model: ObservableObject, Codable {
 
     init() {
         entries = [
-            ListItem(prompt: "A colorful bowl of fruit on a wooden table", imagePath: "", strength: ListItem.defaultStrength, negativePrompt: "Berries", seed: nil, steps: ListItem.defaultSteps, guidance: ListItem.defaultGuidance, state: .creating)
+            ListItem(prompt: "A colorful bowl of fruit on a wooden table", imagePath: "", originalImagePath: "", imageName: "", strength: ListItem.defaultStrength, negativePrompt: "Berries", seed: nil, steps: ListItem.defaultSteps, guidance: ListItem.defaultGuidance, state: .creating)
         ]
         renderQueue = ContiguousArray<UUID>()
     }
@@ -40,6 +40,17 @@ final class Model: ObservableObject, Codable {
 
     @MainActor
     private var rendering = false
+    
+    private let cloningAssets = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appending(path: "cloningAssets", directoryHint: .isDirectory)
+    
+    func ingestCloningAsset(from url: URL) -> String {
+        if !FileManager.default.fileExists(atPath: cloningAssets.path) {
+            try? FileManager.default.createDirectory(at: cloningAssets, withIntermediateDirectories: true)
+        }
+        let destinationUrl = cloningAssets.appending(path: UUID().uuidString, directoryHint: .notDirectory)
+        try? FileManager.default.copyItem(at: url, to: destinationUrl)
+        return destinationUrl.path
+    }
 }
 
 @MainActor
@@ -181,6 +192,20 @@ extension Model {
             NSLog("State saved")
         } catch {
             NSLog("Error saving state: \(error)")
+        }
+        
+        var imagePaths = Set<String>()
+        for entry in entries {
+            if !entry.imagePath.isEmpty {
+                imagePaths.insert(URL(filePath: entry.imagePath).lastPathComponent)
+            }
+        }
+        let fm = FileManager.default
+        for item in (try? fm.contentsOfDirectory(atPath: cloningAssets.path)) ?? [] {
+            if !item.hasPrefix("."), !imagePaths.contains(item) {
+                try? fm.removeItem(at: cloningAssets.appending(path: item))
+                NSLog("Clearing unused attachment \(item)")
+            }
         }
     }
 

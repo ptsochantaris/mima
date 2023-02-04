@@ -29,7 +29,7 @@ struct EntryName: View {
             }
 
             if !entry.imagePath.isEmpty {
-                Text("Cloning \(URL(filePath: entry.imagePath).lastPathComponent) at \(Int(entry.strength * 100))%")
+                Text("Cloning \(entry.imageName) at \(Int(entry.strength * 100))%")
                     .font(.caption)
             }
 

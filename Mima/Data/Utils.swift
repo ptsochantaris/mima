@@ -20,6 +20,7 @@ extension CGImage {
             "Steps": String(item.steps),
             "Guidance": String(item.guidance),
             "I2IPath": String(item.imagePath),
+            "I2IName": String(item.imageName),
             "I2IStrength": String(item.strength)
         ]
 
@@ -57,7 +58,9 @@ extension CGImage {
         }
                 
         let item = ListItem(prompt: getValue(for: "Prompt"),
-                            imagePath: getValue(for: "I2IPath"),
+                            imagePath: "",
+                            originalImagePath: getValue(for: "I2IPath"),
+                            imageName: getValue(for: "I2IName"),
                             strength: Float(getValue(for: "I2IStrength")) ?? ListItem.defaultStrength,
                             negativePrompt: getValue(for: "NegativePrompt"),
                             seed: UInt32(getValue(for: "Seed")),
@@ -65,8 +68,13 @@ extension CGImage {
                             guidance: Float(getValue(for: "Guidance")) ?? ListItem.defaultGuidance,
                             state: .clonedCreator)
         
-        if notFoundCount == 7 {
-            item.imagePath = url.path
+        if notFoundCount == 8 {
+            item.originalImagePath = url.path
+        }
+        
+        if !item.originalImagePath.isEmpty {
+            item.imageName = url.lastPathComponent
+            item.imagePath = Model.shared.ingestCloningAsset(from: URL(filePath: item.originalImagePath))
         }
 
         return item
@@ -74,12 +82,31 @@ extension CGImage {
 }
 
 final class ImageDropDelegate: DropDelegate {
+    private let newItemInfo: NewItemModel?
+    init(newItemInfo: NewItemModel? = nil) {
+        self.newItemInfo = newItemInfo
+    }
     func performDrop(info: DropInfo) -> Bool {
         guard let provider = info.itemProviders(for: [.url]).first else {
             return false
         }
-        provider.loadObject(ofClass: NSURL.self) { url, error in
-            if let url = url as? URL, let entry = CGImage.checkForEntry(from: url) {
+        _ = provider.loadObject(ofClass: URL.self) { url, error in
+            if let error {
+                NSLog("Drop error: \(error)")
+                return
+            }
+            guard let url else {
+                NSLog("Drop error - no URL or error")
+                return
+            }
+            if let info = self.newItemInfo {
+                Task { @MainActor in
+                    info.originalImagePath = url.path
+                    info.imageName = url.lastPathComponent
+                    info.imagePath = Model.shared.ingestCloningAsset(from: url)
+                    info.updatePrototype()
+                }
+            } else if let entry = CGImage.checkForEntry(from: url) {
                 Task { @MainActor in
                     Model.shared.add(entry: entry)
                 }
