@@ -175,8 +175,6 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         try pipeline.loadResources()
         NSLog("Pipeline ready")
         await PipelineState.shared.setPhase(to: .ready(pipeline))
-        Task {
-            await Model.shared.startRenderingIfNeeded()
-        }
+        await Model.shared.startRenderingIfNeeded()
     }
 }

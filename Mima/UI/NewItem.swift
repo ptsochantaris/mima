@@ -62,10 +62,11 @@ final class NewItemModel: ObservableObject {
         } else {
             convertedStrength = ListItem.defaultStrength
         }
+        let imageName = imageName.trimmingCharacters(in: .whitespacesAndNewlines)
         prototype.update(prompt: promptText.trimmingCharacters(in: .whitespacesAndNewlines),
-                         imagePath: imagePath,
-                         originalImagePath: originalImagePath,
-                         imageName: imagePath.isEmpty ? "" : imageName,
+                         imagePath: imageName.isEmpty ? "" : imagePath,
+                         originalImagePath: imageName.isEmpty ? "" : originalImagePath,
+                         imageName: imageName,
                          strength: convertedStrength,
                          negativePrompt: negativePromptText.trimmingCharacters(in: .whitespacesAndNewlines),
                          seed: UInt32(seedText.trimmingCharacters(in: .whitespacesAndNewlines)),

@@ -8,6 +8,8 @@ final class Model: ObservableObject, Codable {
     @Published var tipJar = TipJar()
 
     private var renderQueue: ContiguousArray<UUID>
+    private var rendering = false
+    private static let cloningAssets = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appending(path: "cloningAssets", directoryHint: .isDirectory)
 
     init() {
         entries = [
@@ -37,13 +39,8 @@ final class Model: ObservableObject, Codable {
         try container.encode(entries, forKey: .entries)
         try container.encode(renderQueue, forKey: .renderQueue)
     }
-
-    @MainActor
-    private var rendering = false
     
-    private let cloningAssets = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appending(path: "cloningAssets", directoryHint: .isDirectory)
-    
-    func ingestCloningAsset(from url: URL) -> String {
+    static func ingestCloningAsset(from url: URL) -> String {
         if !FileManager.default.fileExists(atPath: cloningAssets.path) {
             try? FileManager.default.createDirectory(at: cloningAssets, withIntermediateDirectories: true)
         }
@@ -99,8 +96,8 @@ extension Model {
         return nil
     }
 
-    @MainActor
     func startRenderingIfNeeded() async {
+        assert(Thread.isMainThread)
         if rendering {
             NSLog("Already rendering")
             return
@@ -114,7 +111,7 @@ extension Model {
             return
         }
         rendering = true
-        Task { @MainActor in
+        Task {
             while let entry = nextEntryToRender(), await Rendering.render(entry) {
                 save()
             }
@@ -137,8 +134,8 @@ extension Model {
         renderQueue.append(id)
         Task {
             await startRenderingIfNeeded()
+            save()
         }
-        save()
     }
 
     func createItem(basedOn prototype: ListItem, fromCreator: Bool) {
@@ -201,6 +198,7 @@ extension Model {
             }
         }
         let fm = FileManager.default
+        let cloningAssets = Model.cloningAssets
         for item in (try? fm.contentsOfDirectory(atPath: cloningAssets.path)) ?? [] {
             if !item.hasPrefix("."), !imagePaths.contains(item) {
                 try? fm.removeItem(at: cloningAssets.appending(path: item))
@@ -214,15 +212,14 @@ extension Model {
             await PipelineBootup().startup()
         }
 
-        guard let data = try? Data(contentsOf: indexFileUrl) else {
-            return Model()
+        if let data = try? Data(contentsOf: indexFileUrl) {
+            do {
+                return try JSONDecoder().decode(Model.self, from: data)
+            } catch {
+                NSLog("Error loading model: \(error.localizedDescription)")
+            }
         }
-
-        do {
-            return try JSONDecoder().decode(Model.self, from: data)
-        } catch {
-            NSLog("Error loading model: \(error.localizedDescription)")
-            return Model()
-        }
+        
+        return Model()
     }()
 }

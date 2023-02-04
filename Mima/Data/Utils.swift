@@ -74,7 +74,7 @@ extension CGImage {
         
         if !item.originalImagePath.isEmpty {
             item.imageName = url.lastPathComponent
-            item.imagePath = Model.shared.ingestCloningAsset(from: URL(filePath: item.originalImagePath))
+            item.imagePath = Model.ingestCloningAsset(from: URL(filePath: item.originalImagePath))
         }
 
         return item
@@ -103,13 +103,11 @@ final class ImageDropDelegate: DropDelegate {
                 Task { @MainActor in
                     info.originalImagePath = url.path
                     info.imageName = url.lastPathComponent
-                    info.imagePath = Model.shared.ingestCloningAsset(from: url)
+                    info.imagePath = Model.ingestCloningAsset(from: url)
                     info.updatePrototype()
                 }
             } else if let entry = CGImage.checkForEntry(from: url) {
-                Task { @MainActor in
-                    Model.shared.add(entry: entry)
-                }
+                Model.shared.add(entry: entry)
             }
         }
         return true
