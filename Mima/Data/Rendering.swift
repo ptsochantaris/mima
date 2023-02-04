@@ -1,9 +1,9 @@
 import CoreGraphics
 import CoreML
 import Foundation
-import StableDiffusion
 import SwiftUI
 import ZIPFoundation
+@preconcurrency import StableDiffusion
 
 enum WarmUpPhase {
     case booting, downloading(progress: Float), downloadingError(error: Error), initialising, initialisingError(error: Error), expanding
@@ -123,18 +123,23 @@ enum Rendering {
         case .setup:
             break
         case .ready:
-            item.state = .rendering(step: 0, total: Float(item.steps))
+            Task { @MainActor in
+                item.state = .rendering(step: 0, total: Float(item.steps))
+            }
         case .shutdown:
             return false
         }
 
         let result: [CGImage?] = await Task { @RenderActor in
-            guard case let .ready(pipeline) = await PipelineState.shared.phase, !item.state.isCancelled else {
+            guard
+                case let .ready(pipeline) = await PipelineState.shared.phase,
+                (await MainActor.run { item.state.isCancelled }) == false
+            else {
                 return []
             }
 
+            NSLog("Starting render of item \(item.id)")
             Task { @MainActor in
-                NSLog("Starting render of item \(item.id)")
                 item.state = .rendering(step: 0, total: Float(item.steps))
             }
             

@@ -25,10 +25,8 @@ final class Model: ObservableObject, Codable {
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-
         entries = try values.decode(ContiguousArray<ListItem>.self, forKey: .entries)
         renderQueue = try values.decode(ContiguousArray<UUID>.self, forKey: .renderQueue)
-
         Task {
             await startRenderingIfNeeded()
         }
@@ -48,6 +46,22 @@ final class Model: ObservableObject, Codable {
         try? FileManager.default.copyItem(at: url, to: destinationUrl)
         return destinationUrl.path
     }
+    
+    static let shared: Model = {
+        Task {
+            await PipelineBootup().startup()
+        }
+
+        if let data = try? Data(contentsOf: indexFileUrl) {
+            do {
+                return try JSONDecoder().decode(Model.self, from: data)
+            } catch {
+                NSLog("Error loading model: \(error.localizedDescription)")
+            }
+        }
+        
+        return Model()
+    }()
 }
 
 @MainActor
@@ -97,7 +111,6 @@ extension Model {
     }
 
     func startRenderingIfNeeded() async {
-        assert(Thread.isMainThread)
         if rendering {
             NSLog("Already rendering")
             return
@@ -206,20 +219,4 @@ extension Model {
             }
         }
     }
-
-    static let shared: Model = {
-        Task { @RenderActor in
-            await PipelineBootup().startup()
-        }
-
-        if let data = try? Data(contentsOf: indexFileUrl) {
-            do {
-                return try JSONDecoder().decode(Model.self, from: data)
-            } catch {
-                NSLog("Error loading model: \(error.localizedDescription)")
-            }
-        }
-        
-        return Model()
-    }()
 }
