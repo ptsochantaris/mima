@@ -1,9 +1,22 @@
 import CoreGraphics
 import CoreML
 import Foundation
+@preconcurrency import StableDiffusion
 import SwiftUI
 import ZIPFoundation
-@preconcurrency import StableDiffusion
+
+#if canImport(Cocoa)
+typealias IMAGE = NSImage
+
+extension NSImage {
+    var cgImage: CGImage? {
+        cgImage(forProposedRect: nil, context: nil, hints: nil)
+    }
+}
+
+#else
+typealias IMAGE = UIImage
+#endif
 
 enum WarmUpPhase {
     case booting, downloading(progress: Float), downloadingError(error: Error), initialising, initialisingError(error: Error), expanding
@@ -29,7 +42,7 @@ final actor PipelineState: ObservableObject {
                 return warmupPhase
             }
         }
-        
+
         var booting: Bool {
             switch self {
             case .ready:
@@ -38,8 +51,7 @@ final actor PipelineState: ObservableObject {
                 return true
             case let .setup(warmupPhase):
                 switch warmupPhase {
-                case .booting, .expanding, .initialising, .downloading:
-                    return true
+                case .booting, .downloading, .expanding, .initialising:  return true
                 case .downloadingError, .initialisingError:
                     return false
                 }
@@ -48,7 +60,7 @@ final actor PipelineState: ObservableObject {
     }
 
     private(set) var phase = Phase.setup(warmupPhase: .booting)
-    
+
     func setPhase(to newPhase: Phase) {
         phase = newPhase
         Task { @MainActor in
@@ -65,7 +77,7 @@ final actor PipelineState: ObservableObject {
             setPhase(to: .shutdown)
             phase = .shutdown
             pipeline.unloadResources()
-            NSLog("Pipeline shutdown")
+            log("Pipeline shutdown")
         }
     }
 }
@@ -96,7 +108,7 @@ extension CGImage {
             let verticalScale = sideLength / H
             scaledImageSize = CGSize(width: W * verticalScale, height: sideLength)
         }
-        
+
         let c = CGContext(data: nil,
                           width: Int(sideLength),
                           height: Int(sideLength),
@@ -110,7 +122,7 @@ extension CGImage {
                                      y: (sideLength - scaledImageSize.height) * 0.5,
                                      width: scaledImageSize.width,
                                      height: scaledImageSize.height)
-        
+
         c.draw(self, in: scaledImageRect)
         return c.makeImage()
     }
@@ -138,15 +150,15 @@ enum Rendering {
                 return []
             }
 
-            NSLog("Starting render of item \(item.id)")
+            log("Starting render of item \(item.id)")
             Task { @MainActor in
                 item.state = .rendering(step: 0, total: Float(item.steps))
             }
-            
+
             var config = StableDiffusionPipeline.Configuration(prompt: item.prompt)
-            if !item.imagePath.isEmpty, let img = NSImage(contentsOfFile: item.imagePath) {
-                NSLog("Loading starting image from \(item.imagePath)")
-                config.startingImage = img.cgImage(forProposedRect: nil, context: nil, hints: nil)?.scaled(to: 512)
+            if !item.imagePath.isEmpty, let img = IMAGE(contentsOfFile: item.imagePath) {
+                log("Loading starting image from \(item.imagePath)")
+                config.startingImage = img.cgImage?.scaled(to: 512)
                 config.strength = item.strength
             }
             config.negativePrompt = item.negativePrompt
@@ -173,7 +185,7 @@ enum Rendering {
         } else {
             item.state = .error
         }
-        
+
         return true
     }
 

@@ -14,9 +14,11 @@ struct ItemBackground: View {
 struct ListItemView: View {
     @ObservedObject private var entry: ListItem
     @State private var showPicker = false
+    private let scrollViewProxy: ScrollViewProxy
 
-    init(entry: ListItem) {
+    init(entry: ListItem, scrollViewProxy: ScrollViewProxy) {
         self.entry = entry
+        self.scrollViewProxy = scrollViewProxy
     }
 
     @State private var visibleControls = false
@@ -27,7 +29,7 @@ struct ListItemView: View {
 
             switch entry.state {
             case .clonedCreator, .creating:
-                NewItem(newItemInfo: NewItemModel(prototype: entry))
+                NewItem(newItemInfo: NewItemModel(prototype: entry), scrollViewProxy: scrollViewProxy)
 
             case .queued:
                 EntryTitle(entry: entry)

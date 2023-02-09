@@ -10,7 +10,7 @@ struct GaugeProgressStyle: ProgressViewStyle {
                     .stroke(.tint.opacity(0.3), style: StrokeStyle(lineWidth: 3.5, lineCap: .butt))
                     .rotationEffect(.degrees(-90))
             }
-            
+
             Circle()
                 .trim(from: 0, to: fractionCompleted)
                 .stroke(.tint, style: StrokeStyle(lineWidth: 3.5, lineCap: .butt))

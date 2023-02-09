@@ -57,10 +57,10 @@ final class TipJar: ObservableObject {
                 tip1.fetchedProduct = products[0]
                 tip2.fetchedProduct = products[1]
                 tip3.fetchedProduct = products[2]
-                NSLog("Fetched tip list")
+                log("Fetched tip list")
                 state = .ready
             } catch {
-                NSLog("Error fetching tip jar: \(error.localizedDescription)")
+                log("Error fetching tip jar: \(error.localizedDescription)")
                 state = .error(error)
             }
         }

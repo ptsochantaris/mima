@@ -26,13 +26,14 @@
 		164DD47C2982EF97006B8D6F /* PipelinePhaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164DD47B2982EF97006B8D6F /* PipelinePhaseView.swift */; };
 		164DD47E2982F05A006B8D6F /* DismissButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164DD47D2982F05A006B8D6F /* DismissButton.swift */; };
 		164DD48029831728006B8D6F /* ButtonBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164DD47F29831728006B8D6F /* ButtonBackground.swift */; };
+		16501BDB29957AA000B77985 /* StableDiffusion in Frameworks */ = {isa = PBXBuildFile; productRef = 16501BDA29957AA000B77985 /* StableDiffusion */; };
 		165150E7297DCC5A00124967 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165150E6297DCC5A00124967 /* AboutView.swift */; };
 		166142482974BD5800BFA494 /* MimaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166142472974BD5800BFA494 /* MimaApp.swift */; };
 		1661424C2974BD5900BFA494 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1661424B2974BD5900BFA494 /* Assets.xcassets */; };
 		1661425F2974D15E00BFA494 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1661425E2974D15E00BFA494 /* Utils.swift */; };
 		16622AC7297D996300C8C7F0 /* Mac.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16622AC6297D996300C8C7F0 /* Mac.swift */; };
-		16642E5C298B14C900D7BB6B /* StableDiffusion in Frameworks */ = {isa = PBXBuildFile; productRef = 16642E5B298B14C900D7BB6B /* StableDiffusion */; };
 		166A262E297EE7C600A1BB50 /* Rendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166A262D297EE7C600A1BB50 /* Rendering.swift */; };
+		16F0E2EB2995952D00F71B01 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F0E2EA2995952D00F71B01 /* Logging.swift */; };
 		16F195A629889AD300E2862C /* BootWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F195A529889AD300E2862C /* BootWatcher.swift */; };
 /* End PBXBuildFile section */
 
@@ -65,6 +66,7 @@
 		16622AC6297D996300C8C7F0 /* Mac.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mac.swift; sourceTree = "<group>"; };
 		166A262D297EE7C600A1BB50 /* Rendering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rendering.swift; sourceTree = "<group>"; };
 		169732BC297F0C2700DFF596 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		16F0E2EA2995952D00F71B01 /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		16F195A529889AD300E2862C /* BootWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootWatcher.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -74,7 +76,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1630C9A12981B68B005A0688 /* ZIPFoundation in Frameworks */,
-				16642E5C298B14C900D7BB6B /* StableDiffusion in Frameworks */,
+				16501BDB29957AA000B77985 /* StableDiffusion in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,6 +123,7 @@
 				1610EFC3298443DE00266EEA /* PipelineBootup.swift */,
 				1635F76129869EBB00B6FC6A /* TipJar.swift */,
 				16F195A529889AD300E2862C /* BootWatcher.swift */,
+				16F0E2EA2995952D00F71B01 /* Logging.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -166,7 +169,7 @@
 			name = Mima;
 			packageProductDependencies = (
 				1630C9A02981B68B005A0688 /* ZIPFoundation */,
-				16642E5B298B14C900D7BB6B /* StableDiffusion */,
+				16501BDA29957AA000B77985 /* StableDiffusion */,
 			);
 			productName = Mima;
 			productReference = 166142442974BD5800BFA494 /* Mima.app */;
@@ -198,7 +201,7 @@
 			mainGroup = 1661423B2974BD5800BFA494;
 			packageReferences = (
 				1630C99F2981B68B005A0688 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
-				16642E5A298B14C900D7BB6B /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */,
+				16501BD929957AA000B77985 /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */,
 			);
 			productRefGroup = 166142452974BD5800BFA494 /* Products */;
 			projectDirPath = "";
@@ -236,6 +239,7 @@
 				16398DBB2986C408002214EA /* TipList.swift in Sources */,
 				1625573C297C3FBF0027BD4F /* MimaButton.swift in Sources */,
 				166A262E297EE7C600A1BB50 /* Rendering.swift in Sources */,
+				16F0E2EB2995952D00F71B01 /* Logging.swift in Sources */,
 				166142482974BD5800BFA494 /* MimaApp.swift in Sources */,
 				16255736297BFA430027BD4F /* NewItem.swift in Sources */,
 				1625573E297C3FD90027BD4F /* GaugeProgressStyle.swift in Sources */,
@@ -307,6 +311,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				MARKETING_VERSION = 1.0.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -364,6 +369,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
 				LLVM_LTO = YES;
 				MARKETING_VERSION = 1.0.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -483,11 +489,11 @@
 				minimumVersion = 0.9.9;
 			};
 		};
-		16642E5A298B14C900D7BB6B /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */ = {
+		16501BD929957AA000B77985 /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/littleowl/ml-stable-diffusion";
+			repositoryURL = "https://github.com/apple/ml-stable-diffusion";
 			requirement = {
-				branch = "image2image-swift";
+				branch = main;
 				kind = branch;
 			};
 		};
@@ -499,9 +505,9 @@
 			package = 1630C99F2981B68B005A0688 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
 		};
-		16642E5B298B14C900D7BB6B /* StableDiffusion */ = {
+		16501BDA29957AA000B77985 /* StableDiffusion */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 16642E5A298B14C900D7BB6B /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */;
+			package = 16501BD929957AA000B77985 /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */;
 			productName = StableDiffusion;
 		};
 /* End XCSwiftPackageProductDependency section */

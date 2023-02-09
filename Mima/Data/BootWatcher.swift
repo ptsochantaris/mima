@@ -1,5 +1,5 @@
-import Foundation
 import Combine
+import Foundation
 import SwiftUI
 
 @MainActor
@@ -8,7 +8,7 @@ final class BootWatcher: ObservableObject {
     private var observer: Cancellable?
 
     @Published var booting = PipelineState.shared.reportedPhase.booting
-    
+
     init() {
         observer = pipeline.objectWillChange.receive(on: DispatchQueue.main).sink { [weak self] in
             guard let self else { return }
@@ -18,7 +18,7 @@ final class BootWatcher: ObservableObject {
             }
         }
     }
-    
+
     deinit {
         observer?.cancel()
     }

@@ -37,7 +37,7 @@ final class Model: ObservableObject, Codable {
         try container.encode(entries, forKey: .entries)
         try container.encode(renderQueue, forKey: .renderQueue)
     }
-    
+
     static func ingestCloningAsset(from url: URL) -> String {
         if !FileManager.default.fileExists(atPath: cloningAssets.path) {
             try? FileManager.default.createDirectory(at: cloningAssets, withIntermediateDirectories: true)
@@ -46,7 +46,7 @@ final class Model: ObservableObject, Codable {
         try? FileManager.default.copyItem(at: url, to: destinationUrl)
         return destinationUrl.path
     }
-    
+
     static let shared: Model = {
         Task {
             await PipelineBootup().startup()
@@ -56,10 +56,10 @@ final class Model: ObservableObject, Codable {
             do {
                 return try JSONDecoder().decode(Model.self, from: data)
             } catch {
-                NSLog("Error loading model: \(error.localizedDescription)")
+                log("Error loading model: \(error.localizedDescription)")
             }
         }
-        
+
         return Model()
     }()
 }
@@ -70,7 +70,7 @@ extension Model {
         entries.removeAll { $0.state.isWaiting }
         save()
     }
-    
+
     func cancelAllRendering() {
         for entry in entries where entry.state.isRendering {
             entry.state = .queued
@@ -112,15 +112,15 @@ extension Model {
 
     func startRenderingIfNeeded() async {
         if rendering {
-            NSLog("Already rendering")
+            log("Already rendering")
             return
         }
         if renderQueue.isEmpty {
-            NSLog("Nothing to render")
+            log("Nothing to render")
             return
         }
         if case .setup = await PipelineState.shared.phase {
-            NSLog("Pipeline not ready")
+            log("Pipeline not ready")
             return
         }
         rendering = true
@@ -199,11 +199,11 @@ extension Model {
             let entryIds = Set(entries.filter(\.state.shouldStayInRenderQueue).map(\.id))
             renderQueue.removeAll { !entryIds.contains($0) }
             try JSONEncoder().encode(self).write(to: Model.indexFileUrl, options: .atomic)
-            NSLog("State saved")
+            log("State saved")
         } catch {
-            NSLog("Error saving state: \(error)")
+            log("Error saving state: \(error)")
         }
-        
+
         var imagePaths = Set<String>()
         for entry in entries {
             if !entry.imagePath.isEmpty {
@@ -215,7 +215,7 @@ extension Model {
         for item in (try? fm.contentsOfDirectory(atPath: cloningAssets.path)) ?? [] {
             if !item.hasPrefix("."), !imagePaths.contains(item) {
                 try? fm.removeItem(at: cloningAssets.appending(path: item))
-                NSLog("Clearing unused attachment \(item)")
+                log("Clearing unused attachment \(item)")
             }
         }
     }

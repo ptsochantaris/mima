@@ -5,25 +5,25 @@ import UniformTypeIdentifiers
 final class NewItemModel: ObservableObject {
     var prototype: ListItem
 
-    @Published var promptText: String = ""
-    @Published var imageName: String = ""
-    @Published var imagePath: String = ""
-    @Published var originalImagePath: String = ""
-    @Published var strengthText: String = ""
-    @Published var negativePromptText: String = ""
-    @Published var seedText: String = ""
-    @Published var stepText: String = ""
-    @Published var guidanceText: String = ""
-
+    @Published var promptText = ""
+    @Published var imageName = ""
+    @Published var imagePath = ""
+    @Published var originalImagePath = ""
+    @Published var strengthText = ""
+    @Published var negativePromptText = ""
+    @Published var seedText = ""
+    @Published var stepText = ""
+    @Published var guidanceText = ""
+    
     init(prototype: ListItem) {
         self.prototype = prototype
         refreshFromPrototype()
     }
-    
+
     func refreshFromPrototype() {
-        NSLog("Loading latest prototype data")
+        log("Loading latest prototype data")
         promptText = prototype.prompt
-                
+
         imageName = prototype.imageName
         imagePath = prototype.imagePath
         originalImagePath = prototype.originalImagePath
@@ -54,7 +54,7 @@ final class NewItemModel: ObservableObject {
             guidanceText = String(prototype.guidance)
         }
     }
-    
+
     func updatePrototype() {
         let convertedStrength: Float
         if let s = Float(strengthText.trimmingCharacters(in: .whitespacesAndNewlines)) {
@@ -77,18 +77,27 @@ final class NewItemModel: ObservableObject {
             refreshFromPrototype()
         }
     }
-    
-    func create() {
+
+    func create(scrollViewProxy: ScrollViewProxy) {
         updatePrototype()
-        withAnimation {
+        withAnimation(.easeInOut(duration: 0.2)) {
             Model.shared.createItem(basedOn: prototype, fromCreator: prototype.state.isCreator)
+        }
+        if prototype.state.isCreator {
+            Task {
+                try? await Task.sleep(for: .milliseconds(200))
+                withAnimation {
+                    scrollViewProxy.scrollTo(bottomId, anchor: .bottom)
+                }
+            }
         }
     }
 }
 
 struct NewItem: View {
     @StateObject var newItemInfo: NewItemModel
-
+    let scrollViewProxy: ScrollViewProxy
+    
     var body: some View {
         GeometryReader { proxy in
             ZStack {
@@ -136,7 +145,7 @@ struct NewItem: View {
                         }
                         .font(.caption)
                         .onSubmit {
-                            newItemInfo.create()
+                            newItemInfo.create(scrollViewProxy: scrollViewProxy)
                         }
 
                         VStack {
@@ -171,7 +180,7 @@ struct NewItem: View {
                                     .frame(width: 70)
                                 }
                                 .onSubmit {
-                                    newItemInfo.create()
+                                    newItemInfo.create(scrollViewProxy: scrollViewProxy)
                                 }
                             }
                         }
@@ -179,7 +188,7 @@ struct NewItem: View {
                         .multilineTextAlignment(.center)
 
                         Button {
-                            newItemInfo.create()
+                            newItemInfo.create(scrollViewProxy: scrollViewProxy)
                         } label: {
                             Text("Create")
                         }

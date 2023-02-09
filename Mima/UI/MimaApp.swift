@@ -21,6 +21,8 @@ import SwiftUI
     }
 #endif
 
+let bottomId = "bottomId"
+
 private struct ContentView: View {
     @ObservedObject private var model = Model.shared
     @ObservedObject private var pipeline = PipelineState.shared
@@ -30,18 +32,21 @@ private struct ContentView: View {
             if let phase = pipeline.reportedPhase.showStatus {
                 PipelinePhaseView(phase: phase)
             }
-            ScrollView {
-                LazyVGrid(columns: [
-                    GridItem(.adaptive(minimum: 300, maximum: 1024), spacing: 16)
-                ], spacing: 16) {
-                    ForEach(model.entries) { entry in
-                        ListItemView(entry: entry)
-                            .cornerRadius(21)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVGrid(columns: [
+                        GridItem(.adaptive(minimum: 300, maximum: 1024), spacing: 16)
+                    ], spacing: 16) {
+                        ForEach(model.entries) { entry in
+                            ListItemView(entry: entry, scrollViewProxy: proxy)
+                                .cornerRadius(21)
+                        }
                     }
+                    .padding()
+                    .id(bottomId)
                 }
-                .padding()
+                .layoutPriority(2)
             }
-            .layoutPriority(2)
         }
         .onDrop(of: [.image], delegate: ImageDropDelegate())
         .frame(minWidth: 360)
@@ -119,7 +124,8 @@ struct MimaApp: App {
                                     await PipelineBootup().startup()
                                 }
                                 Model.shared.cancelAllRendering()
-                            })
+                            }
+                        )
                         Toggle(version.displayName, isOn: isOn)
                             .disabled(isOn.wrappedValue || bootWatcher.booting)
                     }
@@ -151,6 +157,7 @@ struct MimaApp: App {
 
         WindowGroup("About Mima", id: "about") {
             AboutView()
+            #if canImport(Cocoa)
                 .onAppear {
                     Task {
                         if let wnd = NSApp.windows.first(where: { $0.title == "About Mima" }) {
@@ -158,6 +165,7 @@ struct MimaApp: App {
                         }
                     }
                 }
+            #endif
         }
         #if canImport(Cocoa)
         .windowResizability(.contentSize)
@@ -165,6 +173,7 @@ struct MimaApp: App {
 
         WindowGroup("Mima Help", id: "help") {
             HelpView()
+            #if canImport(Cocoa)
                 .onAppear {
                     Task {
                         if let wnd = NSApp.windows.first(where: { $0.title == "Mima Help" }) {
@@ -172,6 +181,7 @@ struct MimaApp: App {
                         }
                     }
                 }
+            #endif
         }
         #if canImport(Cocoa)
         .windowResizability(.contentSize)

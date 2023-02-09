@@ -32,7 +32,6 @@ struct EntryName: View {
                 Text("Cloning \(entry.imageName) at \(Int(entry.strength * 100))%")
                     .font(.caption)
             }
-
         }
         .multilineTextAlignment(.center)
     }

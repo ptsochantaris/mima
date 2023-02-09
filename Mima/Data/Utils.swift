@@ -38,7 +38,7 @@ extension CGImage {
 
     static func checkForEntry(from url: URL) -> ListItem? {
         if url.path.hasPrefix(NSTemporaryDirectory()) {
-            NSLog("Mima to Mima drop ignored")
+            log("Mima to Mima drop ignored")
             return nil
         }
         guard let imageSource = CGImageSourceCreateWithURL(url as CFURL, nil) else {
@@ -56,7 +56,7 @@ extension CGImage {
             }
             return CGImageMetadataTagCopyValue(tag) as? String ?? ""
         }
-                
+
         let item = ListItem(prompt: getValue(for: "Prompt"),
                             imagePath: "",
                             originalImagePath: getValue(for: "I2IPath"),
@@ -67,11 +67,11 @@ extension CGImage {
                             steps: Int(getValue(for: "Steps")) ?? ListItem.defaultSteps,
                             guidance: Float(getValue(for: "Guidance")) ?? ListItem.defaultGuidance,
                             state: .clonedCreator)
-        
+
         if notFoundCount == 8 {
             item.originalImagePath = url.path
         }
-        
+
         if !item.originalImagePath.isEmpty {
             item.imageName = url.lastPathComponent
             item.imagePath = Model.ingestCloningAsset(from: URL(filePath: item.originalImagePath))
@@ -86,17 +86,18 @@ final class ImageDropDelegate: DropDelegate {
     init(newItemInfo: NewItemModel? = nil) {
         self.newItemInfo = newItemInfo
     }
+
     func performDrop(info: DropInfo) -> Bool {
         guard let provider = info.itemProviders(for: [.url]).first else {
             return false
         }
         _ = provider.loadObject(ofClass: URL.self) { url, error in
             if let error {
-                NSLog("Drop error: \(error)")
+                log("Drop error: \(error)")
                 return
             }
             guard let url else {
-                NSLog("Drop error - no URL or error")
+                log("Drop error - no URL or error")
                 return
             }
             if let info = self.newItemInfo {
