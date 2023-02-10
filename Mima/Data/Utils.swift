@@ -66,7 +66,7 @@ extension CGImage {
                             seed: UInt32(getValue(for: "Seed")),
                             steps: Int(getValue(for: "Steps")) ?? ListItem.defaultSteps,
                             guidance: Float(getValue(for: "Guidance")) ?? ListItem.defaultGuidance,
-                            state: .clonedCreator)
+                            state: .cloning(needsFlash: true))
 
         if notFoundCount == 8 {
             item.originalImagePath = url.path
@@ -79,6 +79,10 @@ extension CGImage {
 
         return item
     }
+}
+
+extension Notification.Name {
+    static let ScrollToBottom = Notification.Name("ScrollToBottom")
 }
 
 final class ImageDropDelegate: DropDelegate {
@@ -108,7 +112,12 @@ final class ImageDropDelegate: DropDelegate {
                     info.updatePrototype()
                 }
             } else if let entry = CGImage.checkForEntry(from: url) {
-                Model.shared.add(entry: entry)
+                Task { @MainActor in
+                    withAnimation {
+                        Model.shared.add(entry: entry)
+                    }
+                    NotificationCenter.default.post(name: .ScrollToBottom, object: nil)
+                }
             }
         }
         return true

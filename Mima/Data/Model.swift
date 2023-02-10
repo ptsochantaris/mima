@@ -66,6 +66,16 @@ final class Model: ObservableObject, Codable {
 
 @MainActor
 extension Model {
+    var useSafetyChecker: Bool {
+        get {
+            UserDefaults.standard.bool(forKey: "useSafetyChecker")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "useSafetyChecker")
+            objectWillChange.send()
+        }
+    }
+
     func removeAllQueued() {
         entries.removeAll { $0.state.isWaiting }
         save()
@@ -166,8 +176,11 @@ extension Model {
     }
 
     func add(entry: ListItem) {
-        entries.insert(entry, at: 0)
-        submitToQueue(entry.id)
+        if let creatorIndex = entries.firstIndex(where: { $0.state.isCreator }) {
+            entries.insert(entry, at: creatorIndex)
+        } else {
+            entries.append(entry)
+        }
     }
 
     func prioritise(_ item: ListItem) {
@@ -186,7 +199,7 @@ extension Model {
 
     func insertCreator(for entry: ListItem) {
         if let index = entries.firstIndex(where: { $0.id == entry.id }) {
-            let newEntry = entry.clone(as: .clonedCreator)
+            let newEntry = entry.clone(as: .cloning(needsFlash: true))
             entries.insert(newEntry, at: index + 1)
             save()
         }

@@ -14,22 +14,19 @@ struct ItemBackground: View {
 struct ListItemView: View {
     @ObservedObject private var entry: ListItem
     @State private var showPicker = false
-    private let scrollViewProxy: ScrollViewProxy
-
-    init(entry: ListItem, scrollViewProxy: ScrollViewProxy) {
-        self.entry = entry
-        self.scrollViewProxy = scrollViewProxy
-    }
-
     @State private var visibleControls = false
 
+    init(entry: ListItem) {
+        self.entry = entry
+    }
+    
     var body: some View {
         ZStack {
             ItemBackground()
 
             switch entry.state {
-            case .clonedCreator, .creating:
-                NewItem(newItemInfo: NewItemModel(prototype: entry), scrollViewProxy: scrollViewProxy)
+            case .cloning, .creating:
+                NewItem(newItemInfo: NewItemModel(prototype: entry))
 
             case .queued:
                 EntryTitle(entry: entry)

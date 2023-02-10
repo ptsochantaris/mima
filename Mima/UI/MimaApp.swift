@@ -21,7 +21,7 @@ import SwiftUI
     }
 #endif
 
-let bottomId = "bottomId"
+private let bottomId = "bottomId"
 
 private struct ContentView: View {
     @ObservedObject private var model = Model.shared
@@ -38,7 +38,7 @@ private struct ContentView: View {
                         GridItem(.adaptive(minimum: 300, maximum: 1024), spacing: 16)
                     ], spacing: 16) {
                         ForEach(model.entries) { entry in
-                            ListItemView(entry: entry, scrollViewProxy: proxy)
+                            ListItemView(entry: entry)
                                 .cornerRadius(21)
                         }
                     }
@@ -46,6 +46,14 @@ private struct ContentView: View {
                     .id(bottomId)
                 }
                 .layoutPriority(2)
+                .onReceive(NotificationCenter.default.publisher(for: .ScrollToBottom)) { _ in
+                    Task {
+                        try? await Task.sleep(for: .milliseconds(200))
+                        withAnimation {
+                            proxy.scrollTo(bottomId, anchor: .bottom)
+                        }
+                    }
+                }
             }
         }
         .onDrop(of: [.image], delegate: ImageDropDelegate())
@@ -64,6 +72,7 @@ struct MimaApp: App {
     @Environment(\.openWindow) var openWindow
     @State private var mainIsVisible = false
     @StateObject private var bootWatcher = BootWatcher()
+    @ObservedObject private var model = Model.shared
 
     var body: some Scene {
         WindowGroup("Mima", id: "main") {
@@ -82,12 +91,12 @@ struct MimaApp: App {
             CommandGroup(after: .textEditing) {
                 Button("Cancel Queued Items") {
                     withAnimation {
-                        Model.shared.removeAllQueued()
+                        model.removeAllQueued()
                     }
                 }
                 Button("Remove All Items") {
                     withAnimation {
-                        Model.shared.removeAll()
+                        model.removeAll()
                     }
                 }
             }
@@ -123,13 +132,18 @@ struct MimaApp: App {
                                     PipelineBootup.persistedModelVersion = version
                                     await PipelineBootup().startup()
                                 }
-                                Model.shared.cancelAllRendering()
+                                model.cancelAllRendering()
                             }
                         )
                         Toggle(version.displayName, isOn: isOn)
                             .disabled(isOn.wrappedValue || bootWatcher.booting)
                     }
                 }
+                let isOn = Binding<Bool>(
+                    get: { model.useSafetyChecker },
+                    set: { model.useSafetyChecker = $0 }
+                )
+                Toggle("Use Safety Filter", isOn: isOn)
             }
             #if canImport(Cocoa)
                 CommandGroup(replacing: .importExport) {
@@ -140,10 +154,10 @@ struct MimaApp: App {
                             panel.canCreateDirectories = true
                             panel.canChooseDirectories = true
                             panel.allowsMultipleSelection = false
-                            panel.prompt = "Export \(Model.shared.entries.count) Items"
+                            panel.prompt = "Export \(model.entries.count) Items"
                             if panel.runModal() == .OK {
                                 if let url = panel.url {
-                                    Model.shared.exportAll(to: url)
+                                    model.exportAll(to: url)
                                 }
                             }
                         }

@@ -165,7 +165,7 @@ enum Rendering {
             config.stepCount = item.steps
             config.seed = item.generatedSeed
             config.guidanceScale = item.guidance
-            config.disableSafety = true
+            config.disableSafety = !(await Model.shared.useSafetyChecker)
 
             return try! pipeline.generateImages(configuration: config) { progress in
                 DispatchQueue.main.sync {
