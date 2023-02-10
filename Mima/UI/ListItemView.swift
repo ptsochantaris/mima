@@ -29,6 +29,18 @@ struct ListItemView: View {
                 NewItem(newItemInfo: NewItemModel(prototype: entry))
 
             case .queued, .rendering, .blocked:
+                if let url = entry.imagePath {
+                    AsyncImage(url: URL(filePath: url)) { phase in
+                        switch phase {
+                        case let .success(img):
+                            img.resizable().opacity(0.12)
+                        case .empty, .failure:
+                            Color.clear
+                        @unknown default:
+                            Color.clear
+                        }
+                    }
+                }
                 EntryTitle(entry: entry)
                 Color.clear
                     .overlay(alignment: .bottomLeading) {

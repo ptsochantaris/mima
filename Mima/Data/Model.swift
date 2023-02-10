@@ -43,7 +43,8 @@ final class Model: ObservableObject, Codable {
             try? FileManager.default.createDirectory(at: cloningAssets, withIntermediateDirectories: true)
         }
         let destinationUrl = cloningAssets.appending(path: UUID().uuidString, directoryHint: .notDirectory)
-        try? FileManager.default.copyItem(at: url, to: destinationUrl)
+        let image = IMAGE(contentsOf: url)?.cgImage?.scaled(to: 512)
+        image?.save(to: destinationUrl)
         return destinationUrl.path
     }
 

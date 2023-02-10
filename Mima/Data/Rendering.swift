@@ -161,7 +161,11 @@ enum Rendering {
             var config = StableDiffusionPipeline.Configuration(prompt: item.prompt)
             if !item.imagePath.isEmpty, let img = IMAGE(contentsOfFile: item.imagePath) {
                 log("Loading starting image from \(item.imagePath)")
-                config.startingImage = img.cgImage?.scaled(to: 512)
+                if img.size.width == 512 && img.size.height == 512 {
+                    config.startingImage = img.cgImage
+                } else {
+                    config.startingImage = img.cgImage?.scaled(to: 512) // remove eventually
+                }
                 config.strength = item.strength
             }
             config.negativePrompt = item.negativePrompt

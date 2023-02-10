@@ -35,6 +35,14 @@ extension CGImage {
         CGImageDestinationAddImageAndMetadata(destination, self, metadata, nil)
         CGImageDestinationFinalize(destination)
     }
+    
+    func save(to url: URL) {
+        guard let destination = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) else {
+            return
+        }
+        CGImageDestinationAddImage(destination, self, nil)
+        CGImageDestinationFinalize(destination)
+    }
 
     static func checkForEntry(from url: URL) -> ListItem? {
         if url.path.hasPrefix(NSTemporaryDirectory()) {
