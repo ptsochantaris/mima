@@ -168,12 +168,12 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         let config = MLModelConfiguration()
         #if canImport(Cocoa)
             config.computeUnits = .cpuAndGPU
-            let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, configuration: config, disableSafety: true)
+            let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, configuration: config, disableSafety: false)
             log("Warmup...")
             try pipeline.loadResources()
         #else
             config.computeUnits = .cpuAndNeuralEngine
-            let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, configuration: config, disableSafety: true, reduceMemory: true)
+            let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, configuration: config, disableSafety: false, reduceMemory: true)
         #endif
         log("Pipeline ready")
         await PipelineState.shared.setPhase(to: .ready(pipeline))

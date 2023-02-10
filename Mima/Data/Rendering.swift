@@ -154,6 +154,9 @@ enum Rendering {
             Task { @MainActor in
                 item.state = .rendering(step: 0, total: Float(item.steps))
             }
+            
+            let useSafety = await Model.shared.useSafetyChecker
+            log("Using safety filter: \(useSafety && pipeline.canSafetyCheck)")
 
             var config = StableDiffusionPipeline.Configuration(prompt: item.prompt)
             if !item.imagePath.isEmpty, let img = IMAGE(contentsOfFile: item.imagePath) {
@@ -165,16 +168,24 @@ enum Rendering {
             config.stepCount = item.steps
             config.seed = item.generatedSeed
             config.guidanceScale = item.guidance
-            config.disableSafety = !(await Model.shared.useSafetyChecker)
+            config.disableSafety = !useSafety
 
-            return try! pipeline.generateImages(configuration: config) { progress in
-                DispatchQueue.main.sync {
-                    if item.state.isCancelled || item.state.isWaiting {
-                        return false
-                    } else {
-                        item.state = .rendering(step: Float(progress.step), total: Float(item.steps))
-                        return true
+            do {
+                return try pipeline.generateImages(configuration: config) { progress in
+                    DispatchQueue.main.sync {
+                        if item.state.isCancelled || item.state.isWaiting {
+                            return false
+                        } else {
+                            item.state = .rendering(step: Float(progress.step), total: Float(item.steps))
+                            return true
+                        }
                     }
+                }
+            } catch {
+                log("Render error: \(error.localizedDescription)")
+                return await MainActor.run {
+                    item.state = .error
+                    return []
                 }
             }
         }.value
@@ -183,7 +194,11 @@ enum Rendering {
             i.save(from: item)
             item.state = .done
         } else {
-            item.state = .error
+            if case .error = item.state {
+                log("Completed render with error")
+            } else {
+                item.state = .blocked
+            }
         }
 
         return true

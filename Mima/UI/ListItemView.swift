@@ -28,15 +28,7 @@ struct ListItemView: View {
             case .cloning, .creating:
                 NewItem(newItemInfo: NewItemModel(prototype: entry))
 
-            case .queued:
-                EntryTitle(entry: entry)
-                Color.clear
-                    .overlay(alignment: .bottomLeading) {
-                        EntryFooter(entry: entry)
-                            .padding()
-                    }
-
-            case .rendering:
+            case .queued, .rendering, .blocked:
                 EntryTitle(entry: entry)
                 Color.clear
                     .overlay(alignment: .bottomLeading) {

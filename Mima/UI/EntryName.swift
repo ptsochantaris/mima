@@ -32,6 +32,12 @@ struct EntryName: View {
                 Text("Cloning \(entry.imageName) at \(Int(entry.strength * 100))%")
                     .font(.caption)
             }
+            
+            if case .blocked = entry.state {
+                Text("This image was blocked by the safety filter")
+                    .font(.caption)
+                    .foregroundColor(.accentColor)
+            }
         }
         .multilineTextAlignment(.center)
     }
