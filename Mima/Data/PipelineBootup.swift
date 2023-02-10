@@ -169,12 +169,12 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         #if canImport(Cocoa)
             config.computeUnits = .cpuAndGPU
             let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, configuration: config, disableSafety: true)
+            log("Warmup...")
+            try pipeline.loadResources()
         #else
             config.computeUnits = .cpuAndNeuralEngine
             let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, configuration: config, disableSafety: true, reduceMemory: true)
         #endif
-        log("Warmup...")
-        try pipeline.loadResources()
         log("Pipeline ready")
         await PipelineState.shared.setPhase(to: .ready(pipeline))
         await Model.shared.startRenderingIfNeeded()
