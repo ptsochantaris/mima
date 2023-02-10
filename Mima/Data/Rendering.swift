@@ -173,6 +173,13 @@ enum Rendering {
             config.seed = item.generatedSeed
             config.guidanceScale = item.guidance
             config.disableSafety = !useSafety
+            
+            let progressSteps: Float
+            if config.startingImage == nil {
+                progressSteps = Float(item.steps)
+            } else {
+                progressSteps = (Float(item.steps) * config.strength).rounded(.down)
+            }
 
             do {
                 return try pipeline.generateImages(configuration: config) { progress in
@@ -180,7 +187,7 @@ enum Rendering {
                         if item.state.isCancelled || item.state.isWaiting {
                             return false
                         } else {
-                            item.state = .rendering(step: Float(progress.step), total: Float(item.steps))
+                            item.state = .rendering(step: Float(progress.step), total: progressSteps)
                             return true
                         }
                     }
