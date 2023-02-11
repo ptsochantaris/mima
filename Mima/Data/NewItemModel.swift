@@ -102,11 +102,6 @@ final class NewItemModel: ObservableObject {
 
     func create() {
         updatePrototype()
-        withAnimation(.easeInOut(duration: 0.2)) {
-            Model.shared.createItem(basedOn: prototype, fromCreator: prototype.state.isCreator)
-        }
-        if prototype.state.isCreator {
-            NotificationCenter.default.post(name: .ScrollToBottom, object: nil)
-        }
+        Model.shared.createItem(basedOn: prototype, fromCreator: prototype.state.isCreator)
     }
 }

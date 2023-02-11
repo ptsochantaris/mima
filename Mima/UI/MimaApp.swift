@@ -53,12 +53,15 @@ private struct ContentView: View {
                 .onAppear {
                     proxy.scrollTo(bottomId, anchor: .top)
                 }
-                .onReceive(NotificationCenter.default.publisher(for: .ScrollToBottom)) { _ in
+                .onReceive(NotificationCenter.default.publisher(for: .ScrollToBottom)) { notification in
+                    guard let desiredDuration = notification.object as? CGFloat else { return }
                     Task {
-                        try? await Task.sleep(for: .milliseconds(220))
-                        withAnimation {
+                        await model.getCreationLock()
+                        withAnimation(.easeInOut(duration: desiredDuration)) {
                             proxy.scrollTo(bottomId, anchor: .top)
                         }
+                        try? await Task.sleep(for: .milliseconds(Int(desiredDuration * 1000) + 10))
+                        model.releaseCreationLock()
                     }
                 }
             }

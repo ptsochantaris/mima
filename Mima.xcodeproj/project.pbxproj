@@ -34,6 +34,7 @@
 		1661425F2974D15E00BFA494 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1661425E2974D15E00BFA494 /* Utils.swift */; };
 		16622AC7297D996300C8C7F0 /* Mac.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16622AC6297D996300C8C7F0 /* Mac.swift */; };
 		166A262E297EE7C600A1BB50 /* Rendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166A262D297EE7C600A1BB50 /* Rendering.swift */; };
+		169655F42998485300301693 /* AsyncAlgorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 169655F32998485300301693 /* AsyncAlgorithms */; };
 		16F0E2EB2995952D00F71B01 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F0E2EA2995952D00F71B01 /* Logging.swift */; };
 		16F195A629889AD300E2862C /* BootWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F195A529889AD300E2862C /* BootWatcher.swift */; };
 /* End PBXBuildFile section */
@@ -79,6 +80,7 @@
 			files = (
 				1630C9A12981B68B005A0688 /* ZIPFoundation in Frameworks */,
 				16501BDB29957AA000B77985 /* StableDiffusion in Frameworks */,
+				169655F42998485300301693 /* AsyncAlgorithms in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -173,6 +175,7 @@
 			packageProductDependencies = (
 				1630C9A02981B68B005A0688 /* ZIPFoundation */,
 				16501BDA29957AA000B77985 /* StableDiffusion */,
+				169655F32998485300301693 /* AsyncAlgorithms */,
 			);
 			productName = Mima;
 			productReference = 166142442974BD5800BFA494 /* Mima.app */;
@@ -205,6 +208,7 @@
 			packageReferences = (
 				1630C99F2981B68B005A0688 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				16501BD929957AA000B77985 /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */,
+				169655F22998485300301693 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */,
 			);
 			productRefGroup = 166142452974BD5800BFA494 /* Products */;
 			projectDirPath = "";
@@ -495,6 +499,14 @@
 				kind = branch;
 			};
 		};
+		169655F22998485300301693 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-async-algorithms";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -507,6 +519,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 16501BD929957AA000B77985 /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */;
 			productName = StableDiffusion;
+		};
+		169655F32998485300301693 /* AsyncAlgorithms */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 169655F22998485300301693 /* XCRemoteSwiftPackageReference "swift-async-algorithms" */;
+			productName = AsyncAlgorithms;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -150,12 +150,7 @@ final class ImageDropDelegate: DropDelegate {
                     info.updatePrototype()
                 }
             } else if let entry = CGImage.checkForEntry(from: url) {
-                Task { @MainActor in
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        Model.shared.add(entry: entry)
-                    }
-                    NotificationCenter.default.post(name: .ScrollToBottom, object: nil)
-                }
+                Model.shared.add(entry: entry)
             }
         }
         return true

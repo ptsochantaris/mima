@@ -2,6 +2,8 @@
     import Cocoa
 #endif
 import Foundation
+import SwiftUI
+import AsyncAlgorithms
 
 final class Model: ObservableObject, Codable {
     @Published var entries: ContiguousArray<ListItem>
@@ -27,9 +29,6 @@ final class Model: ObservableObject, Codable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         entries = try values.decode(ContiguousArray<ListItem>.self, forKey: .entries)
         renderQueue = try values.decode(ContiguousArray<UUID>.self, forKey: .renderQueue)
-        Task {
-            await startRenderingIfNeeded()
-        }
     }
 
     func encode(to encoder: Encoder) throws {
@@ -53,20 +52,47 @@ final class Model: ObservableObject, Codable {
             await PipelineBootup().startup()
         }
 
+        let model: Model
         if let data = try? Data(contentsOf: indexFileUrl) {
             do {
-                return try JSONDecoder().decode(Model.self, from: data)
+                model = try JSONDecoder().decode(Model.self, from: data)
             } catch {
                 log("Error loading model: \(error.localizedDescription)")
+                model = Model()
             }
+        } else {
+            model = Model()
         }
 
-        return Model()
+        Task {
+            await model.startRenderingIfNeeded()
+        }
+
+        Task {
+            await model.animationLockQueue.send(())
+        }
+        return model
     }()
+    
+    // This shouldn't be needed, but SwiftUI scrollview scroll-to-bottom + model animations don't get along
+    private var animationLockQueue = AsyncChannel<Void>()
+    private var creationQueueCount = 0
 }
 
 @MainActor
 extension Model {
+    func getCreationLock() async {
+        for await _ in animationLockQueue {
+            return
+        }
+    }
+    
+    func releaseCreationLock() {
+        Task {
+            await animationLockQueue.send(())
+        }
+    }
+    
     var useSafetyChecker: Bool {
         get {
             UserDefaults.standard.bool(forKey: "useSafetyChecker")
@@ -163,24 +189,43 @@ extension Model {
     }
 
     func createItem(basedOn prototype: ListItem, fromCreator: Bool) {
-        let entry = prototype.clone(as: .queued)
-        if let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) {
-            if fromCreator {
-                entries.insert(entry, at: creatorIndex)
-            } else {
-                entries[creatorIndex] = entry
+        Task {
+            creationQueueCount += 1
+            await getCreationLock()
+            if let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) {
+                let duration = creationQueueCount == 1 ? CGFloat(0.25) : CGFloat(0.1)
+                let entry = prototype.clone(as: .queued)
+                if fromCreator {
+                    withAnimation(.easeInOut(duration: duration)) {
+                        entries.insert(entry, at: creatorIndex)
+                    }
+                    try? await Task.sleep(for: .milliseconds(Int(duration * 1000) + 10))
+                    let duration = creationQueueCount == 1 ? CGFloat(0.2) : CGFloat(0.03)
+                    NotificationCenter.default.post(name: .ScrollToBottom, object: duration)
+                } else {
+                    withAnimation {
+                        entries[creatorIndex] = entry
+                    }
+                }
+                submitToQueue(entry.id)
             }
-        } else {
-            entries.insert(entry, at: 0)
+            creationQueueCount -= 1
+            releaseCreationLock()
         }
-        submitToQueue(entry.id)
     }
 
     func add(entry: ListItem) {
-        if let creatorIndex = entries.firstIndex(where: { $0.state.isCreator }) {
-            entries.insert(entry, at: creatorIndex)
-        } else {
-            entries.append(entry)
+        Task {
+            await getCreationLock()
+            let duration = CGFloat(0.3)
+            if let creatorIndex = entries.firstIndex(where: { $0.state.isCreator }) {
+                withAnimation(.easeInOut(duration: duration)) {
+                    entries.insert(entry, at: creatorIndex)
+                }
+                try? await Task.sleep(for: .milliseconds(Int(duration * 1000) + 10))
+                NotificationCenter.default.post(name: .ScrollToBottom, object: duration)
+            }
+            releaseCreationLock()
         }
     }
 
