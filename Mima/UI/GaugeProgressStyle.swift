@@ -23,6 +23,7 @@ struct GaugeProgressStyle: ProgressViewStyle {
                 .trim(from: 0, to: fractionCompleted)
                 .stroke(.tint, style: StrokeStyle(lineWidth: 3.5, lineCap: .butt))
                 .rotationEffect(.degrees(-90))
+                .animation(.easeInOut(duration: 1), value: fractionCompleted)
         }
     }
 }

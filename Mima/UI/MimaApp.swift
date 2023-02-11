@@ -34,23 +34,30 @@ private struct ContentView: View {
             }
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVGrid(columns: [
-                        GridItem(.adaptive(minimum: 300, maximum: 1024), spacing: 16)
-                    ], spacing: 16) {
-                        ForEach(model.entries) { entry in
-                            ListItemView(entry: entry)
-                                .cornerRadius(21)
+                    VStack {
+                        LazyVGrid(columns: [
+                            GridItem(.adaptive(minimum: 300, maximum: 1024), spacing: 16)
+                        ], spacing: 16) {
+                            ForEach(model.entries) { entry in
+                                ListItemView(entry: entry)
+                                    .cornerRadius(21)
+                            }
                         }
+                        .padding()
+                        Spacer(minLength: 0)
+                            .frame(height: 0)
+                            .id(bottomId)
                     }
-                    .padding()
-                    .id(bottomId)
                 }
                 .layoutPriority(2)
+                .onAppear {
+                    proxy.scrollTo(bottomId, anchor: .top)
+                }
                 .onReceive(NotificationCenter.default.publisher(for: .ScrollToBottom)) { _ in
                     Task {
-                        try? await Task.sleep(for: .milliseconds(200))
+                        try? await Task.sleep(for: .milliseconds(220))
                         withAnimation {
-                            proxy.scrollTo(bottomId, anchor: .bottom)
+                            proxy.scrollTo(bottomId, anchor: .top)
                         }
                     }
                 }
