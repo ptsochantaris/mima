@@ -36,13 +36,15 @@ struct PipelinePhaseView: View {
                 Icon(name: "clock")
                 VStack(alignment: .leading) {
                     Text("Warming up the engine…")
+                        .fixedSize(horizontal: false, vertical: true)
                     Text("Please wait a moment")
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             case let .downloading(progress):
                 Icon(name: "clock")
                 VStack(alignment: .leading) {
                     Text("Downloading the AI engine, this is only needed for the first installation…")
-                        .layoutPriority(2)
+                        .fixedSize(horizontal: false, vertical: true)
                     GeometryReader { proxy in
                         HStack(spacing: 0) {
                             if progress > 0 {
@@ -58,25 +60,33 @@ struct PipelinePhaseView: View {
                 RetryButton()
                 VStack(alignment: .leading) {
                     Text("There was a download error!")
+                        .fixedSize(horizontal: false, vertical: true)
                     Text(error.localizedDescription)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             case let .initialisingError(error):
                 RetryButton()
                 VStack(alignment: .leading) {
                     Text("There was an error starting up the AI model!")
+                        .fixedSize(horizontal: false, vertical: true)
                     Text(error.localizedDescription)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             case .expanding:
                 Icon(name: "clock")
                 VStack(alignment: .leading) {
                     Text("Expanding the AI engine data…")
+                        .fixedSize(horizontal: false, vertical: true)
                     Text("Please wait a moment")
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             case .initialising:
                 Icon(name: "clock")
                 VStack(alignment: .leading) {
                     Text("Warming up the engine…")
+                        .fixedSize(horizontal: false, vertical: true)
                     Text("This can take a few minutes or more the first time!")
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             Spacer()
