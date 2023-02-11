@@ -5,19 +5,6 @@ import Foundation
 import SwiftUI
 import ZIPFoundation
 
-#if canImport(Cocoa)
-typealias IMAGE = NSImage
-
-extension NSImage {
-    var cgImage: CGImage? {
-        cgImage(forProposedRect: nil, context: nil, hints: nil)
-    }
-}
-
-#else
-typealias IMAGE = UIImage
-#endif
-
 enum WarmUpPhase {
     case booting, downloading(progress: Float), downloadingError(error: Error), initialising, initialisingError(error: Error), expanding
 }
@@ -96,38 +83,6 @@ enum FetchError: Error {
     case noDataDownloaded(String)
 }
 
-extension CGImage {
-    func scaled(to sideLength: CGFloat) -> CGImage? {
-        let scaledImageSize: CGSize
-        let W = CGFloat(width)
-        let H = CGFloat(height)
-        if width < height {
-            let lateralScale = sideLength / W
-            scaledImageSize = CGSize(width: sideLength, height: H * lateralScale)
-        } else {
-            let verticalScale = sideLength / H
-            scaledImageSize = CGSize(width: W * verticalScale, height: sideLength)
-        }
-
-        let c = CGContext(data: nil,
-                          width: Int(sideLength),
-                          height: Int(sideLength),
-                          bitsPerComponent: 8,
-                          bytesPerRow: Int(sideLength) * 4,
-                          space: CGColorSpaceCreateDeviceRGB(),
-                          bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGImageByteOrderInfo.order32Little.rawValue)!
-        c.interpolationQuality = .high
-
-        let scaledImageRect = CGRect(x: (sideLength - scaledImageSize.width) * 0.5,
-                                     y: (sideLength - scaledImageSize.height) * 0.5,
-                                     width: scaledImageSize.width,
-                                     height: scaledImageSize.height)
-
-        c.draw(self, in: scaledImageRect)
-        return c.makeImage()
-    }
-}
-
 enum Rendering {
     @MainActor
     static func render(_ item: ListItem) async -> Bool {
@@ -159,12 +114,12 @@ enum Rendering {
             log("Using safety filter: \(useSafety && pipeline.canSafetyCheck)")
 
             var config = StableDiffusionPipeline.Configuration(prompt: item.prompt)
-            if !item.imagePath.isEmpty, let img = IMAGE(contentsOfFile: item.imagePath) {
-                log("Loading starting image from \(item.imagePath)")
-                if img.size.width == 512 && img.size.height == 512 {
-                    config.startingImage = img.cgImage
+            if !item.imagePath.isEmpty, let img = loadImage(from: URL(fileURLWithPath: item.imagePath)) {
+                log("Loaded starting image from \(item.imagePath)")
+                if img.width == 512 && img.height == 512 {
+                    config.startingImage = img
                 } else {
-                    config.startingImage = img.cgImage?.scaled(to: 512) // remove eventually
+                    config.startingImage = img.scaled(to: 512) // remove eventually
                 }
                 config.strength = item.strength
             }

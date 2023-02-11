@@ -87,6 +87,36 @@ extension CGImage {
 
         return item
     }
+    
+    func scaled(to sideLength: CGFloat) -> CGImage? {
+        let scaledImageSize: CGSize
+        let W = CGFloat(width)
+        let H = CGFloat(height)
+        if width < height {
+            let lateralScale = sideLength / W
+            scaledImageSize = CGSize(width: sideLength, height: H * lateralScale)
+        } else {
+            let verticalScale = sideLength / H
+            scaledImageSize = CGSize(width: W * verticalScale, height: sideLength)
+        }
+
+        let c = CGContext(data: nil,
+                          width: Int(sideLength),
+                          height: Int(sideLength),
+                          bitsPerComponent: 8,
+                          bytesPerRow: Int(sideLength) * 4,
+                          space: CGColorSpaceCreateDeviceRGB(),
+                          bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGImageByteOrderInfo.order32Little.rawValue)!
+        c.interpolationQuality = .high
+
+        let scaledImageRect = CGRect(x: (sideLength - scaledImageSize.width) * 0.5,
+                                     y: (sideLength - scaledImageSize.height) * 0.5,
+                                     width: scaledImageSize.width,
+                                     height: scaledImageSize.height)
+
+        c.draw(self, in: scaledImageRect)
+        return c.makeImage()
+    }
 }
 
 extension Notification.Name {
@@ -140,3 +170,24 @@ extension RangeReplaceableCollection {
         return nil
     }
 }
+
+#if canImport(Cocoa)
+
+import Cocoa
+typealias IMAGE = NSImage
+func loadImage(from url: URL) -> CGImage? {
+    NSImage(contentsOf: url)?.cgImage(forProposedRect: nil, context: nil, hints: nil)
+}
+
+#elseif canImport(UIKit)
+
+import UIKit
+typealias IMAGE = UIImage
+func loadImage(from url: URL) -> CGImage? {
+    guard let data = try? Data(contentsOf: url) else {
+        return nil
+    }
+    return UIImage(data: data)?.cgImage
+}
+
+#endif
