@@ -16,12 +16,24 @@ struct NewItem: View {
                                 GridRow {
                                     Text("Clone")
                                     HStack(spacing: 4) {
-                                        TextField("No Source Image", text: $newItemInfo.imageName, onEditingChanged: { editing in
-                                            if !editing {
-                                                newItemInfo.updatePrototype()
-                                            }
-                                        })
+                                        Text(newItemInfo.imageName)
+                                            .bold()
+                                            .padding(EdgeInsets(top: 0, leading: 11, bottom: 0, trailing: 0))
+
+                                        Button {
+                                            newItemInfo.imageName = ""
+                                            newItemInfo.updatePrototype()
+                                        } label: {
+                                            Image(systemName: "xmark.circle.fill")
+                                                .font(.body)
+                                                .opacity(0.7)
+                                        }
+                                        .buttonStyle(.borderless)
+
+                                        Spacer(minLength: 0)
+                                        
                                         Text("at")
+                                        
                                         TextField(String(Int(ListItem.defaultStrength * 100)) + "%", text: $newItemInfo.strengthText, onEditingChanged: { editing in
                                             if !editing {
                                                 newItemInfo.updatePrototype()

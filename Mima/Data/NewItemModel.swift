@@ -50,7 +50,6 @@ final class NewItemModel: ObservableObject {
         imageName = prototype.imageName
         imagePath = prototype.imagePath
         originalImagePath = prototype.originalImagePath
-
         negativePromptText = prototype.negativePrompt
 
         if let seed = prototype.seed {

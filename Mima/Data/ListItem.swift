@@ -15,9 +15,9 @@ final class ListItem: ObservableObject, Codable, Identifiable {
     var steps: Int
     var imagePath: String
     var originalImagePath: String
-    var imageName: String
     var strength: Float
 
+    @Published var imageName: String
     @Published var state: State
 
     enum CodingKeys: CodingKey {

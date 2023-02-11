@@ -6,7 +6,7 @@ struct ItemBackground: View {
         #if canImport(Cocoa)
             Color.secondary.opacity(0.1)
         #else
-            Color.secondary.opacity(0.4)
+            Color.secondary.opacity(0.3)
         #endif
     }
 }
@@ -24,23 +24,24 @@ struct ListItemView: View {
         ZStack {
             ItemBackground()
 
+            if !(entry.state.isDone || entry.imageName.isEmpty || entry.imagePath.isEmpty) {
+                AsyncImage(url: URL(filePath: entry.imagePath)) { phase in
+                    switch phase {
+                    case let .success(img):
+                        img.resizable().opacity(0.12)
+                    case .empty, .failure:
+                        Color.clear
+                    @unknown default:
+                        Color.clear
+                    }
+                }
+            }
+            
             switch entry.state {
             case .cloning, .creating:
                 NewItem(newItemInfo: NewItemModel(prototype: entry))
 
             case .queued, .rendering, .blocked:
-                if let url = entry.imagePath {
-                    AsyncImage(url: URL(filePath: url)) { phase in
-                        switch phase {
-                        case let .success(img):
-                            img.resizable().opacity(0.12)
-                        case .empty, .failure:
-                            Color.clear
-                        @unknown default:
-                            Color.clear
-                        }
-                    }
-                }
                 EntryTitle(entry: entry)
                 Color.clear
                     .overlay(alignment: .bottomLeading) {
