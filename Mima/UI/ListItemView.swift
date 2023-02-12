@@ -72,10 +72,17 @@ struct ListItemView: View {
                                 p.suggestedName = name
                                 return p
                             }
-                    case .empty, .failure:
-                        Spacer()
+                    case .empty:
+                        Color.clear
+                    case .failure(let error):
+                        Color.clear
+                            .overlay {
+                                Text("Error loading: \(error.localizedDescription)")
+                                    .font(.callout)
+                                    .foregroundColor(.accentColor)
+                            }
                     @unknown default:
-                        Spacer()
+                        Color.clear
                     }
                 }
                 .overlay(alignment: .topLeading) {

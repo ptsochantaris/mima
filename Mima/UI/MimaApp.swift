@@ -51,7 +51,9 @@ private struct ContentView: View {
                 }
                 .layoutPriority(2)
                 .onAppear {
-                    proxy.scrollTo(bottomId, anchor: .top)
+                    DispatchQueue.main.async {
+                        proxy.scrollTo(bottomId, anchor: .top)
+                    }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: .ScrollToBottom)) { notification in
                     guard let desiredDuration = notification.object as? CGFloat else { return }

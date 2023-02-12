@@ -19,7 +19,7 @@ struct DismissButton: View {
                     }
                 }
 
-        case let .rendering(step, total):
+        case .rendering:
             ZStack {
                 MimaButon(look: .dismiss(.progress))
                     .onTapGesture {
@@ -28,8 +28,7 @@ struct DismissButton: View {
                         }
                     }
                     .overlay {
-                        ProgressView(value: step, total: total)
-                            .progressViewStyle(GaugeProgressStyle())
+                        ProgressCircle(entry: entry)
                             .frame(width: 29, height: 29)
                     }
             }

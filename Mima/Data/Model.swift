@@ -65,12 +65,10 @@ final class Model: ObservableObject, Codable {
         }
 
         Task {
+            await model.animationLockQueue.send(())
             await model.startRenderingIfNeeded()
         }
 
-        Task {
-            await model.animationLockQueue.send(())
-        }
         return model
     }()
     
@@ -189,25 +187,25 @@ extension Model {
     }
 
     func createItem(basedOn prototype: ListItem, fromCreator: Bool) {
+        creationQueueCount += 1
+        let newItem = prototype.clone(as: .queued)
         Task {
-            creationQueueCount += 1
             await getCreationLock()
             if let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) {
                 let duration = creationQueueCount == 1 ? CGFloat(0.25) : CGFloat(0.1)
-                let entry = prototype.clone(as: .queued)
                 if fromCreator {
                     withAnimation(.easeInOut(duration: duration)) {
-                        entries.insert(entry, at: creatorIndex)
+                        entries.insert(newItem, at: creatorIndex)
                     }
                     try? await Task.sleep(for: .milliseconds(Int(duration * 1000) + 10))
                     let duration = creationQueueCount == 1 ? CGFloat(0.2) : CGFloat(0.03)
                     NotificationCenter.default.post(name: .ScrollToBottom, object: duration)
                 } else {
                     withAnimation {
-                        entries[creatorIndex] = entry
+                        entries[creatorIndex] = newItem
                     }
                 }
-                submitToQueue(entry.id)
+                submitToQueue(newItem.id)
             }
             creationQueueCount -= 1
             releaseCreationLock()
