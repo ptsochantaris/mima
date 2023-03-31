@@ -6,7 +6,7 @@
       "location" : "https://github.com/apple/ml-stable-diffusion",
       "state" : {
         "branch" : "main",
-        "revision" : "00390a64182ddd87ef368f70f3a2de9acd26cb29"
+        "revision" : "42889f6b2a87bf99ecc4d262ab454a0a7795535c"
       }
     },
     {
@@ -24,7 +24,7 @@
       "location" : "https://github.com/apple/swift-async-algorithms",
       "state" : {
         "branch" : "main",
-        "revision" : "9cfed92b026c524674ed869a4ff2dcfdeedf8a2a"
+        "revision" : "e6b21d2a6d6cf8c886a97fba489563fd885937d4"
       }
     },
     {
