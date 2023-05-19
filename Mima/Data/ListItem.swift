@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-final class ListItem: ObservableObject, Codable, Identifiable {
+final class ListItem: ObservableObject, Codable, Identifiable, @unchecked Sendable {
     static let defaultSteps = 50
     static let defaultGuidance: Float = 7.5
     static let defaultStrength: Float = 0.6

@@ -168,7 +168,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         let config = MLModelConfiguration()
         #if canImport(Cocoa)
             config.computeUnits = .cpuAndGPU
-            let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, configuration: config, disableSafety: false)
+            let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, controlNet: [], configuration: config, disableSafety: false)
             log("Warmup...")
             try pipeline.loadResources()
         #else

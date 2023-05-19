@@ -35,7 +35,7 @@ extension CGImage {
         CGImageDestinationAddImageAndMetadata(destination, self, metadata, nil)
         CGImageDestinationFinalize(destination)
     }
-    
+
     func save(to url: URL) {
         guard let destination = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) else {
             return
@@ -87,7 +87,7 @@ extension CGImage {
 
         return item
     }
-    
+
     func scaled(to sideLength: CGFloat) -> CGImage? {
         let scaledImageSize: CGSize
         let W = CGFloat(width)
@@ -150,7 +150,9 @@ final class ImageDropDelegate: DropDelegate {
                     info.updatePrototype()
                 }
             } else if let entry = CGImage.checkForEntry(from: url) {
-                Model.shared.add(entry: entry)
+                Task { @MainActor in
+                    await Model.shared.add(entry: entry)
+                }
             }
         }
         return true
@@ -168,21 +170,21 @@ extension RangeReplaceableCollection {
 
 #if canImport(Cocoa)
 
-import Cocoa
-typealias IMAGE = NSImage
-func loadImage(from url: URL) -> CGImage? {
-    NSImage(contentsOf: url)?.cgImage(forProposedRect: nil, context: nil, hints: nil)
-}
+    import Cocoa
+    typealias IMAGE = NSImage
+    func loadImage(from url: URL) -> CGImage? {
+        NSImage(contentsOf: url)?.cgImage(forProposedRect: nil, context: nil, hints: nil)
+    }
 
 #elseif canImport(UIKit)
 
-import UIKit
-typealias IMAGE = UIImage
-func loadImage(from url: URL) -> CGImage? {
-    guard let data = try? Data(contentsOf: url) else {
-        return nil
+    import UIKit
+    typealias IMAGE = UIImage
+    func loadImage(from url: URL) -> CGImage? {
+        guard let data = try? Data(contentsOf: url) else {
+            return nil
+        }
+        return UIImage(data: data)?.cgImage
     }
-    return UIImage(data: data)?.cgImage
-}
 
 #endif

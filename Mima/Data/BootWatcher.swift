@@ -12,9 +12,9 @@ final class BootWatcher: ObservableObject {
     init() {
         observer = pipeline.objectWillChange.receive(on: DispatchQueue.main).sink { [weak self] in
             guard let self else { return }
-            let phase = self.pipeline.reportedPhase.booting
-            if phase != self.booting {
-                self.booting = phase
+            let phase = pipeline.reportedPhase.booting
+            if phase != booting {
+                booting = phase
             }
         }
     }

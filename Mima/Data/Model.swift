@@ -1,9 +1,9 @@
 #if canImport(Cocoa)
     import Cocoa
 #endif
+import AsyncAlgorithms
 import Foundation
 import SwiftUI
-import AsyncAlgorithms
 
 final class Model: ObservableObject, Codable {
     @Published var entries: ContiguousArray<ListItem>
@@ -71,7 +71,7 @@ final class Model: ObservableObject, Codable {
 
         return model
     }()
-    
+
     // This shouldn't be needed, but SwiftUI scrollview scroll-to-bottom + model animations don't get along
     private var animationLockQueue = AsyncChannel<Void>()
     private var creationQueueCount = 0
@@ -84,13 +84,13 @@ extension Model {
             return
         }
     }
-    
+
     func releaseCreationLock() {
         Task {
             await animationLockQueue.send(())
         }
     }
-    
+
     var useSafetyChecker: Bool {
         get {
             UserDefaults.standard.bool(forKey: "useSafetyChecker")
@@ -212,19 +212,26 @@ extension Model {
         }
     }
 
-    func add(entry: ListItem) {
-        Task {
-            await getCreationLock()
-            let duration = CGFloat(0.3)
-            if let creatorIndex = entries.firstIndex(where: { $0.state.isCreator }) {
-                withAnimation(.easeInOut(duration: duration)) {
-                    entries.insert(entry, at: creatorIndex)
-                }
-                try? await Task.sleep(for: .milliseconds(Int(duration * 1000) + 10))
-                NotificationCenter.default.post(name: .ScrollToBottom, object: duration)
+    func state(of entity: ListItem) -> ListItem.State? {
+        entries.first { $0.id == entity.id }?.state
+    }
+
+    func addAndRender(entry: ListItem) async {
+        await add(entry: entry)
+        submitToQueue(entry.id)
+    }
+
+    func add(entry: ListItem) async {
+        await getCreationLock()
+        let duration = CGFloat(0.3)
+        if let creatorIndex = entries.firstIndex(where: { $0.state.isCreator }) {
+            withAnimation(.easeInOut(duration: duration)) {
+                entries.insert(entry, at: creatorIndex)
             }
-            releaseCreationLock()
+            try? await Task.sleep(for: .milliseconds(Int(duration * 1000) + 10))
+            NotificationCenter.default.post(name: .ScrollToBottom, object: duration)
         }
+        releaseCreationLock()
     }
 
     func prioritise(_ item: ListItem) {

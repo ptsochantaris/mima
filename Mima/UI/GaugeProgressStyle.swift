@@ -18,12 +18,11 @@ private struct SpinCircle: View {
 struct ProgressCircle: View {
     @ObservedObject var entry: ListItem
     @State private var firstUpdateAfterAppearing = true
-    
+
     var body: some View {
         Group {
             switch entry.state {
-            case .error, .queued, .done, .blocked, .cancelled, .creating, .cloning:
-                Color.clear
+            case .blocked, .cancelled, .cloning, .creating, .done, .error, .queued:  Color.clear
             case let .rendering(step, total):
                 if step < 1 || step > total {
                     SpinCircle()

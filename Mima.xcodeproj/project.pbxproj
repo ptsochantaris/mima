@@ -35,6 +35,7 @@
 		16622AC7297D996300C8C7F0 /* Mac.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16622AC6297D996300C8C7F0 /* Mac.swift */; };
 		166A262E297EE7C600A1BB50 /* Rendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166A262D297EE7C600A1BB50 /* Rendering.swift */; };
 		169655F42998485300301693 /* AsyncAlgorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 169655F32998485300301693 /* AsyncAlgorithms */; };
+		16A4FF2E29E0A3590077A3C7 /* MimaAppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A4FF2D29E0A3590077A3C7 /* MimaAppIntents.swift */; };
 		16F0E2EB2995952D00F71B01 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F0E2EA2995952D00F71B01 /* Logging.swift */; };
 		16F195A629889AD300E2862C /* BootWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F195A529889AD300E2862C /* BootWatcher.swift */; };
 /* End PBXBuildFile section */
@@ -69,6 +70,7 @@
 		16622AC6297D996300C8C7F0 /* Mac.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mac.swift; sourceTree = "<group>"; };
 		166A262D297EE7C600A1BB50 /* Rendering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rendering.swift; sourceTree = "<group>"; };
 		169732BC297F0C2700DFF596 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		16A4FF2D29E0A3590077A3C7 /* MimaAppIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MimaAppIntents.swift; sourceTree = "<group>"; };
 		16F0E2EA2995952D00F71B01 /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		16F195A529889AD300E2862C /* BootWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootWatcher.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -129,6 +131,7 @@
 				16F195A529889AD300E2862C /* BootWatcher.swift */,
 				16F0E2EA2995952D00F71B01 /* Logging.swift */,
 				160292102996812D006C67C9 /* NewItemModel.swift */,
+				16A4FF2D29E0A3590077A3C7 /* MimaAppIntents.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -242,6 +245,7 @@
 				1625573A297C3FA20027BD4F /* EntryTitle.swift in Sources */,
 				16255730297B6EAF0027BD4F /* ListItemState.swift in Sources */,
 				164DD47C2982EF97006B8D6F /* PipelinePhaseView.swift in Sources */,
+				16A4FF2E29E0A3590077A3C7 /* MimaAppIntents.swift in Sources */,
 				164DD47E2982F05A006B8D6F /* DismissButton.swift in Sources */,
 				16398DBB2986C408002214EA /* TipList.swift in Sources */,
 				1625573C297C3FBF0027BD4F /* MimaButton.swift in Sources */,
@@ -301,7 +305,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 20;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -366,7 +370,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 20;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;

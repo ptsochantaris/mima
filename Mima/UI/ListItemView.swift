@@ -19,7 +19,7 @@ struct ListItemView: View {
     init(entry: ListItem) {
         self.entry = entry
     }
-    
+
     var body: some View {
         ZStack {
             ItemBackground()
@@ -36,12 +36,12 @@ struct ListItemView: View {
                     }
                 }
             }
-            
+
             switch entry.state {
             case .cloning, .creating:
                 NewItem(newItemInfo: NewItemModel(prototype: entry))
 
-            case .queued, .rendering, .blocked:
+            case .blocked, .queued, .rendering:
                 EntryTitle(entry: entry)
                 Color.clear
                     .overlay(alignment: .bottomLeading) {
@@ -74,7 +74,7 @@ struct ListItemView: View {
                             }
                     case .empty:
                         Color.clear
-                    case .failure(let error):
+                    case let .failure(error):
                         Color.clear
                             .overlay {
                                 Text("Error loading: \(error.localizedDescription)")

@@ -25,6 +25,14 @@ extension ListItem {
             }
         }
 
+        var isWaitingOrRendering: Bool {
+            switch self {
+            case .blocked, .cancelled, .cloning, .creating, .done, .error:  return false
+            case .queued, .rendering:
+                return true
+            }
+        }
+
         var isWaiting: Bool {
             if case .queued = self {
                 return true
@@ -59,7 +67,7 @@ extension ListItem {
             }
             return false
         }
-        
+
         var isBlocked: Bool {
             if case .blocked = self {
                 return true

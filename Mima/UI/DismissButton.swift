@@ -11,7 +11,7 @@ struct DismissButton: View {
 
     var body: some View {
         switch entry.state {
-        case .cancelled, .cloning, .creating, .error, .queued, .blocked:
+        case .blocked, .cancelled, .cloning, .creating, .error, .queued:
             MimaButon(look: .dismiss(.button))
                 .onTapGesture {
                     withAnimation {

@@ -1,10 +1,3 @@
-//
-//  NewItemModel.swift
-//  Mima
-//
-//  Created by Paul Tsochantaris on 10/02/2023.
-//
-
 import Foundation
 import SwiftUI
 
@@ -21,7 +14,7 @@ final class NewItemModel: ObservableObject {
     @Published var seedText = ""
     @Published var stepText = ""
     @Published var guidanceText = ""
-    
+
     @Published var flashWhenVisible = false {
         didSet {
             if flashWhenVisible {
@@ -34,7 +27,7 @@ final class NewItemModel: ObservableObject {
             }
         }
     }
-    
+
     init(prototype: ListItem) {
         self.prototype = prototype
         refreshFromPrototype()

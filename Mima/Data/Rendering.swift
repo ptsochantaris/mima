@@ -38,7 +38,7 @@ final actor PipelineState: ObservableObject {
                 return true
             case let .setup(warmupPhase):
                 switch warmupPhase {
-                case .booting, .downloading, .expanding, .initialising:  return true
+                case .booting, .downloading, .expanding, .initialising: return true
                 case .downloadingError, .initialisingError:
                     return false
                 }
@@ -100,7 +100,7 @@ enum Rendering {
         let result: [CGImage?] = await Task { @RenderActor in
             guard
                 case let .ready(pipeline) = await PipelineState.shared.phase,
-                (await MainActor.run { item.state.isCancelled }) == false
+                await (MainActor.run { item.state.isCancelled }) == false
             else {
                 return []
             }
@@ -109,14 +109,14 @@ enum Rendering {
             Task { @MainActor in
                 item.state = .rendering(step: 0, total: Float(item.steps))
             }
-            
+
             let useSafety = await Model.shared.useSafetyChecker
             log("Using safety filter: \(useSafety && pipeline.canSafetyCheck)")
 
             var config = StableDiffusionPipeline.Configuration(prompt: item.prompt)
             if !item.imagePath.isEmpty, let img = loadImage(from: URL(fileURLWithPath: item.imagePath)) {
                 log("Loaded starting image from \(item.imagePath)")
-                if img.width == 512 && img.height == 512 {
+                if img.width == 512, img.height == 512 {
                     config.startingImage = img
                 } else {
                     config.startingImage = img.scaled(to: 512) // remove eventually
@@ -128,7 +128,7 @@ enum Rendering {
             config.seed = item.generatedSeed
             config.guidanceScale = item.guidance
             config.disableSafety = !useSafety
-            
+
             let progressSteps: Float
             if config.startingImage == nil {
                 progressSteps = Float(item.steps)

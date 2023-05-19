@@ -3,7 +3,7 @@ import UniformTypeIdentifiers
 
 struct NewItem: View {
     @StateObject var newItemInfo: NewItemModel
-    
+
     var body: some View {
         GeometryReader { proxy in
             ZStack {
@@ -31,9 +31,9 @@ struct NewItem: View {
                                         .buttonStyle(.borderless)
 
                                         Spacer(minLength: 0)
-                                        
+
                                         Text("at")
-                                        
+
                                         TextField(String(Int(ListItem.defaultStrength * 100)) + "%", text: $newItemInfo.strengthText, onEditingChanged: { editing in
                                             if !editing {
                                                 newItemInfo.updatePrototype()
