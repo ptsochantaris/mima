@@ -9,7 +9,7 @@ enum BootupActor {
     static let shared = ActorType()
 }
 
-private let revision = "2"
+private let revision = "3"
 
 enum ModelVersion: String, Identifiable, CaseIterable {
     case sd14, sd15, sd20, sd21
