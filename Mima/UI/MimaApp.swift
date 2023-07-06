@@ -21,8 +21,6 @@ import SwiftUI
     }
 #endif
 
-private let bottomId = "bottomId"
-
 private struct ContentView: View {
     @ObservedObject private var model = Model.shared
     @ObservedObject private var pipeline = PipelineState.shared
@@ -34,36 +32,36 @@ private struct ContentView: View {
             }
             ScrollViewReader { proxy in
                 ScrollView {
-                    VStack {
-                        LazyVGrid(columns: [
-                            GridItem(.adaptive(minimum: 300, maximum: 1024), spacing: 16)
-                        ], spacing: 16) {
-                            ForEach(model.entries) { entry in
-                                ListItemView(entry: entry)
-                                    .cornerRadius(21)
-                            }
+                    LazyVGrid(columns: [
+                        GridItem(.adaptive(minimum: 300, maximum: 1024), spacing: 16)
+                    ], spacing: 16) {
+                        ForEach(model.entries) { entry in
+                            ListItemView(entry: entry)
+                                .cornerRadius(21)
                         }
-                        .padding()
-                        Spacer(minLength: 0)
-                            .frame(height: 0)
-                            .id(bottomId)
                     }
+                    .padding()
+                    Color.clear
+                        .id(model.bottomId)
+                        .frame(height: 0, alignment: .bottom)
                 }
                 .layoutPriority(2)
                 .onAppear {
-                    DispatchQueue.main.async {
-                        proxy.scrollTo(bottomId, anchor: .top)
-                    }
+                    proxy.scrollTo(model.bottomId, anchor: .top)
                 }
                 .onReceive(NotificationCenter.default.publisher(for: .ScrollToBottom)) { notification in
-                    guard let desiredDuration = notification.object as? CGFloat else { return }
+                    guard let duration = notification.object as? CGFloat else { return }
+                    let bottomId = model.bottomId
                     Task {
-                        await model.getCreationLock()
-                        withAnimation(.easeInOut(duration: desiredDuration)) {
-                            proxy.scrollTo(bottomId, anchor: .top)
+                        try? await Task.sleep(for: .milliseconds(duration * 1000))
+                        let newId = model.bottomId
+                        if bottomId == newId {
+                            withAnimation(.easeInOut(duration: 0.16)) {
+                                proxy.scrollTo(bottomId, anchor: .top)
+                            }
+                        } else {
+                            proxy.scrollTo(newId, anchor: .top)
                         }
-                        try? await Task.sleep(for: .milliseconds(Int(desiredDuration * 1000) + 10))
-                        model.releaseCreationLock()
                     }
                 }
             }

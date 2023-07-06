@@ -1,13 +1,13 @@
 #if canImport(Cocoa)
     import Cocoa
 #endif
-import AsyncAlgorithms
 import Foundation
 import SwiftUI
 
 final class Model: ObservableObject, Codable {
     @Published var entries: ContiguousArray<ListItem>
     @Published var tipJar = TipJar()
+    @Published var bottomId = UUID()
 
     private var renderQueue: ContiguousArray<UUID>
     private var rendering = false
@@ -65,32 +65,15 @@ final class Model: ObservableObject, Codable {
         }
 
         Task {
-            await model.animationLockQueue.send(())
             await model.startRenderingIfNeeded()
         }
 
         return model
     }()
-
-    // This shouldn't be needed, but SwiftUI scrollview scroll-to-bottom + model animations don't get along
-    private var animationLockQueue = AsyncChannel<Void>()
-    private var creationQueueCount = 0
 }
 
 @MainActor
 extension Model {
-    func getCreationLock() async {
-        for await _ in animationLockQueue {
-            return
-        }
-    }
-
-    func releaseCreationLock() {
-        Task {
-            await animationLockQueue.send(())
-        }
-    }
-
     var useSafetyChecker: Bool {
         get {
             UserDefaults.standard.bool(forKey: "useSafetyChecker")
@@ -187,28 +170,22 @@ extension Model {
     }
 
     func createItem(basedOn prototype: ListItem, fromCreator: Bool) {
-        creationQueueCount += 1
         let newItem = prototype.clone(as: .queued)
-        Task {
-            await getCreationLock()
-            if let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) {
-                let duration = creationQueueCount == 1 ? CGFloat(0.25) : CGFloat(0.1)
-                if fromCreator {
-                    withAnimation(.easeInOut(duration: duration)) {
-                        entries.insert(newItem, at: creatorIndex)
-                    }
-                    try? await Task.sleep(for: .milliseconds(Int(duration * 1000) + 10))
-                    let duration = creationQueueCount == 1 ? CGFloat(0.2) : CGFloat(0.03)
-                    NotificationCenter.default.post(name: .ScrollToBottom, object: duration)
-                } else {
-                    withAnimation {
-                        entries[creatorIndex] = newItem
-                    }
-                }
+        guard let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) else {
+            return
+        }
+        if fromCreator {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                entries.insert(newItem, at: creatorIndex)
+                submitToQueue(newItem.id)
+                bottomId = UUID()
+                NotificationCenter.default.post(name: .ScrollToBottom, object: 0.2)
+            }
+        } else {
+            withAnimation {
+                entries[creatorIndex] = newItem
                 submitToQueue(newItem.id)
             }
-            creationQueueCount -= 1
-            releaseCreationLock()
         }
     }
 
@@ -222,16 +199,14 @@ extension Model {
     }
 
     func add(entry: ListItem) async {
-        await getCreationLock()
-        let duration = CGFloat(0.3)
-        if let creatorIndex = entries.firstIndex(where: { $0.state.isCreator }) {
-            withAnimation(.easeInOut(duration: duration)) {
-                entries.insert(entry, at: creatorIndex)
-            }
-            try? await Task.sleep(for: .milliseconds(Int(duration * 1000) + 10))
-            NotificationCenter.default.post(name: .ScrollToBottom, object: duration)
+        guard let creatorIndex = entries.firstIndex(where: { $0.state.isCreator }) else {
+            return
         }
-        releaseCreationLock()
+        withAnimation(.easeInOut(duration: 0.2)) {
+            entries.insert(entry, at: creatorIndex)
+            bottomId = UUID()
+            NotificationCenter.default.post(name: .ScrollToBottom, object: 0.2)
+        }
     }
 
     func prioritise(_ item: ListItem) {

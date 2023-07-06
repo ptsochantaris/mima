@@ -11,10 +11,12 @@ struct ItemBackground: View {
     }
 }
 
-struct ListItemView: View {
+struct ListItemView: View, Identifiable {
     @ObservedObject private var entry: ListItem
     @State private var showPicker = false
     @State private var visibleControls = false
+
+    var id: UUID { entry.id }
 
     init(entry: ListItem) {
         self.entry = entry
@@ -25,15 +27,10 @@ struct ListItemView: View {
             ItemBackground()
 
             if !(entry.state.isDone || entry.imageName.isEmpty || entry.imagePath.isEmpty) {
-                AsyncImage(url: URL(filePath: entry.imagePath)) { phase in
-                    switch phase {
-                    case let .success(img):
-                        img.resizable().opacity(0.12)
-                    case .empty, .failure:
-                        Color.clear
-                    @unknown default:
-                        Color.clear
-                    }
+                AsyncImage(url: URL(filePath: entry.imagePath)) { img in
+                    img.resizable().opacity(0.12)
+                } placeholder: {
+                    Color.clear
                 }
             }
 
@@ -51,39 +48,27 @@ struct ListItemView: View {
 
             case .done:
                 let sourceUrl = entry.imageUrl
-                AsyncImage(url: sourceUrl) { phase in
-                    switch phase {
-                    case let .success(img):
-                        img.resizable()
-                        #if canImport(Cocoa)
-                            .overlay {
-                                AcceptingFirstMouse()
+                AsyncImage(url: sourceUrl) { img in
+                    img.resizable()
+                    #if canImport(Cocoa)
+                        .overlay {
+                            AcceptingFirstMouse()
+                        }
+                    #endif
+                        .onDrag {
+                            let name = entry.exportFilename
+                            let destUrl = URL(fileURLWithPath: NSTemporaryDirectory() + name)
+                            let fm = FileManager.default
+                            if fm.fileExists(atPath: destUrl.path) {
+                                try? fm.removeItem(at: destUrl)
                             }
-                        #endif
-                            .onDrag {
-                                let name = entry.exportFilename
-                                let destUrl = URL(fileURLWithPath: NSTemporaryDirectory() + name)
-                                let fm = FileManager.default
-                                if fm.fileExists(atPath: destUrl.path) {
-                                    try? fm.removeItem(at: destUrl)
-                                }
-                                try? fm.copyItem(at: sourceUrl, to: destUrl)
-                                let p = NSItemProvider(item: destUrl as NSSecureCoding?, typeIdentifier: UTType.fileURL.identifier)
-                                p.suggestedName = name
-                                return p
-                            }
-                    case .empty:
-                        Color.clear
-                    case let .failure(error):
-                        Color.clear
-                            .overlay {
-                                Text("Error loading: \(error.localizedDescription)")
-                                    .font(.callout)
-                                    .foregroundColor(.accentColor)
-                            }
-                    @unknown default:
-                        Color.clear
-                    }
+                            try? fm.copyItem(at: sourceUrl, to: destUrl)
+                            let p = NSItemProvider(item: destUrl as NSSecureCoding?, typeIdentifier: UTType.fileURL.identifier)
+                            p.suggestedName = name
+                            return p
+                        }
+                } placeholder: {
+                    Color.clear
                 }
                 .overlay(alignment: .topLeading) {
                     if visibleControls {

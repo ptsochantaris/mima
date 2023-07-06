@@ -27,7 +27,7 @@ extension ListItem {
 
         var isWaitingOrRendering: Bool {
             switch self {
-            case .blocked, .cancelled, .cloning, .creating, .done, .error:  return false
+            case .blocked, .cancelled, .cloning, .creating, .done, .error: return false
             case .queued, .rendering:
                 return true
             }

@@ -22,7 +22,7 @@ struct ProgressCircle: View {
     var body: some View {
         Group {
             switch entry.state {
-            case .blocked, .cancelled, .cloning, .creating, .done, .error, .queued:  Color.clear
+            case .blocked, .cancelled, .cloning, .creating, .done, .error, .queued: Color.clear
             case let .rendering(step, total):
                 if step < 1 || step > total {
                     SpinCircle()
