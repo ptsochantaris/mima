@@ -37,6 +37,8 @@ enum ModelVersion: String, Identifiable, CaseIterable {
 }
 
 final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
+    static private var modelDownloadResumeData: Data?
+
     private let modelVersion: ModelVersion
     private let temporaryZip: String
     private let storageDirectory: URL
@@ -86,14 +88,17 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
     func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         try? FileManager.default.moveItem(at: location, to: tempUrl)
     }
-
+    
     func urlSession(_: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        PipelineBootup.modelDownloadResumeData = (error as? NSError)?.userInfo[NSURLSessionDownloadTaskResumeData] as? Data
+
         if let error {
             Task {
                 await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
             }
             return
         }
+
         if let response = task.response as? HTTPURLResponse, response.statusCode >= 400 {
             Task {
                 let error = NSError(domain: "build.bru.mima.network", code: 1, userInfo: [NSLocalizedDescriptionKey: "Server returned code \(response.statusCode)"])
@@ -137,9 +142,16 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
 
             do {
                 await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloading(progress: 0)))
-                log("Requesting new model transfer...")
-                let downloadUrl = URL(string: "https://bruvault.net/\(modelVersion.zipName)")!
-                let task = urlSession.downloadTask(with: downloadUrl)
+                let task: URLSessionTask
+                if let resumeData = PipelineBootup.modelDownloadResumeData {
+                    log("Attempting to resume model transfer...")
+                    task = urlSession.downloadTask(withResumeData: resumeData)
+                    PipelineBootup.modelDownloadResumeData = nil
+                } else {
+                    log("Requesting new model transfer...")
+                    let downloadUrl = URL(string: "https://bruvault.net/\(modelVersion.zipName)")!
+                    task = urlSession.downloadTask(with: downloadUrl)
+                }
                 task.resume()
             }
         }

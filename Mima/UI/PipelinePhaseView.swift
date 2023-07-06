@@ -43,7 +43,7 @@ struct PipelinePhaseView: View {
             case let .downloading(progress):
                 Icon(name: "clock")
                 VStack(alignment: .leading) {
-                    Text("Downloading the AI engine, this is only needed for the first installation…")
+                    Text("Downloading the AI engine, this is only needed once…")
                         .fixedSize(horizontal: false, vertical: true)
                     GeometryReader { proxy in
                         HStack(spacing: 0) {
@@ -67,7 +67,7 @@ struct PipelinePhaseView: View {
             case let .initialisingError(error):
                 RetryButton()
                 VStack(alignment: .leading) {
-                    Text("There was an error starting up the AI model!")
+                    Text("There was an error starting up the engine!")
                         .fixedSize(horizontal: false, vertical: true)
                     Text(error.localizedDescription)
                         .fixedSize(horizontal: false, vertical: true)
@@ -75,7 +75,7 @@ struct PipelinePhaseView: View {
             case .expanding:
                 Icon(name: "clock")
                 VStack(alignment: .leading) {
-                    Text("Expanding the AI engine data…")
+                    Text("Expanding the engine data…")
                         .fixedSize(horizontal: false, vertical: true)
                     Text("Please wait a moment")
                         .fixedSize(horizontal: false, vertical: true)
