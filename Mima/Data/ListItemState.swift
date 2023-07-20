@@ -1,8 +1,9 @@
 import Foundation
+import CoreGraphics
 
 extension ListItem {
     enum State: Codable {
-        case queued, rendering(step: Float, total: Float), done, cancelled, error, creating, cloning(needsFlash: Bool), blocked
+        case queued, rendering(step: Float, total: Float, preview: CGImage?), done, cancelled, error, creating, cloning(needsFlash: Bool), blocked
 
         var shouldStayInRenderQueue: Bool {
             switch self {

@@ -91,7 +91,7 @@ enum Rendering {
             break
         case .ready:
             Task { @MainActor in
-                item.state = .rendering(step: 0, total: Float(item.steps))
+                item.state = .rendering(step: 0, total: Float(item.steps), preview: nil)
             }
         case .shutdown:
             return false
@@ -107,7 +107,7 @@ enum Rendering {
 
             log("Starting render of item \(item.id)")
             Task { @MainActor in
-                item.state = .rendering(step: 0, total: Float(item.steps))
+                item.state = .rendering(step: 0, total: Float(item.steps), preview: nil)
             }
 
             let useSafety = await Model.shared.useSafetyChecker
@@ -137,14 +137,28 @@ enum Rendering {
             }
 
             do {
+                var lastProgressCheck = Date.distantPast
                 return try pipeline.generateImages(configuration: config) { progress in
-                    DispatchQueue.main.sync {
+                    if lastProgressCheck.timeIntervalSinceNow > -1 {
+                        return true
+                    }
+                    lastProgressCheck = Date.now
+                    return DispatchQueue.main.sync {
                         if item.state.isCancelled || item.state.isWaiting {
                             return false
-                        } else {
-                            item.state = .rendering(step: Float(progress.step), total: progressSteps)
-                            return true
                         }
+                        DispatchQueue.global(qos: .background).async {
+                            if let p = progress.currentImages.first, let p {
+                                DispatchQueue.main.async {
+                                    if case .rendering = item.state {
+                                        withAnimation(.easeInOut(duration: 1.5)) {
+                                            item.state = .rendering(step: Float(progress.step), total: progressSteps, preview: p)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        return true
                     }
                 }
             } catch {
@@ -157,8 +171,13 @@ enum Rendering {
         }.value
 
         if let i = result.first, let i {
+            withAnimation(.easeInOut(duration: 1.0)) {
+                item.state = .rendering(step: 1, total: 1, preview: i)
+            }
             i.save(from: item)
-            item.state = .done
+            withAnimation(.easeInOut(duration: 1.5)) {
+                item.state = .done
+            }
         } else {
             if case .error = item.state {
                 log("Completed render with error")
