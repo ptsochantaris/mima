@@ -27,8 +27,8 @@ struct ListItemView: View, Identifiable {
             ItemBackground()
             
             let state = entry.state
-            if case let .rendering(_, _, preview) = state, let preview {
-                Image(preview, scale: 1, label: Text("")).resizable().opacity(0.2)
+            if case let .rendering(steps, total, preview) = state, let preview {
+                Image(preview, scale: 1, label: Text("")).resizable().opacity(0.3 * Double(steps) / Double(total))
             } else if !(entry.state.isDone || entry.imageName.isEmpty || entry.imagePath.isEmpty) {
                 AsyncImage(url: URL(filePath: entry.imagePath)) { img in
                     img.resizable().opacity(0.12)
