@@ -104,7 +104,7 @@ enum Rendering {
             else {
                 return []
             }
-
+            
             log("Starting render of item \(item.id)")
             Task { @MainActor in
                 item.state = .rendering(step: 0, total: Float(item.steps), preview: nil)
@@ -192,6 +192,6 @@ enum Rendering {
     @MainActor
     static func shutdown() async {
         await PipelineState.shared.shutDown()
-        Model.shared.save()
+        Model.shared.saveNow()
     }
 }

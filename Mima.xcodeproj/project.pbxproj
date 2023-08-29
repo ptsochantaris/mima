@@ -23,6 +23,7 @@
 		1635F76229869EBB00B6FC6A /* TipJar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1635F76129869EBB00B6FC6A /* TipJar.swift */; };
 		16398DBB2986C408002214EA /* TipList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16398DBA2986C408002214EA /* TipList.swift */; };
 		16398DBD2986C41B002214EA /* TipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16398DBC2986C41B002214EA /* TipView.swift */; };
+		163A5D2D2A9E19AD00D370FA /* PopTimer in Frameworks */ = {isa = PBXBuildFile; productRef = 163A5D2C2A9E19AD00D370FA /* PopTimer */; };
 		1646F2AE2985E05900C75C1C /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1646F2AD2985E05900C75C1C /* HelpView.swift */; };
 		164DD47C2982EF97006B8D6F /* PipelinePhaseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164DD47B2982EF97006B8D6F /* PipelinePhaseView.swift */; };
 		164DD47E2982F05A006B8D6F /* DismissButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164DD47D2982F05A006B8D6F /* DismissButton.swift */; };
@@ -79,6 +80,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				163A5D2D2A9E19AD00D370FA /* PopTimer in Frameworks */,
 				1630C9A12981B68B005A0688 /* ZIPFoundation in Frameworks */,
 				16501BDB29957AA000B77985 /* StableDiffusion in Frameworks */,
 			);
@@ -176,6 +178,7 @@
 			packageProductDependencies = (
 				1630C9A02981B68B005A0688 /* ZIPFoundation */,
 				16501BDA29957AA000B77985 /* StableDiffusion */,
+				163A5D2C2A9E19AD00D370FA /* PopTimer */,
 			);
 			productName = Mima;
 			productReference = 166142442974BD5800BFA494 /* Mima.app */;
@@ -208,6 +211,7 @@
 			packageReferences = (
 				1630C99F2981B68B005A0688 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				16501BD929957AA000B77985 /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */,
+				163A5D2B2A9E19AD00D370FA /* XCRemoteSwiftPackageReference "pop-timer" */,
 			);
 			productRefGroup = 166142452974BD5800BFA494 /* Products */;
 			projectDirPath = "";
@@ -497,6 +501,14 @@
 				minimumVersion = 0.9.9;
 			};
 		};
+		163A5D2B2A9E19AD00D370FA /* XCRemoteSwiftPackageReference "pop-timer" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ptsochantaris/pop-timer";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		16501BD929957AA000B77985 /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/ml-stable-diffusion";
@@ -512,6 +524,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1630C99F2981B68B005A0688 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
+		};
+		163A5D2C2A9E19AD00D370FA /* PopTimer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 163A5D2B2A9E19AD00D370FA /* XCRemoteSwiftPackageReference "pop-timer" */;
+			productName = PopTimer;
 		};
 		16501BDA29957AA000B77985 /* StableDiffusion */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -10,6 +10,15 @@
       }
     },
     {
+      "identity" : "pop-timer",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ptsochantaris/pop-timer",
+      "state" : {
+        "branch" : "main",
+        "revision" : "866789ba524adc477ad3eb0ad41c929f7092dac7"
+      }
+    },
+    {
       "identity" : "swift-argument-parser",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-argument-parser.git",

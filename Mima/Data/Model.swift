@@ -3,6 +3,7 @@
 #endif
 import Foundation
 import SwiftUI
+import PopTimer
 
 final class Model: ObservableObject, Codable {
     @Published var entries: ContiguousArray<ListItem>
@@ -12,6 +13,11 @@ final class Model: ObservableObject, Codable {
     private var renderQueue: ContiguousArray<UUID>
     private var rendering = false
     private static let cloningAssets = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appending(path: "cloningAssets", directoryHint: .isDirectory)
+
+    private lazy var saveTimer = PopTimer(timeInterval: 0.1) { [weak self] in
+        guard let self else { return }
+        saveNow()
+    }
 
     init() {
         entries = [
@@ -141,7 +147,9 @@ extension Model {
             log("Pipeline not ready")
             return
         }
+
         rendering = true
+        
         Task {
             while let entry = nextEntryToRender(), await Rendering.render(entry) {
                 save()
@@ -161,15 +169,13 @@ extension Model {
         #endif
     }
 
-    private func submitToQueue(_ id: UUID) {
+    private func submitToQueue(_ id: UUID) async {
         renderQueue.append(id)
-        Task {
-            await startRenderingIfNeeded()
-            save()
-        }
+        await startRenderingIfNeeded()
+        save()
     }
 
-    func createItem(basedOn prototype: ListItem, fromCreator: Bool) {
+    func createItem(basedOn prototype: ListItem, fromCreator: Bool) async {
         let newItem = prototype.clone(as: .queued)
         guard let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) else {
             return
@@ -177,16 +183,16 @@ extension Model {
         if fromCreator {
             withAnimation(.easeInOut(duration: 0.2)) {
                 entries.insert(newItem, at: creatorIndex)
-                submitToQueue(newItem.id)
                 bottomId = UUID()
                 NotificationCenter.default.post(name: .ScrollToBottom, object: 0.2)
             }
         } else {
             withAnimation {
                 entries[creatorIndex] = newItem
-                submitToQueue(newItem.id)
             }
         }
+
+        await submitToQueue(newItem.id)
     }
 
     func state(of entity: ListItem) -> ListItem.State? {
@@ -195,7 +201,7 @@ extension Model {
 
     func addAndRender(entry: ListItem) async {
         await add(entry: entry)
-        submitToQueue(entry.id)
+        await submitToQueue(entry.id)
     }
 
     func add(entry: ListItem) async {
@@ -215,18 +221,32 @@ extension Model {
         }
     }
 
-    func createRandomVariant(of entry: ListItem) {
+    func createRandomVariant(of entry: ListItem) async {
         if let index = entries.firstIndex(where: { $0.id == entry.id }) {
-            let randomEntry = entry.randomVariant()
-            entries.insert(randomEntry, at: index + 1)
-            submitToQueue(randomEntry.id)
+            if NSEvent.modifierFlags.contains(.option) {
+                for count in 0 ..< 100 {
+                    let randomEntry = entry.randomVariant()
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        entries.insert(randomEntry, at: index + 1 + count)
+                    }
+                    await submitToQueue(randomEntry.id)
+                }
+            } else {
+                let randomEntry = entry.randomVariant()
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    entries.insert(randomEntry, at: index + 1)
+                }
+                await submitToQueue(randomEntry.id)
+            }
         }
     }
 
     func insertCreator(for entry: ListItem) {
         if let index = entries.firstIndex(where: { $0.id == entry.id }) {
             let newEntry = entry.clone(as: .cloning(needsFlash: true))
-            entries.insert(newEntry, at: index + 1)
+            withAnimation(.easeInOut(duration: 0.2)) {
+                entries.insert(newEntry, at: index + 1)
+            }
             save()
         }
     }
@@ -234,9 +254,14 @@ extension Model {
     private static let indexFileUrl = fileDirectory.appending(path: "entries.json", directoryHint: .notDirectory)
 
     func save() {
+        let entryIds = Set(entries.filter(\.state.shouldStayInRenderQueue).map(\.id))
+        renderQueue.removeAll { !entryIds.contains($0) }
+        saveTimer.push()
+    }
+
+    func saveNow() {
+        saveTimer.abort()
         do {
-            let entryIds = Set(entries.filter(\.state.shouldStayInRenderQueue).map(\.id))
-            renderQueue.removeAll { !entryIds.contains($0) }
             try JSONEncoder().encode(self).write(to: Model.indexFileUrl, options: .atomic)
             log("State saved")
         } catch {

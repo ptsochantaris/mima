@@ -36,7 +36,7 @@ final class NewItemModel: ObservableObject {
         }
     }
 
-    func refreshFromPrototype() {
+    private func refreshFromPrototype() {
         log("Loading latest prototype data")
         promptText = prototype.prompt
 
@@ -87,14 +87,20 @@ final class NewItemModel: ObservableObject {
                          seed: UInt32(seedText.trimmingCharacters(in: .whitespacesAndNewlines)),
                          steps: Int(stepText.trimmingCharacters(in: .whitespacesAndNewlines)) ?? ListItem.defaultSteps,
                          guidance: Float(guidanceText.trimmingCharacters(in: .whitespacesAndNewlines)) ?? ListItem.defaultGuidance)
-        Task {
-            try await Task.sleep(for: .milliseconds(100))
-            refreshFromPrototype()
-        }
+        refreshFromPrototype()
     }
 
     func create() {
-        updatePrototype()
-        Model.shared.createItem(basedOn: prototype, fromCreator: prototype.state.isCreator)
+        Task {
+            if NSEvent.modifierFlags.contains(.option) {
+                for _ in 0 ..< 100 {
+                    updatePrototype()
+                    await Model.shared.createItem(basedOn: prototype, fromCreator: prototype.state.isCreator)
+                }
+            } else {
+                updatePrototype()
+                await Model.shared.createItem(basedOn: prototype, fromCreator: prototype.state.isCreator)
+            }
+        }
     }
 }

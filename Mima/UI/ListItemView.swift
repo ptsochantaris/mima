@@ -88,8 +88,8 @@ struct ListItemView: View, Identifiable {
                     if visibleControls {
                         MimaButon(look: .encore)
                             .onTapGesture {
-                                withAnimation {
-                                    Model.shared.createRandomVariant(of: entry)
+                                Task {
+                                    await Model.shared.createRandomVariant(of: entry)
                                 }
                             }
                     }
@@ -98,9 +98,7 @@ struct ListItemView: View, Identifiable {
                     if visibleControls {
                         MimaButon(look: .edit)
                             .onTapGesture {
-                                withAnimation {
-                                    Model.shared.insertCreator(for: entry)
-                                }
+                                Model.shared.insertCreator(for: entry)
                             }
                     }
                 }
