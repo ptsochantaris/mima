@@ -104,7 +104,7 @@ enum Rendering {
             else {
                 return []
             }
-            
+
             log("Starting render of item \(item.id)")
             Task { @MainActor in
                 item.state = .rendering(step: 0, total: Float(item.steps), preview: nil)
@@ -149,10 +149,11 @@ enum Rendering {
                         }
                         DispatchQueue.global(qos: .background).async {
                             if let p = progress.currentImages.first, let p {
+                                let step = Float(progress.step)
                                 DispatchQueue.main.async {
                                     if case .rendering = item.state {
                                         withAnimation(.easeInOut(duration: 1.5)) {
-                                            item.state = .rendering(step: Float(progress.step), total: progressSteps, preview: p)
+                                            item.state = .rendering(step: step, total: progressSteps, preview: p)
                                         }
                                     }
                                 }
@@ -175,7 +176,7 @@ enum Rendering {
                 item.state = .rendering(step: 1, total: 1, preview: i)
             }
             i.save(from: item)
-            withAnimation(.easeInOut(duration: 1.5)) {
+            withAnimation(.easeInOut(duration: 1.0)) {
                 item.state = .done
             }
         } else {

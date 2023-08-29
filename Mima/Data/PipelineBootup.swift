@@ -37,7 +37,7 @@ enum ModelVersion: String, Identifiable, CaseIterable {
 }
 
 final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
-    static private var modelDownloadResumeData: Data?
+    private static var modelDownloadResumeData: Data?
 
     private let modelVersion: ModelVersion
     private let temporaryZip: String
@@ -88,7 +88,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
     func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         try? FileManager.default.moveItem(at: location, to: tempUrl)
     }
-    
+
     func urlSession(_: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         PipelineBootup.modelDownloadResumeData = (error as? NSError)?.userInfo[NSURLSessionDownloadTaskResumeData] as? Data
 

@@ -25,7 +25,7 @@ struct ListItemView: View, Identifiable {
     var body: some View {
         ZStack {
             ItemBackground()
-            
+
             let state = entry.state
             if case let .rendering(steps, total, preview) = state, let preview {
                 Image(preview, scale: 1, label: Text("")).resizable().opacity(0.3 * Double(steps) / Double(total))

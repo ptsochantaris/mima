@@ -149,6 +149,18 @@ struct MimaApp: App {
                             .disabled(isOn.wrappedValue || bootWatcher.booting)
                     }
                 }
+
+                Menu("Option-Click Repeats…") {
+                    let counts = stride(from: 10, to: 1001, by: 10).map { $0 }
+                    ForEach(counts, id: \.self) { count in
+                        let isOn = Binding<Bool>(
+                            get: { model.optionClickRepetitions == count },
+                            set: { if $0 { model.optionClickRepetitions = count } }
+                        )
+                        Toggle("\(count) times", isOn: isOn)
+                    }
+                }
+
                 let isOn = Binding<Bool>(
                     get: { model.useSafetyChecker },
                     set: { model.useSafetyChecker = $0 }

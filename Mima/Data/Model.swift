@@ -2,8 +2,8 @@
     import Cocoa
 #endif
 import Foundation
-import SwiftUI
 import PopTimer
+import SwiftUI
 
 final class Model: ObservableObject, Codable {
     @Published var entries: ContiguousArray<ListItem>
@@ -80,6 +80,17 @@ final class Model: ObservableObject, Codable {
 
 @MainActor
 extension Model {
+    var optionClickRepetitions: Int {
+        get {
+            let count = UserDefaults.standard.integer(forKey: "optionClickRepetitions")
+            return count == 0 ? 10 : count
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "optionClickRepetitions")
+            objectWillChange.send()
+        }
+    }
+
     var useSafetyChecker: Bool {
         get {
             UserDefaults.standard.bool(forKey: "useSafetyChecker")
@@ -149,7 +160,7 @@ extension Model {
         }
 
         rendering = true
-        
+
         Task {
             while let entry = nextEntryToRender(), await Rendering.render(entry) {
                 save()
@@ -169,30 +180,38 @@ extension Model {
         #endif
     }
 
-    private func submitToQueue(_ id: UUID) async {
-        renderQueue.append(id)
+    private func submitToQueue(_ ids: [UUID]) async {
+        renderQueue.append(contentsOf: ids)
         await startRenderingIfNeeded()
         save()
     }
 
-    func createItem(basedOn prototype: ListItem, fromCreator: Bool) async {
-        let newItem = prototype.clone(as: .queued)
+    func createItem(basedOn prototype: ListItem, count: Int, scroll: Bool) async {
         guard let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) else {
             return
         }
-        if fromCreator {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                entries.insert(newItem, at: creatorIndex)
+        let newItems = (0 ..< count).map { _ in prototype.clone(as: .queued) }
+        withAnimation(.easeInOut(duration: 0.2)) {
+            entries.insert(contentsOf: newItems, at: creatorIndex)
+            if scroll {
                 bottomId = UUID()
                 NotificationCenter.default.post(name: .ScrollToBottom, object: 0.2)
             }
-        } else {
-            withAnimation {
-                entries[creatorIndex] = newItem
-            }
         }
 
-        await submitToQueue(newItem.id)
+        await submitToQueue(newItems.map(\.id))
+    }
+
+    func replaceItem(basedOn prototype: ListItem) async {
+        guard let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) else {
+            return
+        }
+
+        let newItem = prototype.clone(as: .queued)
+        withAnimation(.easeInOut(duration: 0.2)) {
+            entries[creatorIndex] = newItem
+        }
+        await submitToQueue([newItem.id])
     }
 
     func state(of entity: ListItem) -> ListItem.State? {
@@ -201,7 +220,7 @@ extension Model {
 
     func addAndRender(entry: ListItem) async {
         await add(entry: entry)
-        await submitToQueue(entry.id)
+        await submitToQueue([entry.id])
     }
 
     func add(entry: ListItem) async {
@@ -222,23 +241,16 @@ extension Model {
     }
 
     func createRandomVariant(of entry: ListItem) async {
-        if let index = entries.firstIndex(where: { $0.id == entry.id }) {
-            if NSEvent.modifierFlags.contains(.option) {
-                for count in 0 ..< 100 {
-                    let randomEntry = entry.randomVariant()
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        entries.insert(randomEntry, at: index + 1 + count)
-                    }
-                    await submitToQueue(randomEntry.id)
-                }
-            } else {
-                let randomEntry = entry.randomVariant()
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    entries.insert(randomEntry, at: index + 1)
-                }
-                await submitToQueue(randomEntry.id)
-            }
+        guard let index = entries.firstIndex(where: { $0.id == entry.id }) else {
+            return
         }
+        let count = NSEvent.modifierFlags.contains(.option) ? Model.shared.optionClickRepetitions : 1
+        let newEntries = (0 ..< count).map { _ in entry.randomVariant() }
+
+        withAnimation(.easeInOut(duration: 0.2)) {
+            entries.insert(contentsOf: newEntries, at: index + 1)
+        }
+        await submitToQueue(newEntries.map(\.id))
     }
 
     func insertCreator(for entry: ListItem) {

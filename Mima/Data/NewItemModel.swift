@@ -91,15 +91,19 @@ final class NewItemModel: ObservableObject {
     }
 
     func create() {
-        Task {
-            if NSEvent.modifierFlags.contains(.option) {
-                for _ in 0 ..< 100 {
-                    updatePrototype()
-                    await Model.shared.createItem(basedOn: prototype, fromCreator: prototype.state.isCreator)
-                }
-            } else {
-                updatePrototype()
-                await Model.shared.createItem(basedOn: prototype, fromCreator: prototype.state.isCreator)
+        if prototype.state.isCreator {
+            let optionClick = NSEvent.modifierFlags.contains(.option)
+            let count = optionClick ? Model.shared.optionClickRepetitions : 1
+            prototype.willClone = { [weak self] in
+                self?.updatePrototype()
+            }
+            Task {
+                await Model.shared.createItem(basedOn: prototype, count: count, scroll: !optionClick)
+                prototype.willClone = nil
+            }
+        } else {
+            Task {
+                await Model.shared.replaceItem(basedOn: prototype)
             }
         }
     }

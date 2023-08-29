@@ -1,5 +1,5 @@
-import Foundation
 import CoreGraphics
+import Foundation
 
 extension ListItem {
     enum State: Codable {

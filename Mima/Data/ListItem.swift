@@ -17,6 +17,8 @@ final class ListItem: ObservableObject, Codable, Identifiable, @unchecked Sendab
     var originalImagePath: String
     var strength: Float
 
+    var willClone: (() -> Void)?
+
     @Published var imageName: String
     @Published var state: State
 
@@ -57,7 +59,8 @@ final class ListItem: ObservableObject, Codable, Identifiable, @unchecked Sendab
     }
 
     func clone(as newState: State) -> ListItem {
-        ListItem(prompt: prompt, imagePath: imagePath, originalImagePath: originalImagePath, imageName: imageName, strength: strength, negativePrompt: negativePrompt, seed: generatedSeed, steps: steps, guidance: guidance, state: newState)
+        willClone?()
+        return ListItem(prompt: prompt, imagePath: imagePath, originalImagePath: originalImagePath, imageName: imageName, strength: strength, negativePrompt: negativePrompt, seed: generatedSeed, steps: steps, guidance: guidance, state: newState)
     }
 
     func update(prompt: String, imagePath: String, originalImagePath: String, imageName: String, strength: Float, negativePrompt: String, seed: UInt32?, steps: Int, guidance: Float) {
