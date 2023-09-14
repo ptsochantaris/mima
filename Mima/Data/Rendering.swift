@@ -24,23 +24,23 @@ final actor PipelineState: ObservableObject {
         var showStatus: WarmUpPhase? {
             switch self {
             case .ready, .shutdown:
-                return nil
+                nil
             case let .setup(warmupPhase):
-                return warmupPhase
+                warmupPhase
             }
         }
 
         var booting: Bool {
             switch self {
             case .ready:
-                return false
+                false
             case .shutdown:
-                return true
+                true
             case let .setup(warmupPhase):
                 switch warmupPhase {
-                case .booting, .downloading, .expanding, .initialising: return true
+                case .booting, .downloading, .expanding, .initialising: true
                 case .downloadingError, .initialisingError:
-                    return false
+                    false
                 }
             }
         }
@@ -129,11 +129,10 @@ enum Rendering {
             config.guidanceScale = item.guidance
             config.disableSafety = !useSafety
 
-            let progressSteps: Float
-            if config.startingImage == nil {
-                progressSteps = Float(item.steps)
+            let progressSteps: Float = if config.startingImage == nil {
+                Float(item.steps)
             } else {
-                progressSteps = (Float(item.steps) * config.strength).rounded(.down)
+                (Float(item.steps) * config.strength).rounded(.down)
             }
 
             do {

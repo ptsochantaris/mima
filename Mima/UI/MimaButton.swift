@@ -25,18 +25,18 @@ struct MimaButon: View {
         var strength: Strength {
             switch self {
             case .edit, .encore, .share:
-                return .overlay
+                .overlay
             case let .dismiss(strength):
-                return strength
+                strength
             }
         }
 
         var systemName: String {
             switch self {
-            case .dismiss: return "xmark"
-            case .share: return "square.and.arrow.up"
-            case .encore: return "arrow.clockwise"
-            case .edit: return "square.on.square"
+            case .dismiss: "xmark"
+            case .share: "square.and.arrow.up"
+            case .encore: "arrow.clockwise"
+            case .edit: "square.on.square"
             }
         }
     }

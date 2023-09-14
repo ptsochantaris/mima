@@ -90,11 +90,10 @@ enum GladysAppIntents {
 
         @MainActor
         func perform() async throws -> some IntentResult {
-            let finalSeed: UInt32
-            if let seed {
-                finalSeed = UInt32(seed)
+            let finalSeed = if let seed {
+                UInt32(seed)
             } else {
-                finalSeed = UInt32.random(in: 0 ..< UInt32.max)
+                UInt32.random(in: 0 ..< UInt32.max)
             }
 
             let newItem = ListItem(prompt: include ?? "",
@@ -160,7 +159,7 @@ enum GladysAppIntents {
 
         var localizedStringResource: LocalizedStringResource {
             switch self {
-            case .error: return "Failed to create image"
+            case .error: "Failed to create image"
             }
         }
     }

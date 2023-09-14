@@ -35,7 +35,7 @@ enum TipJarError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case let .noFetchedProduct(error):
-            return error
+            error
         }
     }
 }

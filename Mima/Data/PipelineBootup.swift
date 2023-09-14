@@ -24,10 +24,10 @@ enum ModelVersion: String, Identifiable, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .sd14: return "Stable Diffusion 1.4"
-        case .sd15: return "Stable Diffusion 1.5"
-        case .sd20: return "Stable Diffusion 2.0"
-        case .sd21: return "Stable Diffusion 2.1"
+        case .sd14: "Stable Diffusion 1.4"
+        case .sd15: "Stable Diffusion 1.5"
+        case .sd20: "Stable Diffusion 2.0"
+        case .sd21: "Stable Diffusion 2.1"
         }
     }
 

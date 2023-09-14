@@ -6,7 +6,7 @@
       "location" : "https://github.com/apple/ml-stable-diffusion",
       "state" : {
         "branch" : "main",
-        "revision" : "e3875a584b173774357c76beda659df9f62527ec"
+        "revision" : "c5063225aa1473522116425268bb7285e6020f9b"
       }
     },
     {
@@ -15,7 +15,7 @@
       "location" : "https://github.com/ptsochantaris/pop-timer",
       "state" : {
         "branch" : "main",
-        "revision" : "866789ba524adc477ad3eb0ad41c929f7092dac7"
+        "revision" : "09a2b89dcef86151fc30cfc6000154b3645170b1"
       }
     },
     {

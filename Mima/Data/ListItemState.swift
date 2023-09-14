@@ -8,29 +8,29 @@ extension ListItem {
         var shouldStayInRenderQueue: Bool {
             switch self {
             case .error:
-                return false
+                false
             case .cancelled:
-                return false
+                false
             case .cloning:
-                return false
+                false
             case .creating:
-                return false
+                false
             case .queued:
-                return true
+                true
             case .rendering:
-                return true
+                true
             case .done:
-                return false
+                false
             case .blocked:
-                return false
+                false
             }
         }
 
         var isWaitingOrRendering: Bool {
             switch self {
-            case .blocked, .cancelled, .cloning, .creating, .done, .error: return false
+            case .blocked, .cancelled, .cloning, .creating, .done, .error: false
             case .queued, .rendering:
-                return true
+                true
             }
         }
 
