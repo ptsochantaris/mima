@@ -1,11 +1,12 @@
-import SwiftUI
 import Maintini
+import SwiftUI
 
 #if canImport(AppKit)
     final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
-        func applicationDidFinishLaunching(_ notification: Notification) {
+        func applicationDidFinishLaunching(_: Notification) {
             Maintini.setup()
         }
+
         func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
             Task {
                 await Rendering.shutdown()
@@ -17,9 +18,10 @@ import Maintini
 
 #elseif canImport(UIKit)
     final class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
-        func applicationDidFinishLaunching(_ application: UIApplication) {
+        func applicationDidFinishLaunching(_: UIApplication) {
             Maintini.setup()
         }
+
         func applicationWillTerminate(_: UIApplication) {
             Task {
                 await Rendering.shutdown()
@@ -111,9 +113,11 @@ struct MimaApp: App {
                         model.removeAllQueued()
                     }
                 }
-                Button("Remove All Items") {
-                    withAnimation {
-                        model.removeAll()
+                Menu("Remove All Items…") {
+                    Button("Confirm") {
+                        withAnimation {
+                            model.removeAll()
+                        }
                     }
                 }
             }
@@ -158,7 +162,12 @@ struct MimaApp: App {
                 }
 
                 Menu("Option-Click Repeats…") {
-                    let counts = stride(from: 10, to: 1001, by: 10).map { $0 }
+                    let counts = (
+                        Array(stride(from: 10, to: 100, by: 10))
+                            + Array(stride(from: 100, to: 1000, by: 100))
+                            + Array(stride(from: 1000, to: 10001, by: 1000))
+                    )
+
                     ForEach(counts, id: \.self) { count in
                         let isOn = Binding<Bool>(
                             get: { model.optionClickRepetitions == count },

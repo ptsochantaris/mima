@@ -3,6 +3,15 @@ import UniformTypeIdentifiers
 
 struct NewItem: View {
     @StateObject var newItemInfo: NewItemModel
+    @State private var showSafetyCheckerAlert = false
+
+    private func go() {
+        if PipelineBootup.persistedModelVersion == .sdXL, Model.shared.useSafetyChecker {
+            showSafetyCheckerAlert = true
+        } else {
+            newItemInfo.create()
+        }
+    }
 
     var body: some View {
         GeometryReader { proxy in
@@ -63,7 +72,7 @@ struct NewItem: View {
                         }
                         .font(.caption)
                         .onSubmit {
-                            newItemInfo.create()
+                            go()
                         }
 
                         VStack {
@@ -98,7 +107,7 @@ struct NewItem: View {
                                     .frame(width: 70)
                                 }
                                 .onSubmit {
-                                    newItemInfo.create()
+                                    go()
                                 }
                             }
                         }
@@ -106,7 +115,7 @@ struct NewItem: View {
                         .multilineTextAlignment(.center)
 
                         Button {
-                            newItemInfo.create()
+                            go()
                         } label: {
                             Text("Create")
                         }
@@ -117,6 +126,9 @@ struct NewItem: View {
                 }
                 .textFieldStyle(.roundedBorder)
             }
+        }
+        .alert(isPresented: $showSafetyCheckerAlert) {
+            Alert(title: Text("You cannot use the Stable Diffusion XL model when the safety filter is enabled, as it is currently not supported. Either use a different model or disable the safety filter."))
         }
         .overlay(alignment: .topTrailing) {
             if !newItemInfo.prototype.state.isCreator {

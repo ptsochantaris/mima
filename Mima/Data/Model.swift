@@ -2,9 +2,9 @@
     import AppKit
 #endif
 import Foundation
+import Maintini
 import PopTimer
 import SwiftUI
-import Maintini
 
 final class Model: ObservableObject, Codable {
     @Published var entries: ContiguousArray<ListItem>
@@ -12,7 +12,7 @@ final class Model: ObservableObject, Codable {
     @Published var bottomId = UUID()
 
     private var renderQueue: ContiguousArray<UUID>
-    private var rendering: Bool = false {
+    private var rendering = false {
         didSet {
             if rendering != oldValue {
                 if rendering {

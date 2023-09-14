@@ -1,9 +1,9 @@
 import CoreGraphics
 import CoreML
 import Foundation
+import Maintini
 import StableDiffusion
 import SwiftUI
-import Maintini
 
 enum WarmUpPhase {
     case booting, downloading(progress: Float), downloadingError(error: Error), initialising, initialisingError(error: Error), expanding
@@ -19,7 +19,7 @@ final actor PipelineState: ObservableObject {
     static let shared = PipelineState()
 
     enum Phase {
-        case setup(warmupPhase: WarmUpPhase), ready(StableDiffusionPipeline), shutdown
+        case setup(warmupPhase: WarmUpPhase), ready(StableDiffusionPipelineProtocol), shutdown
 
         var showStatus: WarmUpPhase? {
             switch self {
@@ -45,7 +45,6 @@ final actor PipelineState: ObservableObject {
             }
         }
     }
-
 
     private var phaseIsBooting = false
 
@@ -147,6 +146,11 @@ enum Rendering {
             config.seed = item.generatedSeed
             config.guidanceScale = item.guidance
             config.disableSafety = !useSafety
+            config.schedulerType = .dpmSolverMultistepScheduler
+            if PipelineBootup.persistedModelVersion == .sdXL {
+                config.encoderScaleFactor = 0.13025
+                config.decoderScaleFactor = 0.13025
+            }
 
             let progressSteps: Float = if config.startingImage == nil {
                 Float(item.steps)

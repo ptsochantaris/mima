@@ -13,7 +13,7 @@ enum BootupActor {
 private let revision = "3"
 
 enum ModelVersion: String, Identifiable, CaseIterable {
-    case sd14, sd15, sd20, sd21
+    case sd14, sd15, sd20, sd21, sdXL
 
     var zipName: String {
         #if canImport(AppKit)
@@ -29,6 +29,15 @@ enum ModelVersion: String, Identifiable, CaseIterable {
         case .sd15: "Stable Diffusion 1.5"
         case .sd20: "Stable Diffusion 2.0"
         case .sd21: "Stable Diffusion 2.1"
+        case .sdXL: "Stable Diffusion XL"
+        }
+    }
+
+    static var allCases: [ModelVersion] {
+        if #available(macOS 14, iOS 17, *) {
+            [.sd14, .sd15, .sd20, .sd21, .sdXL]
+        } else {
+            [.sd14, .sd15, .sd20, .sd21]
         }
     }
 
@@ -49,7 +58,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
 
     static var persistedModelVersion: ModelVersion {
         get {
-            if let value = UserDefaults.standard.string(forKey: "SelectedModelVersion"), let version = ModelVersion(rawValue: value) {
+            if let value = UserDefaults.standard.string(forKey: "SelectedModelVersion"), let version = ModelVersion(rawValue: value), ModelVersion.allCases.contains(version) {
                 return version
             }
             return .sd15
@@ -175,18 +184,28 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
     }
 
     @BootupActor
+    private func createPipeline(config: MLModelConfiguration, reduceMemory: Bool) async throws -> StableDiffusionPipelineProtocol {
+        if #available(macOS 14.0, *), PipelineBootup.persistedModelVersion == .sdXL {
+            return try StableDiffusionXLPipeline(resourcesAt: storageDirectory, configuration: config, reduceMemory: reduceMemory)
+        } else {
+            let disableSafety = await !Model.shared.useSafetyChecker
+            return try StableDiffusionPipeline(resourcesAt: storageDirectory, controlNet: [], configuration: config, disableSafety: disableSafety, reduceMemory: reduceMemory)
+        }
+    }
+
+    @BootupActor
     private func modelReady() async throws {
         await PipelineState.shared.setPhase(to: .setup(warmupPhase: .initialising))
         log("Constructing pipeline...")
         let config = MLModelConfiguration()
         #if canImport(AppKit)
             config.computeUnits = .cpuAndGPU
-            let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, controlNet: [], configuration: config, disableSafety: false)
+            let pipeline = try await createPipeline(config: config, reduceMemory: false)
             log("Warmup...")
             try pipeline.loadResources()
         #else
             config.computeUnits = .cpuAndNeuralEngine
-            let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, configuration: config, disableSafety: false, reduceMemory: true)
+            let pipeline = try await createPipeline(config: config, reduceMemory: true)
         #endif
         log("Pipeline ready")
         await PipelineState.shared.setPhase(to: .ready(pipeline))
