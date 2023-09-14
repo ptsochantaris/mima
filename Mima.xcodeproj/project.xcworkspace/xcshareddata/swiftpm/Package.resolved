@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "maintini",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ptsochantaris/maintini",
+      "state" : {
+        "branch" : "main",
+        "revision" : "e7a06b9e122a9fe9cec2d7da08f4fb56d5ddb5fd"
+      }
+    },
+    {
       "identity" : "ml-stable-diffusion",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/ml-stable-diffusion",

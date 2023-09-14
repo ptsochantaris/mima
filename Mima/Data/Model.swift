@@ -4,6 +4,7 @@
 import Foundation
 import PopTimer
 import SwiftUI
+import Maintini
 
 final class Model: ObservableObject, Codable {
     @Published var entries: ContiguousArray<ListItem>
@@ -11,7 +12,22 @@ final class Model: ObservableObject, Codable {
     @Published var bottomId = UUID()
 
     private var renderQueue: ContiguousArray<UUID>
-    private var rendering = false
+    private var rendering: Bool = false {
+        didSet {
+            if rendering != oldValue {
+                if rendering {
+                    Task { @MainActor in
+                        Maintini.startMaintaining()
+                    }
+                } else {
+                    Task { @MainActor in
+                        Maintini.endMaintaining()
+                    }
+                }
+            }
+        }
+    }
+
     private static let cloningAssets = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appending(path: "cloningAssets", directoryHint: .isDirectory)
 
     private lazy var saveTimer = PopTimer(timeInterval: 0.1) { [weak self] in

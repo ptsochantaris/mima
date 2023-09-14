@@ -1,7 +1,11 @@
 import SwiftUI
+import Maintini
 
 #if canImport(AppKit)
     final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
+        func applicationDidFinishLaunching(_ notification: Notification) {
+            Maintini.setup()
+        }
         func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
             Task {
                 await Rendering.shutdown()
@@ -13,6 +17,9 @@ import SwiftUI
 
 #elseif canImport(UIKit)
     final class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
+        func applicationDidFinishLaunching(_ application: UIApplication) {
+            Maintini.setup()
+        }
         func applicationWillTerminate(_: UIApplication) {
             Task {
                 await Rendering.shutdown()

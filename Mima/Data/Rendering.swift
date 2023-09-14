@@ -1,8 +1,9 @@
 import CoreGraphics
 import CoreML
 import Foundation
-@preconcurrency import StableDiffusion
+import StableDiffusion
 import SwiftUI
+import Maintini
 
 enum WarmUpPhase {
     case booting, downloading(progress: Float), downloadingError(error: Error), initialising, initialisingError(error: Error), expanding
@@ -45,7 +46,26 @@ final actor PipelineState: ObservableObject {
         }
     }
 
-    private(set) var phase = Phase.setup(warmupPhase: .booting)
+
+    private var phaseIsBooting = false
+
+    private(set) var phase = Phase.setup(warmupPhase: .booting) {
+        didSet {
+            let booting = phase.booting
+            if phaseIsBooting != booting {
+                phaseIsBooting = booting
+                if booting {
+                    Task { @MainActor in
+                        Maintini.startMaintaining()
+                    }
+                } else {
+                    Task { @MainActor in
+                        Maintini.endMaintaining()
+                    }
+                }
+            }
+        }
+    }
 
     func setPhase(to newPhase: Phase) {
         phase = newPhase
