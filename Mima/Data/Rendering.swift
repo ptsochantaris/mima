@@ -134,10 +134,11 @@ enum Rendering {
             var config = StableDiffusionPipeline.Configuration(prompt: item.prompt)
             if !item.imagePath.isEmpty, let img = loadImage(from: URL(fileURLWithPath: item.imagePath)) {
                 log("Loaded starting image from \(item.imagePath)")
-                if img.width == 512, img.height == 512 {
+                let side = PipelineBootup.persistedModelVersion.imageSize
+                if img.width == Int(side), img.height == Int(side) {
                     config.startingImage = img
                 } else {
-                    config.startingImage = img.scaled(to: 512) // remove eventually
+                    config.startingImage = img.scaled(to: side) // needed if image was imported at another model resolution
                 }
                 config.strength = item.strength
             }
@@ -147,6 +148,7 @@ enum Rendering {
             config.guidanceScale = item.guidance
             config.disableSafety = !useSafety
             config.schedulerType = .dpmSolverMultistepScheduler
+            config.useDenoisedIntermediates = false
             if PipelineBootup.persistedModelVersion == .sdXL {
                 config.encoderScaleFactor = 0.13025
                 config.decoderScaleFactor = 0.13025

@@ -64,7 +64,7 @@ final class Model: ObservableObject, Codable {
             try? FileManager.default.createDirectory(at: cloningAssets, withIntermediateDirectories: true)
         }
         let destinationUrl = cloningAssets.appending(path: UUID().uuidString, directoryHint: .notDirectory)
-        let image = loadImage(from: url)?.scaled(to: 512)
+        let image = loadImage(from: url)?.scaled(to: PipelineBootup.persistedModelVersion.imageSize)
         image?.save(to: destinationUrl)
         return destinationUrl.path
     }

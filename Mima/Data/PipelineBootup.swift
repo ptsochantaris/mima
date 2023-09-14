@@ -22,6 +22,15 @@ enum ModelVersion: String, Identifiable, CaseIterable {
             "\(rawValue).iOS.\(revision).zip"
         #endif
     }
+    
+    var imageSize: CGFloat {
+        switch self {
+        case .sd14, .sd15, .sd20, .sd21:
+            512
+        case .sdXL:
+            1024
+        }
+    }
 
     var displayName: String {
         switch self {
