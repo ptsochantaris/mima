@@ -168,9 +168,9 @@ extension RangeReplaceableCollection {
     }
 }
 
-#if canImport(Cocoa)
+#if canImport(AppKit)
 
-    import Cocoa
+    import AppKit
     typealias IMAGE = NSImage
     func loadImage(from url: URL) -> CGImage? {
         NSImage(contentsOf: url)?.cgImage(forProposedRect: nil, context: nil, hints: nil)

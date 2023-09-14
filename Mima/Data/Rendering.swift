@@ -3,7 +3,6 @@ import CoreML
 import Foundation
 @preconcurrency import StableDiffusion
 import SwiftUI
-import ZIPFoundation
 
 enum WarmUpPhase {
     case booting, downloading(progress: Float), downloadingError(error: Error), initialising, initialisingError(error: Error), expanding

@@ -133,7 +133,7 @@ final class ListItem: ObservableObject, Codable, Identifiable, @unchecked Sendab
     }
 
     func copyImageToPasteboard() {
-        #if canImport(Cocoa)
+        #if canImport(AppKit)
             guard let url = (imageUrl as NSURL).fileReferenceURL() as NSURL? else { return }
             let pb = NSPasteboard.general
             pb.clearContents()

@@ -1,6 +1,6 @@
 import SwiftUI
 
-#if canImport(Cocoa)
+#if canImport(AppKit)
     final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
         func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
             Task {
@@ -73,7 +73,7 @@ private struct ContentView: View {
 
 @main
 struct MimaApp: App {
-    #if canImport(Cocoa)
+    #if canImport(AppKit)
         @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate: AppDelegate
     #elseif canImport(UIKit)
         @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate: AppDelegate
@@ -167,7 +167,7 @@ struct MimaApp: App {
                 )
                 Toggle("Use Safety Filter", isOn: isOn)
             }
-            #if canImport(Cocoa)
+            #if canImport(AppKit)
                 CommandGroup(replacing: .importExport) {
                     Button("Export All Items") {
                         Task {
@@ -187,13 +187,13 @@ struct MimaApp: App {
                 }
             #endif
         }
-        #if canImport(Cocoa)
+        #if canImport(AppKit)
         .defaultSize(width: 1024, height: 768)
         #endif
 
         WindowGroup("About Mima", id: "about") {
             AboutView()
-            #if canImport(Cocoa)
+            #if canImport(AppKit)
                 .onAppear {
                     Task {
                         if let wnd = NSApp.windows.first(where: { $0.title == "About Mima" }) {
@@ -203,13 +203,13 @@ struct MimaApp: App {
                 }
             #endif
         }
-        #if canImport(Cocoa)
+        #if canImport(AppKit)
         .windowResizability(.contentSize)
         #endif
 
         WindowGroup("Mima Help", id: "help") {
             HelpView()
-            #if canImport(Cocoa)
+            #if canImport(AppKit)
                 .onAppear {
                     Task {
                         if let wnd = NSApp.windows.first(where: { $0.title == "Mima Help" }) {
@@ -219,7 +219,7 @@ struct MimaApp: App {
                 }
             #endif
         }
-        #if canImport(Cocoa)
+        #if canImport(AppKit)
         .windowResizability(.contentSize)
         #endif
     }

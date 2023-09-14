@@ -3,7 +3,7 @@ import UniformTypeIdentifiers
 
 struct ItemBackground: View {
     var body: some View {
-        #if canImport(Cocoa)
+        #if canImport(AppKit)
             Color.secondary.opacity(0.1)
         #else
             Color.secondary.opacity(0.3)
@@ -53,7 +53,7 @@ struct ListItemView: View, Identifiable {
                 let sourceUrl = entry.imageUrl
                 AsyncImage(url: sourceUrl) { img in
                     img.resizable()
-                    #if canImport(Cocoa)
+                    #if canImport(AppKit)
                         .overlay {
                             AcceptingFirstMouse()
                         }
@@ -79,7 +79,7 @@ struct ListItemView: View, Identifiable {
                             .onTapGesture {
                                 showPicker = true
                             }
-                        #if canImport(Cocoa)
+                        #if canImport(AppKit)
                             .background(SharePicker(isPresented: $showPicker, sharingItems: [sourceUrl]))
                         #endif
                     }
@@ -133,7 +133,7 @@ struct ListItemView: View, Identifiable {
                 }
             }
         }
-        #if canImport(Cocoa)
+        #if canImport(AppKit)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification, object: nil)) { _ in
             visibleControls = false
         }

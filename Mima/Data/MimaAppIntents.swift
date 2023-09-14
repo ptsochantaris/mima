@@ -1,5 +1,5 @@
 import AppIntents
-import Cocoa
+import AppKit
 
 enum ListItemStatus: String, AppEnum {
     static var typeDisplayRepresentation: TypeDisplayRepresentation = "Image status"

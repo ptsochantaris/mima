@@ -1,5 +1,5 @@
 #if os(macOS)
-    import Cocoa
+    import AppKit
     import SwiftUI
 
     final class AcceptFirstMouseView: NSView {

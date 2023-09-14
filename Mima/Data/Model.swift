@@ -1,5 +1,5 @@
-#if canImport(Cocoa)
-    import Cocoa
+#if canImport(AppKit)
+    import AppKit
 #endif
 import Foundation
 import PopTimer
@@ -175,7 +175,7 @@ extension Model {
             let destination = url.appending(path: entry.exportFilename, directoryHint: .notDirectory)
             try? fm.copyItem(at: entry.imageUrl, to: destination)
         }
-        #if canImport(Cocoa)
+        #if canImport(AppKit)
             NSWorkspace.shared.open(url)
         #endif
     }

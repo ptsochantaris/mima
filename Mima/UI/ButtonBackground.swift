@@ -3,7 +3,7 @@ import SwiftUI
 struct ButtonOverlayBackground: View {
     var body: some View {
         Group {
-            #if canImport(Cocoa)
+            #if canImport(AppKit)
                 if NSApp.isActive {
                     Circle()
                         .foregroundStyle(.ultraThinMaterial)

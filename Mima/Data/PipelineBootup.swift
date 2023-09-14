@@ -2,6 +2,7 @@ import CoreML
 import Foundation
 import StableDiffusion
 import SwiftUI
+import ZIPFoundation
 
 @globalActor
 enum BootupActor {
@@ -15,7 +16,7 @@ enum ModelVersion: String, Identifiable, CaseIterable {
     case sd14, sd15, sd20, sd21
 
     var zipName: String {
-        #if canImport(Cocoa)
+        #if canImport(AppKit)
             "\(rawValue).\(revision).zip"
         #else
             "\(rawValue).iOS.\(revision).zip"
@@ -178,7 +179,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         await PipelineState.shared.setPhase(to: .setup(warmupPhase: .initialising))
         log("Constructing pipeline...")
         let config = MLModelConfiguration()
-        #if canImport(Cocoa)
+        #if canImport(AppKit)
             config.computeUnits = .cpuAndGPU
             let pipeline = try StableDiffusionPipeline(resourcesAt: storageDirectory, controlNet: [], configuration: config, disableSafety: false)
             log("Warmup...")
