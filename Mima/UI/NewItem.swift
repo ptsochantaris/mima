@@ -3,11 +3,10 @@ import UniformTypeIdentifiers
 
 struct NewItem: View {
     @StateObject var newItemInfo: NewItemModel
-    @State private var showSafetyCheckerAlert = false
 
     private func go() {
         if PipelineBootup.persistedModelVersion == .sdXL, Model.shared.useSafetyChecker {
-            showSafetyCheckerAlert = true
+            newItemInfo.showSafetyCheckerAlert = true
         } else {
             newItemInfo.create()
         }
@@ -127,8 +126,11 @@ struct NewItem: View {
                 .textFieldStyle(.roundedBorder)
             }
         }
-        .alert(isPresented: $showSafetyCheckerAlert) {
-            Alert(title: Text("You cannot use the Stable Diffusion XL model when the safety filter is enabled, as it is currently not supported. Either use a different model or disable the safety filter."))
+        .alert("Sorry, this model currently doesn't support image-to-image conversion. Please select a different model version.", isPresented: $newItemInfo.showImageToImageAlert) {
+            Button("OK", role: .cancel) {}
+        }
+        .alert("You cannot use the Stable Diffusion XL model when the safety filter is enabled, as it is currently not supported. Either use a different model or disable the safety filter.", isPresented: $newItemInfo.showSafetyCheckerAlert) {
+            Button("OK", role: .cancel) {}
         }
         .overlay(alignment: .topTrailing) {
             if !newItemInfo.prototype.state.isCreator {

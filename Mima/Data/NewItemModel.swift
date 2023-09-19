@@ -5,6 +5,9 @@ import SwiftUI
 final class NewItemModel: ObservableObject {
     var prototype: ListItem
 
+    @Published var showSafetyCheckerAlert = false
+    @Published var showImageToImageAlert = false
+
     @Published var promptText = ""
     @Published var imageName = ""
     @Published var imagePath = ""
