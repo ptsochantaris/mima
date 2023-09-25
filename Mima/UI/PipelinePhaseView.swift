@@ -20,7 +20,7 @@ struct RetryButton: View {
         .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
         .onTapGesture {
             Task { @RenderActor in
-                await PipelineBootup().startup()
+                await PipelineManager().startup()
             }
         }
     }
@@ -43,7 +43,7 @@ struct PipelinePhaseView: View {
             case let .downloading(progress):
                 Icon(name: "clock")
                 VStack(alignment: .leading) {
-                    Text("Downloading the \(PipelineBootup.persistedModelVersion.displayName) engine, this is only needed once…")
+                    Text("Downloading the \(PipelineManager.persistedModelVersion.displayName) engine, this is only needed once…")
                         .fixedSize(horizontal: false, vertical: true)
                     GeometryReader { proxy in
                         HStack(spacing: 0) {

@@ -133,9 +133,9 @@ final class ImageDropDelegate: DropDelegate {
         guard let provider = info.itemProviders(for: [.url]).first else {
             return false
         }
-        if PipelineBootup.persistedModelVersion == .sdXL {
+        if PipelineManager.persistedModelVersion == .sdXL {
             Task { @MainActor in
-                self.newItemInfo?.showImageToImageAlert = true
+                newItemInfo?.showImageToImageAlert = true
             }
             return false
         }

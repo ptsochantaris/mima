@@ -10,16 +10,16 @@ enum BootupActor {
     static let shared = ActorType()
 }
 
-private let revision = "3"
-
 enum ModelVersion: String, Identifiable, CaseIterable {
+    var currentRevision: String { "3" }
+
     case sd14, sd15, sd20, sd21, sdXL
 
     var zipName: String {
         #if canImport(AppKit)
-            "\(rawValue).\(revision).zip"
+            "\(rawValue).\(currentRevision).zip"
         #else
-            "\(rawValue).iOS.\(revision).zip"
+            "\(rawValue).iOS.\(currentRevision).zip"
         #endif
     }
     
@@ -55,7 +55,7 @@ enum ModelVersion: String, Identifiable, CaseIterable {
     }
 }
 
-final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
+final class PipelineManager: NSObject, URLSessionDownloadDelegate {
     private static var modelDownloadResumeData: Data?
 
     private let modelVersion: ModelVersion
@@ -78,7 +78,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
     }
 
     override init() {
-        modelVersion = PipelineBootup.persistedModelVersion
+        modelVersion = PipelineManager.persistedModelVersion
 
         temporaryZip = NSTemporaryDirectory().appending(modelVersion.zipName)
 
@@ -88,7 +88,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
         let storeUrl = docUrl.appending(path: modelVersion.rawValue, directoryHint: .isDirectory)
         storageDirectory = storeUrl
 
-        checkFile = storeUrl.appending(path: "ready.\(revision)", directoryHint: .notDirectory)
+        checkFile = storeUrl.appending(path: "ready.\(modelVersion.currentRevision)", directoryHint: .notDirectory)
 
         super.init()
     }
@@ -109,7 +109,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
     }
 
     func urlSession(_: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        PipelineBootup.modelDownloadResumeData = (error as? NSError)?.userInfo[NSURLSessionDownloadTaskResumeData] as? Data
+        PipelineManager.modelDownloadResumeData = (error as? NSError)?.userInfo[NSURLSessionDownloadTaskResumeData] as? Data
 
         if let error {
             Task {
@@ -162,10 +162,10 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
             do {
                 await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloading(progress: 0)))
                 let task: URLSessionTask
-                if let resumeData = PipelineBootup.modelDownloadResumeData {
+                if let resumeData = PipelineManager.modelDownloadResumeData {
                     log("Attempting to resume model transfer...")
                     task = urlSession.downloadTask(withResumeData: resumeData)
-                    PipelineBootup.modelDownloadResumeData = nil
+                    PipelineManager.modelDownloadResumeData = nil
                 } else {
                     log("Requesting new model transfer...")
                     let downloadUrl = URL(string: "https://bruvault.net/\(modelVersion.zipName)")!
@@ -194,7 +194,7 @@ final class PipelineBootup: NSObject, URLSessionDownloadDelegate {
 
     @BootupActor
     private func createPipeline(config: MLModelConfiguration, reduceMemory: Bool) async throws -> StableDiffusionPipelineProtocol {
-        if #available(macOS 14.0, *), PipelineBootup.persistedModelVersion == .sdXL {
+        if #available(macOS 14.0, *), PipelineManager.persistedModelVersion == .sdXL {
             return try StableDiffusionXLPipeline(resourcesAt: storageDirectory, configuration: config, reduceMemory: reduceMemory)
         } else {
             let disableSafety = await !Model.shared.useSafetyChecker

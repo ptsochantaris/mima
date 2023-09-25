@@ -143,15 +143,15 @@ struct MimaApp: App {
                 Menu("Engine Version…") {
                     ForEach(ModelVersion.allCases) { version in
                         let isOn = Binding<Bool>(
-                            get: { version == PipelineBootup.persistedModelVersion },
+                            get: { version == PipelineManager.persistedModelVersion },
                             set: { newValue, _ in
                                 guard newValue else {
                                     return
                                 }
                                 Task { @RenderActor in
                                     await PipelineState.shared.shutDown()
-                                    PipelineBootup.persistedModelVersion = version
-                                    await PipelineBootup().startup()
+                                    PipelineManager.persistedModelVersion = version
+                                    await PipelineManager().startup()
                                 }
                                 model.cancelAllRendering()
                             }
