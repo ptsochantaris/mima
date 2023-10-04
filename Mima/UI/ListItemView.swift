@@ -27,8 +27,8 @@ struct ListItemView: View, Identifiable {
             ItemBackground()
 
             let state = entry.state
-            if case let .rendering(steps, total, preview) = state, let preview {
-                Image(preview, scale: 1, label: Text("")).resizable().opacity(0.3 * Double(steps) / Double(total))
+            if case let .rendering(step, total, preview) = state, let preview {
+                Image(preview, scale: 1, label: Text("")).resizable().opacity(0.6 * Double(step) / Double(total))
             } else if !(entry.state.isDone || entry.imageName.isEmpty || entry.imagePath.isEmpty) {
                 AsyncImage(url: URL(filePath: entry.imagePath)) { img in
                     img.resizable().opacity(0.12)
@@ -41,8 +41,45 @@ struct ListItemView: View, Identifiable {
             case .cloning, .creating:
                 NewItem(newItemInfo: NewItemModel(prototype: entry))
 
-            case .blocked, .queued, .rendering:
-                EntryTitle(entry: entry)
+            case let .rendering(step, total, _):
+                let progress = Double(step) / Double(total)
+                let ongoing = progress > 0.4
+                let titleOpacity = (3.4 - progress * 4)
+                Color.clear
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .overlay(alignment: ongoing ? .topLeading : .center) {
+                        VStack(spacing: 8) {
+                            EntryName(entry: entry, textAlignment: ongoing ? .leading : .center)
+                                .opacity(titleOpacity)
+                                .id(entry.id)
+                            if !ongoing {
+                                Spacer()
+                                    .frame(height: 1)
+                            }
+                        }
+                        .padding([.top, .bottom])
+                        .padding(ongoing ? .leading : [])
+                        .padding(ongoing ? .trailing : [], 50)
+                        .padding(ongoing ? [] : .horizontal, 50)
+                    }
+                    .overlay(alignment: .bottomLeading) {
+                        if !ongoing {
+                            EntryFooter(entry: entry)
+                                .padding()
+                        }
+                    }
+
+            case .blocked, .queued:
+                VStack(spacing: 8) {
+                    EntryName(entry: entry, textAlignment: .center)
+                        .id(entry.id)
+
+                    Spacer()
+                        .frame(height: 1)
+                }
+                .padding([.top, .bottom])
+                .padding(.horizontal, 50)
+
                 Color.clear
                     .overlay(alignment: .bottomLeading) {
                         EntryFooter(entry: entry)

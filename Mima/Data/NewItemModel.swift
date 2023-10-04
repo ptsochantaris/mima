@@ -72,11 +72,10 @@ final class NewItemModel: ObservableObject {
     }
 
     func updatePrototype() {
-        let convertedStrength: Float
-        if let s = Float(strengthText.trimmingCharacters(in: .whitespacesAndNewlines)) {
-            convertedStrength = s / 100.0
+        let convertedStrength: Float = if let s = Float(strengthText.trimmingCharacters(in: .whitespacesAndNewlines)) {
+            s / 100.0
         } else {
-            convertedStrength = ListItem.defaultStrength
+            ListItem.defaultStrength
         }
         let imageName = imageName.trimmingCharacters(in: .whitespacesAndNewlines)
         prototype.update(prompt: promptText.trimmingCharacters(in: .whitespacesAndNewlines),

@@ -5,7 +5,7 @@ struct NewItem: View {
     @StateObject var newItemInfo: NewItemModel
 
     private func go() {
-        if PipelineManager.persistedModelVersion == .sdXL, Model.shared.useSafetyChecker {
+        if PipelineManager.userSelectedVersion == .sdXL, Model.shared.useSafetyChecker {
             newItemInfo.showSafetyCheckerAlert = true
         } else {
             newItemInfo.create()

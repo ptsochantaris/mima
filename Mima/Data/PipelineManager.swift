@@ -10,18 +10,40 @@ enum BootupActor {
     static let shared = ActorType()
 }
 
-enum ModelVersion: String, Identifiable, CaseIterable {
-    var currentRevision: String { "4" }
+let appDocumentsUrl: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 
-    case sd14, sd15, sd20, sd21, sdXL
+enum ModelVersion: String, Identifiable, CaseIterable {
+    private var latestRevision: String {
+        switch self {
+        case .sd14: "3"
+        case .sd15: "3"
+        case .sd20: "3"
+        case .sd21: "3"
+        case .sdXL: "4"
+        }
+    }
 
     var zipName: String {
         #if canImport(AppKit)
-            "\(rawValue).\(currentRevision).zip"
+            "\(rawValue).\(latestRevision).zip"
         #else
-            "\(rawValue).iOS.\(currentRevision).zip"
+            "\(rawValue).iOS.\(latestRevision).zip"
         #endif
     }
+
+    var root: URL {
+        appDocumentsUrl.appending(path: rawValue, directoryHint: .isDirectory)
+    }
+
+    var tempZipLocation: URL {
+        URL(fileURLWithPath: NSTemporaryDirectory().appending(zipName))
+    }
+
+    var readyFileLocation: URL {
+        root.appending(path: "ready.\(latestRevision)", directoryHint: .notDirectory)
+    }
+
+    case sd14, sd15, sd20, sd21, sdXL
 
     var imageSize: CGFloat {
         switch self {
@@ -57,13 +79,8 @@ enum ModelVersion: String, Identifiable, CaseIterable {
 
 final class PipelineManager: NSObject, URLSessionDownloadDelegate {
     private let modelVersion: ModelVersion
-    private let temporaryZip: String
-    private let storageDirectory: URL
-    private let appDocumentsUrl: URL
-    private let checkFile: URL
-    private lazy var tempUrl = URL(fileURLWithPath: temporaryZip)
 
-    static var persistedModelVersion: ModelVersion {
+    private(set) static var userSelectedVersion: ModelVersion {
         get {
             if let value = UserDefaults.standard.string(forKey: "SelectedModelVersion"), let version = ModelVersion(rawValue: value), ModelVersion.allCases.contains(version) {
                 return version
@@ -75,19 +92,13 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
         }
     }
 
-    override init() {
-        modelVersion = PipelineManager.persistedModelVersion
-
-        temporaryZip = NSTemporaryDirectory().appending(modelVersion.zipName)
-
-        let docUrl = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        appDocumentsUrl = docUrl
-
-        let storeUrl = docUrl.appending(path: modelVersion.rawValue, directoryHint: .isDirectory)
-        storageDirectory = storeUrl
-
-        checkFile = storeUrl.appending(path: "ready.\(modelVersion.currentRevision)", directoryHint: .notDirectory)
-
+    init(selecting version: ModelVersion? = nil) {
+        if let version {
+            modelVersion = version
+            Self.userSelectedVersion = version
+        } else {
+            modelVersion = Self.userSelectedVersion
+        }
         super.init()
     }
 
@@ -103,10 +114,10 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
     }
 
     func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        try? FileManager.default.moveItem(at: location, to: tempUrl)
+        try? FileManager.default.moveItem(at: location, to: modelVersion.tempZipLocation)
     }
 
-    private func handleNetworkError(_ error: Error, in task: URLSessionTask) {
+    private func handleNetworkError(_ error: Error, in _: URLSessionTask) {
         log("Network error: \(error.localizedDescription)")
         Task {
             await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
@@ -145,19 +156,19 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
         }
 
         do {
-            if FileManager.default.fileExists(atPath: checkFile.path) {
+            if FileManager.default.fileExists(atPath: modelVersion.readyFileLocation.path) {
                 log("Model ready...")
                 downloadTasks.first?.cancel()
                 try await modelReady()
 
             } else {
                 log("Need to fetch model...")
-                if FileManager.default.fileExists(atPath: temporaryZip) {
-                    try FileManager.default.removeItem(at: tempUrl)
+                if FileManager.default.fileExists(atPath: modelVersion.tempZipLocation.path) {
+                    try FileManager.default.removeItem(at: modelVersion.tempZipLocation)
                 }
 
                 if let last = downloadTasks.last {
-                    if let modelZip = last.response?.url?.lastPathComponent, Self.persistedModelVersion.zipName == modelZip {
+                    if let modelZip = last.response?.url?.lastPathComponent, modelVersion.zipName == modelZip {
                         log("Existing download for currently selected model detected, continuing")
                         return
                     } else {
@@ -183,7 +194,7 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
     private lazy var urlSession = URLSession(configuration: URLSessionConfiguration.background(withIdentifier: "build.bru.mima.background-download-session"), delegate: self, delegateQueue: nil)
     // Note: this needs extra handling for iOS, not yet implemented
 
-    func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
+    func urlSessionDidFinishEvents(forBackgroundURLSession _: URLSession) {
         log("Background URL session events complete")
     }
 
@@ -192,28 +203,27 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
         log("Downloaded model...")
         await PipelineState.shared.setPhase(to: .setup(warmupPhase: .expanding))
         log("Decompressing model...")
-        if FileManager.default.fileExists(atPath: storageDirectory.path) {
-            try FileManager.default.removeItem(at: storageDirectory)
+        let fm = FileManager.default
+        if fm.fileExists(atPath: modelVersion.root.path) {
+            try fm.removeItem(at: modelVersion.root)
         }
-        try FileManager.default.unzipItem(at: tempUrl, to: appDocumentsUrl)
+        try fm.unzipItem(at: modelVersion.tempZipLocation, to: appDocumentsUrl)
 
         log("Cleaning up...")
-        try FileManager.default.removeItem(at: tempUrl)
-        FileManager.default.createFile(atPath: checkFile.path, contents: nil)
+        try fm.removeItem(at: modelVersion.tempZipLocation)
+        fm.createFile(atPath: modelVersion.readyFileLocation.path, contents: nil)
         try await modelReady()
     }
 
     @BootupActor
     private func createPipeline(config: MLModelConfiguration, reduceMemory: Bool) async throws -> StableDiffusionPipelineProtocol {
-        if #available(macOS 14.0, *), PipelineManager.persistedModelVersion == .sdXL {
-            return try StableDiffusionXLPipeline(resourcesAt: storageDirectory, configuration: config, reduceMemory: reduceMemory)
+        if #available(macOS 14.0, *), modelVersion == .sdXL {
+            return try StableDiffusionXLPipeline(resourcesAt: modelVersion.root, configuration: config, reduceMemory: reduceMemory)
         } else {
             let disableSafety = await !Model.shared.useSafetyChecker
-            return try StableDiffusionPipeline(resourcesAt: storageDirectory, controlNet: [], configuration: config, disableSafety: disableSafety, reduceMemory: reduceMemory)
+            return try StableDiffusionPipeline(resourcesAt: modelVersion.root, controlNet: [], configuration: config, disableSafety: disableSafety, reduceMemory: reduceMemory)
         }
     }
-
-    
 
     @BootupActor
     private func modelReady() async throws {

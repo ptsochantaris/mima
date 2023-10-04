@@ -108,7 +108,9 @@ enum Rendering {
             break
         case .ready:
             Task { @MainActor in
-                item.state = .rendering(step: -1, total: Float(item.steps), preview: nil)
+                withAnimation(.easeInOut(duration: 1)) {
+                    item.state = .rendering(step: -1, total: Float(item.steps), preview: nil)
+                }
             }
         case .shutdown:
             return false
@@ -130,15 +132,14 @@ enum Rendering {
             let useSafety = await Model.shared.useSafetyChecker
             log("Using safety filter: \(useSafety && pipeline.canSafetyCheck)")
 
-            var config: PipelineConfiguration
-            if #available(macOS 14.0, *), PipelineManager.persistedModelVersion == .sdXL {
-                 config = StableDiffusionXLPipeline.Configuration(prompt: item.prompt)
+            var config: PipelineConfiguration = if #available(macOS 14.0, *), PipelineManager.userSelectedVersion == .sdXL {
+                StableDiffusionXLPipeline.Configuration(prompt: item.prompt)
             } else {
-                 config = StableDiffusionPipeline.Configuration(prompt: item.prompt)
+                StableDiffusionPipeline.Configuration(prompt: item.prompt)
             }
             if !item.imagePath.isEmpty, let img = loadImage(from: URL(fileURLWithPath: item.imagePath)) {
                 log("Loaded starting image from \(item.imagePath)")
-                let side = PipelineManager.persistedModelVersion.imageSize
+                let side = PipelineManager.userSelectedVersion.imageSize
                 if img.width == Int(side), img.height == Int(side) {
                     config.startingImage = img
                 } else {
@@ -176,7 +177,7 @@ enum Rendering {
                             firstCheck = false
                             DispatchQueue.main.async {
                                 if case .rendering = item.state {
-                                    withAnimation(.easeInOut(duration: 2)) {
+                                    withAnimation(.easeInOut(duration: 1.5)) {
                                         item.state = .rendering(step: 0, total: progressSteps, preview: nil)
                                     }
                                 }
@@ -188,7 +189,7 @@ enum Rendering {
                                     let step = Float(progress.step)
                                     DispatchQueue.main.async {
                                         if case .rendering = item.state {
-                                            withAnimation(.easeInOut(duration: 2)) {
+                                            withAnimation(.easeInOut(duration: 1.5)) {
                                                 item.state = .rendering(step: step, total: progressSteps, preview: p)
                                             }
                                         }
