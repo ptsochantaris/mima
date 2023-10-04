@@ -53,7 +53,13 @@ final class TipJar: ObservableObject {
     init() {
         Task { @MainActor in
             do {
-                let products = try await Product.products(for: [tip1.productId, tip2.productId, tip3.productId])
+                var products = try await Product.products(for: [tip1.productId, tip2.productId, tip3.productId])
+                if products.count < 3 {
+                    log("Error fetching tip jar: Missing products")
+                    state = .error(TipJarError.noFetchedProduct("Could not fetch products from App Store"))
+                    return
+                }
+                products.sort { $0.id < $1.id }
                 tip1.fetchedProduct = products[0]
                 tip2.fetchedProduct = products[1]
                 tip3.fetchedProduct = products[2]

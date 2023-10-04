@@ -43,7 +43,7 @@ struct PipelinePhaseView: View {
             case let .downloading(progress):
                 Icon(name: "clock")
                 VStack(alignment: .leading) {
-                    Text("Downloading the \(PipelineManager.persistedModelVersion.displayName) engine, this is only needed once…")
+                    Text("Downloading the \(PipelineManager.persistedModelVersion.displayName) engine. This is only needed the first time or after an egine upgrade.")
                         .fixedSize(horizontal: false, vertical: true)
                     GeometryReader { proxy in
                         HStack(spacing: 0) {
@@ -55,6 +55,17 @@ struct PipelinePhaseView: View {
                         .cornerRadius(3)
                         .frame(height: 6)
                     }
+                }
+            case .retryingDownload:
+                Icon(name: "clock")
+                VStack(alignment: .leading) {
+                    Text("There was an issue while downloading, retrying in a moment…")
+                        .fixedSize(horizontal: false, vertical: true)
+                    HStack(spacing: 0) {
+                        Color.black.opacity(0.2)
+                    }
+                    .cornerRadius(3)
+                    .frame(height: 6)
                 }
             case let .downloadingError(error):
                 RetryButton()
@@ -85,7 +96,7 @@ struct PipelinePhaseView: View {
                 VStack(alignment: .leading) {
                     Text("Warming up the engine…")
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("This can take a few minutes or more the first time!")
+                    Text("This can take a minute or more the first time!")
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }

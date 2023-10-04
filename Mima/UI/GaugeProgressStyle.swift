@@ -24,10 +24,11 @@ struct ProgressCircle: View {
             switch entry.state {
             case .blocked, .cancelled, .cloning, .creating, .done, .error, .queued: Color.clear
             case let .rendering(step, total, _):
-                let fraction = min(1, CGFloat(step) / CGFloat(total))
-                if step < 1 {
+                let nextStep = step + 1
+                if nextStep < 1 {
                     SpinCircle()
                 }
+                let fraction = min(1, CGFloat(nextStep) / CGFloat(total))
                 Circle()
                     .trim(from: 0, to: fraction)
                     .stroke(.tint, style: StrokeStyle(lineWidth: 3.5, lineCap: .butt))

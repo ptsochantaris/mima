@@ -2,7 +2,7 @@ import Maintini
 import SwiftUI
 
 #if canImport(AppKit)
-    final class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
+    final class AppDelegate: NSObject, NSApplicationDelegate {
         func applicationDidFinishLaunching(_: Notification) {
             Maintini.setup()
         }
@@ -17,7 +17,7 @@ import SwiftUI
     }
 
 #elseif canImport(UIKit)
-    final class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
+    final class AppDelegate: NSObject, UIApplicationDelegate {
         func applicationDidFinishLaunching(_: UIApplication) {
             Maintini.setup()
         }

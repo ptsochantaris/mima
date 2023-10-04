@@ -6,7 +6,7 @@
       "location" : "https://github.com/ptsochantaris/maintini",
       "state" : {
         "branch" : "main",
-        "revision" : "e7a06b9e122a9fe9cec2d7da08f4fb56d5ddb5fd"
+        "revision" : "f560a9b4be15b378a0758d689828d1f6f5867fde"
       }
     },
     {
@@ -15,7 +15,7 @@
       "location" : "https://github.com/apple/ml-stable-diffusion",
       "state" : {
         "branch" : "main",
-        "revision" : "7b59c2b663b42349bb76f0a4386b011795bd727d"
+        "revision" : "11ba3a096577eb6d243fa3e48d9c05d3a7f06968"
       }
     },
     {
@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/weichsel/ZIPFoundation",
       "state" : {
-        "revision" : "43ec568034b3731101dbf7670765d671c30f54f3",
-        "version" : "0.9.16"
+        "revision" : "a3f5c2bae0f04b0bce9ef3c4ba6bd1031a0564c4",
+        "version" : "0.9.17"
       }
     }
   ],

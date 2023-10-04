@@ -6,7 +6,7 @@ import StableDiffusion
 import SwiftUI
 
 enum WarmUpPhase {
-    case booting, downloading(progress: Float), downloadingError(error: Error), initialising, initialisingError(error: Error), expanding
+    case booting, downloading(progress: Float), downloadingError(error: Error), initialising, initialisingError(error: Error), expanding, retryingDownload
 }
 
 @globalActor
@@ -38,9 +38,8 @@ final actor PipelineState: ObservableObject {
                 true
             case let .setup(warmupPhase):
                 switch warmupPhase {
-                case .booting, .downloading, .expanding, .initialising: true
-                case .downloadingError, .initialisingError:
-                    false
+                case .booting, .downloading, .expanding, .initialising, .retryingDownload: true
+                case .downloadingError, .initialisingError: false
                 }
             }
         }
@@ -109,7 +108,7 @@ enum Rendering {
             break
         case .ready:
             Task { @MainActor in
-                item.state = .rendering(step: 0, total: Float(item.steps), preview: nil)
+                item.state = .rendering(step: -1, total: Float(item.steps), preview: nil)
             }
         case .shutdown:
             return false
@@ -125,13 +124,18 @@ enum Rendering {
 
             log("Starting render of item \(item.id)")
             Task { @MainActor in
-                item.state = .rendering(step: 0, total: Float(item.steps), preview: nil)
+                item.state = .rendering(step: -1, total: Float(item.steps), preview: nil)
             }
 
             let useSafety = await Model.shared.useSafetyChecker
             log("Using safety filter: \(useSafety && pipeline.canSafetyCheck)")
 
-            var config = StableDiffusionPipeline.Configuration(prompt: item.prompt)
+            var config: PipelineConfiguration
+            if #available(macOS 14.0, *), PipelineManager.persistedModelVersion == .sdXL {
+                 config = StableDiffusionXLPipeline.Configuration(prompt: item.prompt)
+            } else {
+                 config = StableDiffusionPipeline.Configuration(prompt: item.prompt)
+            }
             if !item.imagePath.isEmpty, let img = loadImage(from: URL(fileURLWithPath: item.imagePath)) {
                 log("Loaded starting image from \(item.imagePath)")
                 let side = PipelineManager.persistedModelVersion.imageSize
@@ -149,10 +153,6 @@ enum Rendering {
             config.disableSafety = !useSafety
             config.schedulerType = .dpmSolverMultistepScheduler
             config.useDenoisedIntermediates = false
-            if PipelineManager.persistedModelVersion == .sdXL {
-                config.encoderScaleFactor = 0.13025
-                config.decoderScaleFactor = 0.13025
-            }
 
             let progressSteps: Float = if config.startingImage == nil {
                 Float(item.steps)
@@ -162,8 +162,9 @@ enum Rendering {
 
             do {
                 var lastProgressCheck = Date.distantPast
+                var firstCheck = true
                 return try pipeline.generateImages(configuration: config) { progress in
-                    if lastProgressCheck.timeIntervalSinceNow > -1 {
+                    if lastProgressCheck.timeIntervalSinceNow > -2 {
                         return true
                     }
                     lastProgressCheck = Date.now
@@ -171,13 +172,25 @@ enum Rendering {
                         if item.state.isCancelled || item.state.isWaiting {
                             return false
                         }
-                        DispatchQueue.global(qos: .background).async {
-                            if let p = progress.currentImages.first, let p {
-                                let step = Float(progress.step)
-                                DispatchQueue.main.async {
-                                    if case .rendering = item.state {
-                                        withAnimation(.easeInOut(duration: 1.5)) {
-                                            item.state = .rendering(step: step, total: progressSteps, preview: p)
+                        if firstCheck {
+                            firstCheck = false
+                            DispatchQueue.main.async {
+                                if case .rendering = item.state {
+                                    withAnimation(.easeInOut(duration: 2)) {
+                                        item.state = .rendering(step: 0, total: progressSteps, preview: nil)
+                                    }
+                                }
+                            }
+
+                        } else {
+                            DispatchQueue.global(qos: .background).async {
+                                if let p = progress.currentImages.first, let p {
+                                    let step = Float(progress.step)
+                                    DispatchQueue.main.async {
+                                        if case .rendering = item.state {
+                                            withAnimation(.easeInOut(duration: 2)) {
+                                                item.state = .rendering(step: step, total: progressSteps, preview: p)
+                                            }
                                         }
                                     }
                                 }

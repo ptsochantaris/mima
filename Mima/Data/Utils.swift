@@ -133,12 +133,6 @@ final class ImageDropDelegate: DropDelegate {
         guard let provider = info.itemProviders(for: [.url]).first else {
             return false
         }
-        if PipelineManager.persistedModelVersion == .sdXL {
-            Task { @MainActor in
-                newItemInfo?.showImageToImageAlert = true
-            }
-            return false
-        }
         _ = provider.loadObject(ofClass: URL.self) { url, error in
             if let error {
                 log("Drop error: \(error)")
