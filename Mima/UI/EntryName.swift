@@ -43,7 +43,7 @@ struct EntryName: View {
     }
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(alignment: textAlignment == .leading ? .leading : .center, spacing: 4) {
             switch mode {
             case .bothEmpty:
                 Text("Random prompt")
