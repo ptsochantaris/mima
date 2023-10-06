@@ -215,17 +215,30 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
 
         log("Cleaning up...")
         try fm.removeItem(at: modelVersion.tempZipLocation)
-        fm.createFile(atPath: modelVersion.readyFileLocation.path, contents: nil)
+        fm.createFile(atPath: modelVersion.readyFileLocation.path, contents: Data())
+
         try await modelReady()
     }
 
     @BootupActor
     private func createPipeline(config: MLModelConfiguration, reduceMemory: Bool) async throws -> StableDiffusionPipelineProtocol {
-        if #available(macOS 14.0, *), modelVersion == .sdXL {
-            return try StableDiffusionXLPipeline(resourcesAt: modelVersion.root, configuration: config, reduceMemory: reduceMemory)
-        } else {
-            let disableSafety = await !Model.shared.useSafetyChecker
-            return try StableDiffusionPipeline(resourcesAt: modelVersion.root, controlNet: [], configuration: config, disableSafety: disableSafety, reduceMemory: reduceMemory)
+        var attempts = 3
+        while true {
+            do {
+                if #available(macOS 14.0, *), modelVersion == .sdXL {
+                    return try StableDiffusionXLPipeline(resourcesAt: modelVersion.root, configuration: config, reduceMemory: reduceMemory)
+                } else {
+                    let disableSafety = await !Model.shared.useSafetyChecker
+                    return try StableDiffusionPipeline(resourcesAt: modelVersion.root, controlNet: [], configuration: config, disableSafety: disableSafety, reduceMemory: reduceMemory)
+                }
+            } catch {
+                log("Error while initializing, will retry: \(error.localizedDescription)")
+                try? await Task.sleep(nanoseconds: 1 * NSEC_PER_SEC)
+                attempts -= 1
+                if attempts == 0 {
+                    throw error
+                }
+            }
         }
     }
 

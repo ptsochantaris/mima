@@ -31,10 +31,13 @@ struct ListItemView: View, Identifiable {
                 Image(preview, scale: 1, label: Text("")).resizable().opacity(0.6 * Double(step) / Double(total))
             } else if !(entry.state.isDone || entry.imageName.isEmpty || entry.imagePath.isEmpty) {
                 AsyncImage(url: URL(filePath: entry.imagePath)) { img in
-                    img.resizable().opacity(0.12)
+                    img
+                        .resizable()
+                        .opacity(0.12)
                 } placeholder: {
                     Color.clear
                 }
+                .id(entry.id.uuidString)
             }
 
             switch state {
@@ -89,7 +92,8 @@ struct ListItemView: View, Identifiable {
             case .done:
                 let sourceUrl = entry.imageUrl
                 AsyncImage(url: sourceUrl) { img in
-                    img.resizable()
+                    img
+                        .resizable()
                     #if canImport(AppKit)
                         .overlay {
                             AcceptingFirstMouse()
@@ -107,6 +111,7 @@ struct ListItemView: View, Identifiable {
                             p.suggestedName = name
                             return p
                         }
+                        .id(entry.id.uuidString)
                 } placeholder: {
                     Color.clear
                 }
