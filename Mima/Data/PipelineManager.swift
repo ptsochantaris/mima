@@ -163,8 +163,15 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
 
             } else {
                 log("Need to fetch model...")
-                if FileManager.default.fileExists(atPath: modelVersion.tempZipLocation.path) {
-                    try FileManager.default.removeItem(at: modelVersion.tempZipLocation)
+                let fm = FileManager.default
+
+                if fm.fileExists(atPath: modelVersion.tempZipLocation.path) {
+                    try fm.removeItem(at: modelVersion.tempZipLocation)
+                }
+
+                if fm.fileExists(atPath: modelVersion.root.path) {
+                    log("Clearing stale model data directory at \(modelVersion.root)")
+                    try fm.removeItem(at: modelVersion.root)
                 }
 
                 if let last = downloadTasks.last {
@@ -198,25 +205,46 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
         log("Background URL session events complete")
     }
 
+    enum BootError: LocalizedError {
+        case couldNotCompleteUnpack(ModelVersion)
+
+        var errorDescription: String? {
+            switch self {
+            case let .couldNotCompleteUnpack(version):
+                "Could not complete model setup, probably due to a permission issue - please remove \(version.root) and try again."
+            }
+        }
+    }
+
     @BootupActor
     private func modelDownloaded() async throws {
         log("Downloaded model...")
         await PipelineState.shared.setPhase(to: .setup(warmupPhase: .expanding))
-        log("Decompressing model...")
 
+        await Task.yield()
+        log("Decompressing model...")
         let fm = FileManager.default
         if fm.fileExists(atPath: modelVersion.root.path) {
             log("Clearing previous model data directory at \(modelVersion.root)")
-            try? fm.removeItem(at: modelVersion.root)
+            try fm.removeItem(at: modelVersion.root)
         }
 
+        await Task.yield()
         log("Expanding model...")
         try Zip.unzipFile(modelVersion.tempZipLocation, destination: appDocumentsUrl, overwrite: true, password: nil)
 
+        await Task.yield()
         log("Cleaning up...")
         try fm.removeItem(at: modelVersion.tempZipLocation)
-        fm.createFile(atPath: modelVersion.readyFileLocation.path, contents: Data())
 
+        await Task.yield()
+        log("Marking download as ready...")
+        guard fm.createFile(atPath: modelVersion.readyFileLocation.path, contents: Data()) else {
+            throw BootError.couldNotCompleteUnpack(modelVersion)
+        }
+
+        await Task.yield()
+        log("Proceeding with startup...")
         try await modelReady()
     }
 
