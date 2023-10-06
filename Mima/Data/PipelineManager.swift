@@ -211,7 +211,7 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
         var errorDescription: String? {
             switch self {
             case let .couldNotCompleteUnpack(version):
-                "Could not complete model setup, probably due to a permission issue - please remove \(version.root) and try again."
+                "Could not complete model setup, probably due to a permission issue - please remove \(version.root.path) and try again."
             }
         }
     }
@@ -239,8 +239,20 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
 
         await Task.yield()
         log("Marking download as ready...")
-        guard fm.createFile(atPath: modelVersion.readyFileLocation.path, contents: Data()) else {
-            throw BootError.couldNotCompleteUnpack(modelVersion)
+
+        var attempts = 3
+        while true {
+            if fm.createFile(atPath: modelVersion.readyFileLocation.path, contents: Data()) {
+                break
+            } else {
+                attempts -= 1
+                if attempts == 0 {
+                    throw BootError.couldNotCompleteUnpack(modelVersion)
+                } else {
+                    log("Error while initializing, will retry marking download as ready")
+                    try? await Task.sleep(nanoseconds: 1 * NSEC_PER_SEC)
+                }
+            }
         }
 
         await Task.yield()
