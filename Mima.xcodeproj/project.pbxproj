@@ -18,7 +18,6 @@
 		16255738297C3F840027BD4F /* EntryName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16255737297C3F840027BD4F /* EntryName.swift */; };
 		1625573C297C3FBF0027BD4F /* MimaButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625573B297C3FBF0027BD4F /* MimaButton.swift */; };
 		1625573E297C3FD90027BD4F /* GaugeProgressStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625573D297C3FD90027BD4F /* GaugeProgressStyle.swift */; };
-		1630C9A12981B68B005A0688 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 1630C9A02981B68B005A0688 /* ZIPFoundation */; };
 		1635F76229869EBB00B6FC6A /* TipJar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1635F76129869EBB00B6FC6A /* TipJar.swift */; };
 		16398DBB2986C408002214EA /* TipList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16398DBA2986C408002214EA /* TipList.swift */; };
 		16398DBD2986C41B002214EA /* TipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16398DBC2986C41B002214EA /* TipView.swift */; };
@@ -34,6 +33,7 @@
 		1661424C2974BD5900BFA494 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1661424B2974BD5900BFA494 /* Assets.xcassets */; };
 		1661425F2974D15E00BFA494 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1661425E2974D15E00BFA494 /* Utils.swift */; };
 		16622AC7297D996300C8C7F0 /* Mac.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16622AC6297D996300C8C7F0 /* Mac.swift */; };
+		16696C072AD0A69D0002DD60 /* Zip in Frameworks */ = {isa = PBXBuildFile; productRef = 16696C062AD0A69D0002DD60 /* Zip */; };
 		166A262E297EE7C600A1BB50 /* Rendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166A262D297EE7C600A1BB50 /* Rendering.swift */; };
 		16A4FF2E29E0A3590077A3C7 /* MimaAppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A4FF2D29E0A3590077A3C7 /* MimaAppIntents.swift */; };
 		16F0E2EB2995952D00F71B01 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F0E2EA2995952D00F71B01 /* Logging.swift */; };
@@ -81,7 +81,7 @@
 			files = (
 				163A5D2D2A9E19AD00D370FA /* PopTimer in Frameworks */,
 				164CEC752AB31C7300298594 /* Maintini in Frameworks */,
-				1630C9A12981B68B005A0688 /* ZIPFoundation in Frameworks */,
+				16696C072AD0A69D0002DD60 /* Zip in Frameworks */,
 				16501BDB29957AA000B77985 /* StableDiffusion in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -175,10 +175,10 @@
 			);
 			name = Mima;
 			packageProductDependencies = (
-				1630C9A02981B68B005A0688 /* ZIPFoundation */,
 				16501BDA29957AA000B77985 /* StableDiffusion */,
 				163A5D2C2A9E19AD00D370FA /* PopTimer */,
 				164CEC742AB31C7300298594 /* Maintini */,
+				16696C062AD0A69D0002DD60 /* Zip */,
 			);
 			productName = Mima;
 			productReference = 166142442974BD5800BFA494 /* Mima.app */;
@@ -209,10 +209,10 @@
 			);
 			mainGroup = 1661423B2974BD5800BFA494;
 			packageReferences = (
-				1630C99F2981B68B005A0688 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				16501BD929957AA000B77985 /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */,
 				163A5D2B2A9E19AD00D370FA /* XCRemoteSwiftPackageReference "pop-timer" */,
 				164CEC732AB31C7300298594 /* XCRemoteSwiftPackageReference "maintini" */,
+				16696C052AD0A69D0002DD60 /* XCRemoteSwiftPackageReference "Zip" */,
 			);
 			productRefGroup = 166142452974BD5800BFA494 /* Products */;
 			projectDirPath = "";
@@ -305,7 +305,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 31;
+				CURRENT_PROJECT_VERSION = 32;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -326,7 +326,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.1;
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 1.1.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -370,7 +370,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 31;
+				CURRENT_PROJECT_VERSION = 32;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -387,7 +387,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.1;
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 1.1.3;
 				MERGED_BINARY_TYPE = automatic;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -494,14 +494,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		1630C99F2981B68B005A0688 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.9;
-			};
-		};
 		163A5D2B2A9E19AD00D370FA /* XCRemoteSwiftPackageReference "pop-timer" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ptsochantaris/pop-timer";
@@ -526,14 +518,17 @@
 				kind = branch;
 			};
 		};
+		16696C052AD0A69D0002DD60 /* XCRemoteSwiftPackageReference "Zip" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/marmelroy/Zip";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		1630C9A02981B68B005A0688 /* ZIPFoundation */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 1630C99F2981B68B005A0688 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
-			productName = ZIPFoundation;
-		};
 		163A5D2C2A9E19AD00D370FA /* PopTimer */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 163A5D2B2A9E19AD00D370FA /* XCRemoteSwiftPackageReference "pop-timer" */;
@@ -548,6 +543,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 16501BD929957AA000B77985 /* XCRemoteSwiftPackageReference "ml-stable-diffusion" */;
 			productName = StableDiffusion;
+		};
+		16696C062AD0A69D0002DD60 /* Zip */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 16696C052AD0A69D0002DD60 /* XCRemoteSwiftPackageReference "Zip" */;
+			productName = Zip;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

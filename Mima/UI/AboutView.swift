@@ -95,7 +95,7 @@ struct AboutView: View {
                             .font(.headline)
                     }
                     Text("If you have feature suggestions or bug reports, please email paul@bru.build")
-                    Text("Mima uses Stable Diffusion v1.5. Usage of this app and the model is subject to the Stable Diffusion license which can be found at https://raw.githubusercontent.com/CompVis/stable-diffusion/main/LICENSE")
+                    Text("Mima uses Stable Diffusion models. Usage of this app and the models is subject to the Stable Diffusion license which can be found at https://raw.githubusercontent.com/CompVis/stable-diffusion/main/LICENSE")
                     Spacer()
                     TipList()
                 }

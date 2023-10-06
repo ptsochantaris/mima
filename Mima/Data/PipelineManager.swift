@@ -2,7 +2,7 @@ import CoreML
 import Foundation
 import StableDiffusion
 import SwiftUI
-import ZIPFoundation
+import Zip
 
 @globalActor
 enum BootupActor {
@@ -203,11 +203,15 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
         log("Downloaded model...")
         await PipelineState.shared.setPhase(to: .setup(warmupPhase: .expanding))
         log("Decompressing model...")
+
         let fm = FileManager.default
         if fm.fileExists(atPath: modelVersion.root.path) {
-            try fm.removeItem(at: modelVersion.root)
+            log("Clearing previous model data directory at \(modelVersion.root)")
+            try? fm.removeItem(at: modelVersion.root)
         }
-        try fm.unzipItem(at: modelVersion.tempZipLocation, to: appDocumentsUrl)
+
+        log("Expanding model...")
+        try Zip.unzipFile(modelVersion.tempZipLocation, destination: appDocumentsUrl, overwrite: true, password: nil)
 
         log("Cleaning up...")
         try fm.removeItem(at: modelVersion.tempZipLocation)
