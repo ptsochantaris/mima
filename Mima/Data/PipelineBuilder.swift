@@ -77,29 +77,49 @@ enum ModelVersion: String, Identifiable, CaseIterable {
     }
 }
 
-final class PipelineManager: NSObject, URLSessionDownloadDelegate {
-    private let modelVersion: ModelVersion
+final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
+    private let modelLocation: URL
+    private let zipLocation: URL
+    private let zipName: String
+    private let displayName: String
+    private let readyFileLocation: URL
+    private let isXL: Bool
 
-    private(set) static var userSelectedVersion: ModelVersion {
-        get {
-            if let value = UserDefaults.standard.string(forKey: "SelectedModelVersion"), let version = ModelVersion(rawValue: value), ModelVersion.allCases.contains(version) {
-                return version
-            }
-            return .sd15
+    static var current: PipelineBuilder?
+
+    init(selecting version: ModelVersion? = nil) {
+        let useVersion: ModelVersion
+        if let version {
+            UserDefaults.standard.set(version.rawValue, forKey: "SelectedModelVersion")
+            useVersion = version
+            log("Switching over to \(useVersion.displayName)")
+        } else {
+            useVersion = Self.userSelectedVersion
+            log("Already selected \(useVersion.displayName)")
         }
-        set {
-            UserDefaults.standard.set(newValue.rawValue, forKey: "SelectedModelVersion")
+
+        self.displayName = useVersion.displayName
+        self.modelLocation = useVersion.root
+        self.zipName = useVersion.zipName
+        self.zipLocation = useVersion.tempZipLocation
+        self.readyFileLocation = useVersion.readyFileLocation
+        self.isXL = useVersion == .sdXL
+        super.init()
+        
+        Task {
+            await startup()
         }
     }
 
-    init(selecting version: ModelVersion? = nil) {
-        if let version {
-            modelVersion = version
-            Self.userSelectedVersion = version
-        } else {
-            modelVersion = Self.userSelectedVersion
+    deinit {
+        log("Completed setup for \(displayName)")
+    }
+
+    static var userSelectedVersion: ModelVersion {
+        if let value = UserDefaults.standard.string(forKey: "SelectedModelVersion"), let version = ModelVersion(rawValue: value), ModelVersion.allCases.contains(version) {
+            return version
         }
-        super.init()
+        return .sd15
     }
 
     func urlSession(_: URLSession, didCreateTask task: URLSessionTask) {
@@ -114,13 +134,14 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
     }
 
     func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
-        try? FileManager.default.moveItem(at: location, to: modelVersion.tempZipLocation)
+        try? FileManager.default.moveItem(at: location, to: zipLocation)
     }
 
     private func handleNetworkError(_ error: Error, in _: URLSessionTask) {
         log("Network error: \(error.localizedDescription)")
         Task {
             await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
+            await builderDone()
         }
     }
 
@@ -143,11 +164,14 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
                 log("Error setting up the model: \(error.localizedDescription)")
                 await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
             }
+            await builderDone()
         }
     }
 
     @BootupActor
-    func startup() async {
+    private func startup() async {
+        log("Building pipeline assets for \(displayName)")
+
         await PipelineState.shared.setPhase(to: .setup(warmupPhase: .booting))
 
         let downloadTasks = await urlSession.tasks.2
@@ -156,44 +180,46 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
         }
 
         do {
-            if FileManager.default.fileExists(atPath: modelVersion.readyFileLocation.path) {
+            if FileManager.default.fileExists(atPath: readyFileLocation.path) {
                 log("Model ready...")
                 downloadTasks.first?.cancel()
                 try await modelReady()
+                builderDone()
+                return
+            }
 
-            } else {
-                log("Need to fetch model...")
-                let fm = FileManager.default
+            log("Need to fetch model...")
+            let fm = FileManager.default
 
-                if fm.fileExists(atPath: modelVersion.tempZipLocation.path) {
-                    try fm.removeItem(at: modelVersion.tempZipLocation)
+            if fm.fileExists(atPath: zipLocation.path) {
+                try fm.removeItem(at: zipLocation)
+            }
+
+            if fm.fileExists(atPath: modelLocation.path) {
+                log("Clearing stale model data directory at \(modelLocation.path)")
+                try fm.removeItem(at: modelLocation)
+            }
+
+            if let last = downloadTasks.last {
+                if let modelZip = last.response?.url?.lastPathComponent, zipName == modelZip {
+                    log("Existing download for currently selected model detected, continuing")
+                    return
+                } else {
+                    log("Existing download task not recognized, will cancel")
+                    last.cancel()
                 }
+            }
 
-                if fm.fileExists(atPath: modelVersion.root.path) {
-                    log("Clearing stale model data directory at \(modelVersion.root)")
-                    try fm.removeItem(at: modelVersion.root)
-                }
-
-                if let last = downloadTasks.last {
-                    if let modelZip = last.response?.url?.lastPathComponent, modelVersion.zipName == modelZip {
-                        log("Existing download for currently selected model detected, continuing")
-                        return
-                    } else {
-                        log("Existing download task not recognized, will cancel")
-                        last.cancel()
-                    }
-                }
-
-                do {
-                    await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloading(progress: 0)))
-                    log("Requesting new model transfer...")
-                    let downloadUrl = URL(string: "https://bruvault.net/\(modelVersion.zipName)")!
-                    urlSession.downloadTask(with: downloadUrl).resume()
-                }
+            do {
+                await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloading(progress: 0)))
+                log("Requesting new model transfer...")
+                let downloadUrl = URL(string: "https://bruvault.net/\(zipName)")!
+                urlSession.downloadTask(with: downloadUrl).resume()
             }
         } catch {
             log("Error setting up the model: \(error.localizedDescription)")
             await PipelineState.shared.setPhase(to: .setup(warmupPhase: .initialisingError(error: error)))
+            builderDone()
         }
     }
 
@@ -206,79 +232,51 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
     }
 
     enum BootError: LocalizedError {
-        case couldNotCompleteUnpack(ModelVersion)
+        case couldNotCompleteUnpack(URL)
 
         var errorDescription: String? {
             switch self {
             case let .couldNotCompleteUnpack(version):
-                "Could not complete model setup, probably due to a permission issue - please remove \(version.root.path) and try again."
+                "Could not complete model setup, probably due to a permission issue - please remove \(version.path) and try again."
             }
         }
     }
 
     @BootupActor
     private func modelDownloaded() async throws {
-        log("Downloaded model...")
+        log("Downloaded model to \(zipLocation.path)...")
         await PipelineState.shared.setPhase(to: .setup(warmupPhase: .expanding))
 
-        await Task.yield()
         log("Decompressing model...")
         let fm = FileManager.default
-        if fm.fileExists(atPath: modelVersion.root.path) {
-            log("Clearing previous model data directory at \(modelVersion.root)")
-            try fm.removeItem(at: modelVersion.root)
+        if fm.fileExists(atPath: modelLocation.path) {
+            log("Clearing previous model data directory at \(modelLocation.path)")
+            try fm.removeItem(at: modelLocation)
         }
 
-        await Task.yield()
         log("Expanding model...")
-        try Zip.unzipFile(modelVersion.tempZipLocation, destination: appDocumentsUrl, overwrite: true, password: nil)
+        try Zip.unzipFile(zipLocation, destination: appDocumentsUrl, overwrite: true, password: nil)
 
-        await Task.yield()
         log("Cleaning up...")
-        try fm.removeItem(at: modelVersion.tempZipLocation)
+        try fm.removeItem(at: zipLocation)
 
-        await Task.yield()
         log("Marking download as ready...")
 
-        var attempts = 3
-        while true {
-            if fm.createFile(atPath: modelVersion.readyFileLocation.path, contents: Data()) {
-                break
-            } else {
-                attempts -= 1
-                if attempts == 0 {
-                    throw BootError.couldNotCompleteUnpack(modelVersion)
-                } else {
-                    log("Error while initializing, will retry marking download as ready")
-                    try? await Task.sleep(nanoseconds: 1 * NSEC_PER_SEC)
-                }
-            }
+        guard fm.createFile(atPath: readyFileLocation.path, contents: Data()) else {
+            throw BootError.couldNotCompleteUnpack(modelLocation)
         }
 
-        await Task.yield()
         log("Proceeding with startup...")
         try await modelReady()
     }
 
     @BootupActor
     private func createPipeline(config: MLModelConfiguration, reduceMemory: Bool) async throws -> StableDiffusionPipelineProtocol {
-        var attempts = 3
-        while true {
-            do {
-                if #available(macOS 14.0, *), modelVersion == .sdXL {
-                    return try StableDiffusionXLPipeline(resourcesAt: modelVersion.root, configuration: config, reduceMemory: reduceMemory)
-                } else {
-                    let disableSafety = await !Model.shared.useSafetyChecker
-                    return try StableDiffusionPipeline(resourcesAt: modelVersion.root, controlNet: [], configuration: config, disableSafety: disableSafety, reduceMemory: reduceMemory)
-                }
-            } catch {
-                log("Error while initializing, will retry: \(error.localizedDescription)")
-                try? await Task.sleep(nanoseconds: 1 * NSEC_PER_SEC)
-                attempts -= 1
-                if attempts == 0 {
-                    throw error
-                }
-            }
+        if #available(macOS 14.0, *), isXL {
+            return try StableDiffusionXLPipeline(resourcesAt: modelLocation, configuration: config, reduceMemory: reduceMemory)
+        } else {
+            let disableSafety = await !Model.shared.useSafetyChecker
+            return try StableDiffusionPipeline(resourcesAt: modelLocation, controlNet: [], configuration: config, disableSafety: disableSafety, reduceMemory: reduceMemory)
         }
     }
 
@@ -299,5 +297,12 @@ final class PipelineManager: NSObject, URLSessionDownloadDelegate {
         log("Pipeline ready")
         await PipelineState.shared.setPhase(to: .ready(pipeline))
         await Model.shared.startRenderingIfNeeded()
+    }
+
+    @BootupActor
+    private func builderDone() {
+        log("Cleaning up pipeline builder...")
+        urlSession.invalidateAndCancel()
+        Self.current = nil
     }
 }

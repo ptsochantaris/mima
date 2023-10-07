@@ -132,14 +132,14 @@ enum Rendering {
             let useSafety = await Model.shared.useSafetyChecker
             log("Using safety filter: \(useSafety && pipeline.canSafetyCheck)")
 
-            var config: PipelineConfiguration = if #available(macOS 14.0, *), PipelineManager.userSelectedVersion == .sdXL {
+            var config: PipelineConfiguration = if #available(macOS 14.0, *), PipelineBuilder.userSelectedVersion == .sdXL {
                 StableDiffusionXLPipeline.Configuration(prompt: item.prompt)
             } else {
                 StableDiffusionPipeline.Configuration(prompt: item.prompt)
             }
             if !item.imagePath.isEmpty, let img = loadImage(from: URL(fileURLWithPath: item.imagePath)) {
                 log("Loaded starting image from \(item.imagePath)")
-                let side = PipelineManager.userSelectedVersion.imageSize
+                let side = PipelineBuilder.userSelectedVersion.imageSize
                 if img.width == Int(side), img.height == Int(side) {
                     config.startingImage = img
                 } else {

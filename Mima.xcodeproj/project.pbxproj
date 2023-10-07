@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		160292112996812D006C67C9 /* NewItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 160292102996812D006C67C9 /* NewItemModel.swift */; };
-		1610EFC4298443DE00266EEA /* PipelineManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1610EFC3298443DE00266EEA /* PipelineManager.swift */; };
+		1610EFC4298443DE00266EEA /* PipelineBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1610EFC3298443DE00266EEA /* PipelineBuilder.swift */; };
 		1625572C297B2C9C0027BD4F /* ListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625572B297B2C9C0027BD4F /* ListItem.swift */; };
 		1625572E297B38EF0027BD4F /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625572D297B38EF0027BD4F /* Model.swift */; };
 		16255730297B6EAF0027BD4F /* ListItemState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625572F297B6EAF0027BD4F /* ListItemState.swift */; };
@@ -42,7 +42,7 @@
 
 /* Begin PBXFileReference section */
 		160292102996812D006C67C9 /* NewItemModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewItemModel.swift; sourceTree = "<group>"; };
-		1610EFC3298443DE00266EEA /* PipelineManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PipelineManager.swift; sourceTree = "<group>"; };
+		1610EFC3298443DE00266EEA /* PipelineBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PipelineBuilder.swift; sourceTree = "<group>"; };
 		1625572B297B2C9C0027BD4F /* ListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListItem.swift; sourceTree = "<group>"; };
 		1625572D297B38EF0027BD4F /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		1625572F297B6EAF0027BD4F /* ListItemState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListItemState.swift; sourceTree = "<group>"; };
@@ -128,7 +128,7 @@
 				16A4FF2D29E0A3590077A3C7 /* MimaAppIntents.swift */,
 				1625572D297B38EF0027BD4F /* Model.swift */,
 				160292102996812D006C67C9 /* NewItemModel.swift */,
-				1610EFC3298443DE00266EEA /* PipelineManager.swift */,
+				1610EFC3298443DE00266EEA /* PipelineBuilder.swift */,
 				166A262D297EE7C600A1BB50 /* Rendering.swift */,
 				1635F76129869EBB00B6FC6A /* TipJar.swift */,
 				1661425E2974D15E00BFA494 /* Utils.swift */,
@@ -259,7 +259,7 @@
 				16255732297BF9BB0027BD4F /* ListItemView.swift in Sources */,
 				1646F2AE2985E05900C75C1C /* HelpView.swift in Sources */,
 				164DD48029831728006B8D6F /* ButtonBackground.swift in Sources */,
-				1610EFC4298443DE00266EEA /* PipelineManager.swift in Sources */,
+				1610EFC4298443DE00266EEA /* PipelineBuilder.swift in Sources */,
 				16255738297C3F840027BD4F /* EntryName.swift in Sources */,
 				1625572E297B38EF0027BD4F /* Model.swift in Sources */,
 				1625572C297B2C9C0027BD4F /* ListItem.swift in Sources */,
@@ -305,7 +305,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 38;
+				CURRENT_PROJECT_VERSION = 42;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -370,7 +370,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 38;
+				CURRENT_PROJECT_VERSION = 42;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;

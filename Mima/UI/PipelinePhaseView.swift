@@ -20,7 +20,7 @@ struct RetryButton: View {
         .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
         .onTapGesture {
             Task { @RenderActor in
-                await PipelineManager().startup()
+                PipelineBuilder.current = PipelineBuilder()
             }
         }
     }
@@ -43,7 +43,7 @@ struct PipelinePhaseView: View {
             case let .downloading(progress):
                 Icon(name: "clock")
                 VStack(alignment: .leading) {
-                    Text("Downloading the \(PipelineManager.userSelectedVersion.displayName) engine. This is only needed the first time, or after an egine upgrade.")
+                    Text("Downloading the \(PipelineBuilder.userSelectedVersion.displayName) engine. This is only needed the first time, or after an egine upgrade.")
                         .fixedSize(horizontal: false, vertical: true)
                     GeometryReader { proxy in
                         HStack(spacing: 0) {

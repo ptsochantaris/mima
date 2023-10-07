@@ -64,15 +64,13 @@ final class Model: ObservableObject, Codable {
             try? FileManager.default.createDirectory(at: cloningAssets, withIntermediateDirectories: true)
         }
         let destinationUrl = cloningAssets.appending(path: UUID().uuidString, directoryHint: .notDirectory)
-        let image = loadImage(from: url)?.scaled(to: PipelineManager.userSelectedVersion.imageSize)
+        let image = loadImage(from: url)?.scaled(to: PipelineBuilder.userSelectedVersion.imageSize)
         image?.save(to: destinationUrl)
         return destinationUrl.path
     }
 
     static let shared: Model = {
-        Task {
-            await PipelineManager().startup()
-        }
+        PipelineBuilder.current = PipelineBuilder()
 
         let model: Model
         if let data = try? Data(contentsOf: indexFileUrl) {
