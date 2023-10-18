@@ -13,6 +13,7 @@ enum BootupActor {
 let appDocumentsUrl: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 
 enum ModelVersion: String, Identifiable, CaseIterable {
+#if canImport(AppKit)
     private var latestRevision: String {
         switch self {
         case .sd14: "3"
@@ -24,12 +25,17 @@ enum ModelVersion: String, Identifiable, CaseIterable {
     }
 
     var zipName: String {
-        #if canImport(AppKit)
-            "\(rawValue).\(latestRevision).zip"
-        #else
-            "\(rawValue).iOS.\(latestRevision).zip"
-        #endif
+        "\(rawValue).\(latestRevision).zip"
     }
+    #else
+    private var latestRevision: String {
+        "4"
+    }
+
+    var zipName: String {
+        "\(rawValue).iOS.\(latestRevision).zip"
+    }
+    #endif
 
     var root: URL {
         appDocumentsUrl.appending(path: rawValue, directoryHint: .isDirectory)
@@ -141,8 +147,8 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
         try? FileManager.default.moveItem(at: location, to: zipLocation)
     }
 
-    private func handleNetworkError(_ error: Error, in _: URLSessionTask) {
-        log("Network error: \(error.localizedDescription)")
+    private func handleNetworkError(_ error: Error, in task: URLSessionTask) {
+        log("Network error on \(task.originalRequest?.url?.absoluteString ?? "<no url>"): \(error.localizedDescription)")
         Task {
             await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
             await builderDone()

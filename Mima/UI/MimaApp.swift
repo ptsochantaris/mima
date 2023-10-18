@@ -38,6 +38,7 @@ private struct ContentView: View {
         VStack(spacing: 0) {
             if let phase = pipeline.reportedPhase.showStatus {
                 PipelinePhaseView(phase: phase)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             ScrollViewReader { proxy in
                 ScrollView {
@@ -54,7 +55,6 @@ private struct ContentView: View {
                         .id(model.bottomId)
                         .frame(height: 0, alignment: .bottom)
                 }
-                .layoutPriority(2)
                 .onAppear {
                     proxy.scrollTo(model.bottomId, anchor: .top)
                 }
@@ -78,6 +78,7 @@ private struct ContentView: View {
         .background {
             Rectangle()
                 .fill(.quinary)
+                .ignoresSafeArea()
         }
         .onDrop(of: [.image], delegate: ImageDropDelegate())
         .frame(minWidth: 360)

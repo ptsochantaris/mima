@@ -137,10 +137,12 @@ struct ListItemView: View, Identifiable {
             case .cancelled:
                 Text("Cancelled")
                     .font(.caption)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             case .error:
                 Text("Error generating")
                     .font(.caption)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .background {
