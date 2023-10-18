@@ -1,16 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-struct ItemBackground: View {
-    var body: some View {
-        #if canImport(AppKit)
-            Color.secondary.opacity(0.1)
-        #else
-            Color.secondary.opacity(0.3)
-        #endif
-    }
-}
-
 struct ListItemView: View, Identifiable {
     @ObservedObject private var entry: ListItem
     @State private var showPicker = false
@@ -24,8 +14,6 @@ struct ListItemView: View, Identifiable {
 
     var body: some View {
         ZStack {
-            ItemBackground()
-
             let state = entry.state
             if case let .rendering(step, total, preview) = state, let preview {
                 Image(preview, scale: 1, label: Text("")).resizable().opacity(0.6 * Double(step) / Double(total))
@@ -43,6 +31,7 @@ struct ListItemView: View, Identifiable {
             switch state {
             case .cloning, .creating:
                 NewItem(newItemInfo: NewItemModel(prototype: entry))
+                    .padding()
 
             case let .rendering(step, total, _):
                 let progress = Double(step) / Double(total)
@@ -153,6 +142,10 @@ struct ListItemView: View, Identifiable {
                 Text("Error generating")
                     .font(.caption)
             }
+        }
+        .background {
+            Rectangle()
+                .fill(.quaternary)
         }
         .contextMenu {
             if entry.state.isDone {

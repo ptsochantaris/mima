@@ -258,7 +258,11 @@ extension Model {
         guard let index = entries.firstIndex(where: { $0.id == entry.id }) else {
             return
         }
-        let count = NSEvent.modifierFlags.contains(.option) ? Model.shared.optionClickRepetitions : 1
+        #if canImport(AppKit)
+            let count = NSEvent.modifierFlags.contains(.option) ? Model.shared.optionClickRepetitions : 1
+        #else
+            let count = 1
+        #endif
         let newEntries = (0 ..< count).map { _ in entry.randomVariant() }
 
         withAnimation(.easeInOut(duration: 0.2)) {
@@ -295,10 +299,8 @@ extension Model {
         }
 
         var imagePaths = Set<String>()
-        for entry in entries {
-            if !entry.imagePath.isEmpty {
-                imagePaths.insert(URL(filePath: entry.imagePath).lastPathComponent)
-            }
+        for entry in entries where !entry.imagePath.isEmpty {
+            imagePaths.insert(URL(filePath: entry.imagePath).lastPathComponent)
         }
         let fm = FileManager.default
         let cloningAssets = Model.cloningAssets

@@ -75,6 +75,10 @@ private struct ContentView: View {
                 }
             }
         }
+        .background {
+            Rectangle()
+                .fill(.quinary)
+        }
         .onDrop(of: [.image], delegate: ImageDropDelegate())
         .frame(minWidth: 360)
     }

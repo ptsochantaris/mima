@@ -65,11 +65,15 @@ enum ModelVersion: String, Identifiable, CaseIterable {
     }
 
     static var allCases: [ModelVersion] {
-        if #available(macOS 14, iOS 17, *) {
-            [.sd14, .sd15, .sd20, .sd21, .sdXL]
-        } else {
+        #if canImport(AppKit)
+            if #available(macOS 14, *) {
+                [.sd14, .sd15, .sd20, .sd21, .sdXL]
+            } else {
+                [.sd14, .sd15, .sd20, .sd21]
+            }
+        #else
             [.sd14, .sd15, .sd20, .sd21]
-        }
+        #endif
     }
 
     var id: String {
@@ -98,14 +102,14 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
             log("Already selected \(useVersion.displayName)")
         }
 
-        self.displayName = useVersion.displayName
-        self.modelLocation = useVersion.root
-        self.zipName = useVersion.zipName
-        self.zipLocation = useVersion.tempZipLocation
-        self.readyFileLocation = useVersion.readyFileLocation
-        self.isXL = useVersion == .sdXL
+        displayName = useVersion.displayName
+        modelLocation = useVersion.root
+        zipName = useVersion.zipName
+        zipLocation = useVersion.tempZipLocation
+        readyFileLocation = useVersion.readyFileLocation
+        isXL = useVersion == .sdXL
         super.init()
-        
+
         Task {
             await startup()
         }

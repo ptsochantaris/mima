@@ -54,7 +54,7 @@ struct MimaButon: View {
                     .fontWeight(.bold)
                     .foregroundStyle(.white.opacity(0.7))
             }
-        #if os(macOS)
+        #if canImport(AppKit)
             .overlay {
                 AcceptingFirstMouse()
             }

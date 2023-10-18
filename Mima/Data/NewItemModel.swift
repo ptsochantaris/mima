@@ -92,8 +92,13 @@ final class NewItemModel: ObservableObject {
 
     func create() {
         if prototype.state.isCreator {
-            let optionClick = NSEvent.modifierFlags.contains(.option)
-            let count = optionClick ? Model.shared.optionClickRepetitions : 1
+            #if canImport(AppKit)
+                let optionClick = NSEvent.modifierFlags.contains(.option)
+                let count = optionClick ? Model.shared.optionClickRepetitions : 1
+            #else
+                let optionClick = false
+                let count = 1
+            #endif
             prototype.willClone = { [weak self] in
                 self?.updatePrototype()
             }
