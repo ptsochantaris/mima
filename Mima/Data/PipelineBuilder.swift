@@ -282,7 +282,7 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
 
     @BootupActor
     private func createPipeline(config: MLModelConfiguration, reduceMemory: Bool) async throws -> StableDiffusionPipelineProtocol {
-        if #available(macOS 14.0, *), isXL {
+        if #available(macOS 14.0, iOS 17.0, *), isXL {
             return try StableDiffusionXLPipeline(resourcesAt: modelLocation, configuration: config, reduceMemory: reduceMemory)
         } else {
             let disableSafety = await !Model.shared.useSafetyChecker

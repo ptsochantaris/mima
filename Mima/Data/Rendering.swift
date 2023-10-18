@@ -132,7 +132,7 @@ enum Rendering {
             let useSafety = await Model.shared.useSafetyChecker
             log("Using safety filter: \(useSafety && pipeline.canSafetyCheck)")
 
-            var config: PipelineConfiguration = if #available(macOS 14.0, *), PipelineBuilder.userSelectedVersion == .sdXL {
+            var config: PipelineConfiguration = if #available(macOS 14.0, iOS 17.0, *), PipelineBuilder.userSelectedVersion == .sdXL {
                 StableDiffusionXLPipeline.Configuration(prompt: item.prompt)
             } else {
                 StableDiffusionPipeline.Configuration(prompt: item.prompt)
