@@ -298,12 +298,12 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
         #if canImport(AppKit)
             config.computeUnits = .cpuAndGPU
             let pipeline = try await createPipeline(config: config, reduceMemory: false)
-            log("Warmup...")
-            try pipeline.loadResources()
         #else
             config.computeUnits = .cpuAndNeuralEngine
             let pipeline = try await createPipeline(config: config, reduceMemory: true)
         #endif
+        log("Warmup...")
+        try pipeline.loadResources()
         log("Pipeline ready")
         await PipelineState.shared.setPhase(to: .ready(pipeline))
         await Model.shared.startRenderingIfNeeded()
