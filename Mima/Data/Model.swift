@@ -105,6 +105,17 @@ extension Model {
         }
     }
 
+    var previewGenerationInterval: Double {
+        get {
+            let period = UserDefaults.standard.double(forKey: "previewGenerationPeriod")
+            return period == 0 ? 2 : period
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "previewGenerationPeriod")
+            objectWillChange.send()
+        }
+    }
+
     var useSafetyChecker: Bool {
         get {
             UserDefaults.standard.bool(forKey: "useSafetyChecker")

@@ -181,6 +181,19 @@ struct MimaApp: App {
                     }
                 }
 
+                Menu("Preview interval…") {
+                    let counts: [Double] = [0.1, 0.2, 0.3, 0.4, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 9, 10, 20, 30, 60]
+
+                    ForEach(counts, id: \.self) { count in
+                        let isOn = Binding<Bool>(
+                            get: { model.previewGenerationInterval == count },
+                            set: { if $0 { model.previewGenerationInterval = count } }
+                        )
+                        let countString = String(format: "%.1f", count)
+                        Toggle("\(countString) sec", isOn: isOn)
+                    }
+                }
+
                 let isOn = Binding<Bool>(
                     get: { model.useSafetyChecker },
                     set: { model.useSafetyChecker = $0 }

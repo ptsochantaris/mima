@@ -169,41 +169,44 @@ enum Rendering {
             do {
                 var lastProgressCheck = Date.distantPast
                 var firstCheck = true
+                let period = await Model.shared.previewGenerationInterval
+                let previewGenerationPeriod = 0 - period
+                let previewTransitionPeriod = max(0.1, period - 0.2)
                 return try pipeline.generateImages(configuration: config) { progress in
-                    if lastProgressCheck.timeIntervalSinceNow > -2 {
+                    if lastProgressCheck.timeIntervalSinceNow > previewGenerationPeriod {
                         return true
                     }
                     lastProgressCheck = Date.now
-                    return DispatchQueue.main.sync {
-                        if item.state.isCancelled || item.state.isWaiting {
-                            return false
-                        }
-                        if firstCheck {
-                            firstCheck = false
-                            DispatchQueue.main.async {
-                                if case .rendering = item.state {
-                                    withAnimation(.easeInOut(duration: 1.5)) {
-                                        item.state = .rendering(step: 0, total: progressSteps, preview: nil)
-                                    }
-                                }
-                            }
 
-                        } else {
-                            DispatchQueue.global(qos: .background).async {
-                                if let p = progress.currentImages.first, let p {
-                                    let step = Float(progress.step)
-                                    DispatchQueue.main.async {
-                                        if case .rendering = item.state {
-                                            withAnimation(.easeInOut(duration: 1.5)) {
-                                                item.state = .rendering(step: step, total: progressSteps, preview: p)
-                                            }
-                                        }
-                                    }
-                                }
+                    let rendering = DispatchQueue.main.sync { item.state.isRendering }
+                    guard rendering else {
+                        return false
+                    }
+
+                    if firstCheck {
+                        firstCheck = false
+                        DispatchQueue.main.async {
+                            withAnimation(.easeInOut(duration: previewTransitionPeriod)) {
+                                item.state = .rendering(step: 0, total: progressSteps, preview: nil)
                             }
                         }
                         return true
                     }
+
+                    DispatchQueue.global(qos: .utility).async {
+                        guard let p = progress.currentImages.first, let p else {
+                            return
+                        }
+                        let step = Float(progress.step)
+                        DispatchQueue.main.sync {
+                            if case .rendering = item.state {
+                                withAnimation(.easeInOut(duration: previewTransitionPeriod)) {
+                                    item.state = .rendering(step: step, total: progressSteps, preview: p)
+                                }
+                            }
+                        }
+                    }
+                    return true
                 }
             } catch {
                 log("Render error: \(error.localizedDescription)")

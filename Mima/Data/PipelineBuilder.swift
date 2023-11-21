@@ -13,28 +13,28 @@ enum BootupActor {
 let appDocumentsUrl: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 
 enum ModelVersion: String, Identifiable, CaseIterable {
-#if canImport(AppKit)
-    private var latestRevision: String {
-        switch self {
-        case .sd14: "3"
-        case .sd15: "3"
-        case .sd20: "3"
-        case .sd21: "3"
-        case .sdXL: "4"
+    #if canImport(AppKit)
+        private var latestRevision: String {
+            switch self {
+            case .sd14: "3"
+            case .sd15: "3"
+            case .sd20: "3"
+            case .sd21: "3"
+            case .sdXL: "4"
+            }
         }
-    }
 
-    var zipName: String {
-        "\(rawValue).\(latestRevision).zip"
-    }
+        var zipName: String {
+            "\(rawValue).\(latestRevision).zip"
+        }
     #else
-    private var latestRevision: String {
-        "4"
-    }
+        private var latestRevision: String {
+            "4"
+        }
 
-    var zipName: String {
-        "\(rawValue).iOS.\(latestRevision).zip"
-    }
+        var zipName: String {
+            "\(rawValue).iOS.\(latestRevision).zip"
+        }
     #endif
 
     var root: URL {
