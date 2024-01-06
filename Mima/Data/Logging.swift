@@ -1,7 +1,10 @@
 import Foundation
+#if DEBUG
+    import OSLog
+#endif
 
-func log(_ message: String) {
+func log(_ message: @autoclosure () -> String) {
     #if DEBUG
-        NSLog(message)
+        os_log("%{public}@", message())
     #endif
 }

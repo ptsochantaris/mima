@@ -5,6 +5,8 @@ struct ListItemView: View, Identifiable {
     @ObservedObject private var entry: ListItem
     @State private var showPicker = false
     @State private var visibleControls = false
+    @State private var uuid = UUID()
+    @State private var attemptCount = 0
 
     var id: UUID { entry.id }
 
@@ -80,30 +82,40 @@ struct ListItemView: View, Identifiable {
 
             case .done:
                 let sourceUrl = entry.imageUrl
-                AsyncImage(url: sourceUrl) { img in
-                    img
-                        .resizable()
-                    #if canImport(AppKit)
-                        .overlay {
-                            AcceptingFirstMouse()
-                        }
-                    #endif
-                        .onDrag {
-                            let name = entry.exportFilename
-                            let destUrl = URL(fileURLWithPath: NSTemporaryDirectory() + name)
-                            let fm = FileManager.default
-                            if fm.fileExists(atPath: destUrl.path) {
-                                try? fm.removeItem(at: destUrl)
+                AsyncImage(url: sourceUrl, scale: 1, transaction: Transaction()) { phase in
+                    if let error = phase.error {
+                        Image(systemName: "xmark").onAppear {
+                            log("Applying hack for `cancelled` phase: \(error.localizedDescription) attempt: \(attemptCount)")
+                            if attemptCount < 4 {
+                                uuid = UUID()
                             }
-                            try? fm.copyItem(at: sourceUrl, to: destUrl)
-                            let p = NSItemProvider(item: destUrl as NSSecureCoding?, typeIdentifier: UTType.fileURL.identifier)
-                            p.suggestedName = name
-                            return p
                         }
-                        .id(entry.id.uuidString)
-                } placeholder: {
-                    Color.clear
+                    } else if let img = phase.image {
+                        img
+                            .resizable()
+                        #if canImport(AppKit)
+                            .overlay {
+                                AcceptingFirstMouse()
+                            }
+                        #endif
+                            .onDrag {
+                                let name = entry.exportFilename
+                                let destUrl = URL(fileURLWithPath: NSTemporaryDirectory() + name)
+                                let fm = FileManager.default
+                                if fm.fileExists(atPath: destUrl.path) {
+                                    try? fm.removeItem(at: destUrl)
+                                }
+                                try? fm.copyItem(at: sourceUrl, to: destUrl)
+                                let p = NSItemProvider(item: destUrl as NSSecureCoding?, typeIdentifier: UTType.fileURL.identifier)
+                                p.suggestedName = name
+                                return p
+                            }
+                            .id(entry.id.uuidString)
+                    } else {
+                        EmptyView()
+                    }
                 }
+                .id(uuid)
                 .overlay(alignment: .topLeading) {
                     if visibleControls {
                         MimaButon(look: .share)
