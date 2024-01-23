@@ -171,6 +171,7 @@ extension RangeReplaceableCollection {
 #if canImport(AppKit)
 
     import AppKit
+
     typealias IMAGE = NSImage
     func loadImage(from url: URL) -> CGImage? {
         NSImage(contentsOf: url)?.cgImage(forProposedRect: nil, context: nil, hints: nil)
@@ -179,6 +180,7 @@ extension RangeReplaceableCollection {
 #elseif canImport(UIKit)
 
     import UIKit
+
     typealias IMAGE = UIImage
     func loadImage(from url: URL) -> CGImage? {
         guard let data = try? Data(contentsOf: url) else {
