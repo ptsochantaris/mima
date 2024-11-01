@@ -19,7 +19,9 @@ final class BootWatcher: ObservableObject {
         }
     }
 
-    deinit {
-        observer?.cancel()
-    }
+    /*
+     deinit {
+         observer?.cancel()
+     }
+      */
 }

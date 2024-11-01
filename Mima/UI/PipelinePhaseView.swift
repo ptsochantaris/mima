@@ -19,7 +19,7 @@ struct RetryButton: View {
         }
         .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
         .onTapGesture {
-            Task { @RenderActor in
+            Task {
                 PipelineBuilder.current = PipelineBuilder()
             }
         }

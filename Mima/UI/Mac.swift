@@ -43,6 +43,7 @@
             Coordinator(owner: self)
         }
 
+        @MainActor
         final class Coordinator: NSObject, NSSharingServicePickerDelegate {
             let owner: SharePicker
 
@@ -50,9 +51,11 @@
                 self.owner = owner
             }
 
-            func sharingServicePicker(_ sharingServicePicker: NSSharingServicePicker, didChoose _: NSSharingService?) {
+            nonisolated func sharingServicePicker(_ sharingServicePicker: NSSharingServicePicker, didChoose _: NSSharingService?) {
                 sharingServicePicker.delegate = nil
-                owner.isPresented = false
+                Task { @MainActor in
+                    owner.isPresented = false
+                }
             }
         }
     }

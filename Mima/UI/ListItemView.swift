@@ -8,9 +8,10 @@ struct ListItemView: View, Identifiable {
     @State private var uuid = UUID()
     @State private var attemptCount = 0
 
-    var id: UUID { entry.id }
+    let id: UUID
 
     init(entry: ListItem) {
+        id = entry.id
         self.entry = entry
     }
 
@@ -33,7 +34,6 @@ struct ListItemView: View, Identifiable {
             switch state {
             case .cloning, .creating:
                 NewItem(newItemInfo: NewItemModel(prototype: entry))
-                    .padding()
 
             case let .rendering(step, total, _):
                 let progress = Double(step) / Double(total)

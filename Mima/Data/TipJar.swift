@@ -40,6 +40,7 @@ enum TipJarError: LocalizedError {
     }
 }
 
+@MainActor
 final class TipJar: ObservableObject {
     enum State {
         case busy, ready, success, error(Error)
@@ -51,7 +52,7 @@ final class TipJar: ObservableObject {
     @Published var state = State.busy
 
     init() {
-        Task { @MainActor in
+        Task {
             do {
                 var products = try await Product.products(for: [tip1.productId, tip2.productId, tip3.productId])
                 if products.count < 3 {
@@ -82,7 +83,6 @@ final class TipJar: ObservableObject {
         }
     }
 
-    @MainActor
     private func completeTransaction(_ transaction: VerificationResult<StoreKit.Transaction>) async {
         switch transaction {
         case let .unverified(transaction, error):
@@ -98,7 +98,6 @@ final class TipJar: ObservableObject {
         }
     }
 
-    @MainActor
     func purchase(_ tip: Tip) {
         state = .busy
         Task {

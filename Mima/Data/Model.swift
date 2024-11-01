@@ -6,12 +6,12 @@ import Maintini
 import PopTimer
 import SwiftUI
 
+@MainActor
 final class Model: ObservableObject, Codable {
-    @Published var entries: ContiguousArray<ListItem>
-    @Published var tipJar = TipJar()
+    @Published var entries: ContiguousArray<ListItem> = []
     @Published var bottomId = UUID()
 
-    private var renderQueue: ContiguousArray<UUID>
+    private var renderQueue: ContiguousArray<UUID> = []
     private var rendering = false {
         didSet {
             if rendering != oldValue {
@@ -47,16 +47,21 @@ final class Model: ObservableObject, Codable {
         case renderQueue
     }
 
-    init(from decoder: Decoder) throws {
+    nonisolated init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        entries = try values.decode(ContiguousArray<ListItem>.self, forKey: .entries)
-        renderQueue = try values.decode(ContiguousArray<UUID>.self, forKey: .renderQueue)
+        let _entries = try values.decode(ContiguousArray<ListItem>.self, forKey: .entries)
+        let _renderQueue = try values.decode(ContiguousArray<UUID>.self, forKey: .renderQueue)
+        MainActor.assumeIsolated {
+            entries = _entries
+            renderQueue = _renderQueue
+        }
     }
 
-    func encode(to encoder: Encoder) throws {
+    nonisolated func encode(to encoder: Encoder) throws {
+        let (_entries, _renderQueue) = MainActor.assumeIsolated { (entries, renderQueue) }
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(entries, forKey: .entries)
-        try container.encode(renderQueue, forKey: .renderQueue)
+        try container.encode(_entries, forKey: .entries)
+        try container.encode(_renderQueue, forKey: .renderQueue)
     }
 
     static func ingestCloningAsset(from url: URL) -> String {

@@ -18,6 +18,7 @@ enum PipelineActor {
 final actor PipelineState: ObservableObject {
     static let shared = PipelineState()
 
+    @MainActor
     enum Phase {
         case setup(warmupPhase: WarmUpPhase), ready(StableDiffusionPipelineProtocol), shutdown
 
@@ -49,16 +50,14 @@ final actor PipelineState: ObservableObject {
 
     private(set) var phase = Phase.setup(warmupPhase: .booting) {
         didSet {
-            let booting = phase.booting
-            if phaseIsBooting != booting {
-                phaseIsBooting = booting
-                if booting {
-                    Task { @MainActor in
-                        Maintini.startMaintaining()
-                    }
-                } else {
-                    Task { @MainActor in
-                        Maintini.endMaintaining()
+            Task {
+                let booting = await phase.booting
+                if phaseIsBooting != booting {
+                    phaseIsBooting = booting
+                    if booting {
+                        await Maintini.startMaintaining()
+                    } else {
+                        await Maintini.endMaintaining()
                     }
                 }
             }
@@ -130,21 +129,36 @@ enum Rendering {
             }
 
             let useSafety = await Model.shared.useSafetyChecker
-            log("Using safety filter: \(useSafety && pipeline.canSafetyCheck)")
+            let canSafetyCheck = pipeline.canSafetyCheck
+            log("Using safety filter: \(useSafety && canSafetyCheck)")
 
             var config: PipelineConfiguration
-            if #available(macOS 14.0, iOS 17.0, *), PipelineBuilder.userSelectedVersion == .sdXL {
+            switch await PipelineBuilder.userSelectedVersion {
+            case .sdXL:
                 config = StableDiffusionXLPipeline.Configuration(prompt: item.prompt)
                 config.encoderScaleFactor = 0.13025
                 config.decoderScaleFactor = 0.13025
-            } else {
+                config.decoderShiftFactor = 0
+                config.schedulerTimestepShift = 1
+
+            case .sd3m:
+                config = StableDiffusion3Pipeline.Configuration(prompt: item.prompt)
+                config.encoderScaleFactor = 1.5305
+                config.decoderScaleFactor = 1.5305
+                config.decoderShiftFactor = 0.0609
+                config.schedulerTimestepShift = 3
+
+            case .sd14, .sd15, .sd20, .sd21:
                 config = StableDiffusionPipeline.Configuration(prompt: item.prompt)
                 config.encoderScaleFactor = 0.18215
                 config.decoderScaleFactor = 0.18215
+                config.decoderShiftFactor = 0
+                config.schedulerTimestepShift = 1
             }
+
             if !item.imagePath.isEmpty, let img = loadImage(from: URL(fileURLWithPath: item.imagePath)) {
                 log("Loaded starting image from \(item.imagePath)")
-                let side = PipelineBuilder.userSelectedVersion.imageSize
+                let side = await PipelineBuilder.userSelectedVersion.imageSize
                 if img.width == Int(side), img.height == Int(side) {
                     config.startingImage = img
                 } else {
@@ -193,11 +207,9 @@ enum Rendering {
                         return true
                     }
 
-                    DispatchQueue.global(qos: .utility).async {
-                        guard let p = progress.currentImages.first, let p else {
-                            return
-                        }
-                        let step = Float(progress.step)
+                    let p = progress.currentImages.first
+                    let step = Float(progress.step)
+                    if let p {
                         DispatchQueue.main.sync {
                             if case .rendering = item.state {
                                 withAnimation(.easeInOut(duration: previewTransitionPeriod)) {

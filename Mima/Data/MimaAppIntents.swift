@@ -1,9 +1,9 @@
 import AppIntents
 
 enum ListItemStatus: String, AppEnum {
-    static var typeDisplayRepresentation: TypeDisplayRepresentation = "Image status"
+    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Image status"
 
-    static var caseDisplayRepresentations: [ListItemStatus: DisplayRepresentation] = [
+    static let caseDisplayRepresentations: [ListItemStatus: DisplayRepresentation] = [
         .queued: "Queued",
         .rendering: "Rendering",
         .done: "Done",

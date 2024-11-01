@@ -13,25 +13,17 @@ enum BootupActor {
 let appDocumentsUrl: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
 
 enum ModelVersion: String, Identifiable, CaseIterable {
-    #if canImport(AppKit)
-        private var latestRevision: String {
-            switch self {
-            case .sd14: "3"
-            case .sd15: "3"
-            case .sd20: "3"
-            case .sd21: "3"
-            case .sdXL: "4"
-            }
+    private var latestRevision: String {
+        switch self {
+        case .sd3m, .sd14, .sd15, .sd20, .sd21, .sdXL: "5"
         }
+    }
 
+    #if canImport(AppKit)
         var zipName: String {
             "\(rawValue).\(latestRevision).zip"
         }
     #else
-        private var latestRevision: String {
-            "4"
-        }
-
         var zipName: String {
             "\(rawValue).iOS.\(latestRevision).zip"
         }
@@ -49,13 +41,13 @@ enum ModelVersion: String, Identifiable, CaseIterable {
         root.appending(path: "ready.\(latestRevision)", directoryHint: .notDirectory)
     }
 
-    case sd14, sd15, sd20, sd21, sdXL
+    case sd14, sd15, sd20, sd21, sdXL, sd3m
 
     var imageSize: CGFloat {
         switch self {
         case .sd14, .sd15, .sd20, .sd21:
             512
-        case .sdXL:
+        case .sd3m, .sdXL:
             1024
         }
     }
@@ -67,19 +59,12 @@ enum ModelVersion: String, Identifiable, CaseIterable {
         case .sd20: "Stable Diffusion 2.0"
         case .sd21: "Stable Diffusion 2.1"
         case .sdXL: "Stable Diffusion XL"
+        case .sd3m: "Stable Diffusion 3.0"
         }
     }
 
     static var allCases: [ModelVersion] {
-        #if canImport(AppKit)
-            if #available(macOS 14, *) {
-                [.sd14, .sd15, .sd20, .sd21, .sdXL]
-            } else {
-                [.sd14, .sd15, .sd20, .sd21]
-            }
-        #else
-            [.sd14, .sd15, .sd20, .sd21]
-        #endif
+        [.sd14, .sd15, .sd20, .sd21, .sdXL, .sd3m]
     }
 
     var id: String {
@@ -87,18 +72,18 @@ enum ModelVersion: String, Identifiable, CaseIterable {
     }
 }
 
+@MainActor
 final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
     private let modelLocation: URL
     private let zipLocation: URL
     private let zipName: String
     private let displayName: String
     private let readyFileLocation: URL
-    private let isXL: Bool
+    private let useVersion: ModelVersion
 
     static var current: PipelineBuilder?
 
     init(selecting version: ModelVersion? = nil) {
-        let useVersion: ModelVersion
         if let version {
             UserDefaults.standard.set(version.rawValue, forKey: "SelectedModelVersion")
             useVersion = version
@@ -113,7 +98,6 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
         zipName = useVersion.zipName
         zipLocation = useVersion.tempZipLocation
         readyFileLocation = useVersion.readyFileLocation
-        isXL = useVersion == .sdXL
         super.init()
 
         Task {
@@ -132,38 +116,40 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
         return .sd15
     }
 
-    func urlSession(_: URLSession, didCreateTask task: URLSessionTask) {
+    nonisolated func urlSession(_: URLSession, didCreateTask task: URLSessionTask) {
         log("Download task created: \(task.taskIdentifier)")
     }
 
-    func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask, didWriteData _: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
+    nonisolated func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask, didWriteData _: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
         Task {
             await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloading(progress: progress)))
         }
     }
 
-    func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
+    nonisolated func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         try? FileManager.default.moveItem(at: location, to: zipLocation)
     }
 
-    private func handleNetworkError(_ error: Error, in task: URLSessionTask) {
+    private func handleNetworkError(_ error: Error, in task: URLSessionTask) async {
         log("Network error on \(task.originalRequest?.url?.absoluteString ?? "<no url>"): \(error.localizedDescription)")
-        Task {
-            await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
-            await builderDone()
-        }
+        await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
+        await builderDone()
     }
 
-    func urlSession(_: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+    nonisolated func urlSession(_: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         if let error {
-            handleNetworkError(error, in: task)
+            Task {
+                await handleNetworkError(error, in: task)
+            }
             return
         }
 
         if let response = task.response as? HTTPURLResponse, response.statusCode >= 400 {
             let error = NSError(domain: "build.bru.mima.network", code: 1, userInfo: [NSLocalizedDescriptionKey: "Server returned code \(response.statusCode)"])
-            handleNetworkError(error, in: task)
+            Task {
+                await handleNetworkError(error, in: task)
+            }
             return
         }
 
@@ -237,7 +223,7 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
     private lazy var urlSession = URLSession(configuration: URLSessionConfiguration.background(withIdentifier: "build.bru.mima.background-download-session"), delegate: self, delegateQueue: nil)
     // Note: this needs extra handling for iOS, not yet implemented
 
-    func urlSessionDidFinishEvents(forBackgroundURLSession _: URLSession) {
+    nonisolated func urlSessionDidFinishEvents(forBackgroundURLSession _: URLSession) {
         log("Background URL session events complete")
     }
 
@@ -282,11 +268,14 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
 
     @BootupActor
     private func createPipeline(config: MLModelConfiguration, reduceMemory: Bool) async throws -> StableDiffusionPipelineProtocol {
-        if #available(macOS 14.0, iOS 17.0, *), isXL {
-            return try StableDiffusionXLPipeline(resourcesAt: modelLocation, configuration: config, reduceMemory: reduceMemory)
-        } else {
+        switch useVersion {
+        case .sd14, .sd15, .sd20, .sd21:
             let disableSafety = await !Model.shared.useSafetyChecker
             return try StableDiffusionPipeline(resourcesAt: modelLocation, controlNet: [], configuration: config, disableSafety: disableSafety, reduceMemory: reduceMemory)
+        case .sdXL:
+            return try StableDiffusionXLPipeline(resourcesAt: modelLocation, configuration: config, reduceMemory: reduceMemory)
+        case .sd3m:
+            return try StableDiffusion3Pipeline(resourcesAt: modelLocation, configuration: config, reduceMemory: reduceMemory)
         }
     }
 
@@ -313,6 +302,8 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
     private func builderDone() {
         log("Cleaning up pipeline builder...")
         urlSession.invalidateAndCancel()
-        Self.current = nil
+        Task { @MainActor in
+            Self.current = nil
+        }
     }
 }

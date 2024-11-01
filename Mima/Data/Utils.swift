@@ -44,6 +44,7 @@ extension CGImage {
         CGImageDestinationFinalize(destination)
     }
 
+    @MainActor
     static func checkForEntry(from url: URL) -> ListItem? {
         if url.path.hasPrefix(NSTemporaryDirectory()) {
             log("Mima to Mima drop ignored")
@@ -123,6 +124,7 @@ extension Notification.Name {
     static let ScrollToBottom = Notification.Name("ScrollToBottom")
 }
 
+@MainActor
 final class ImageDropDelegate: DropDelegate {
     private let newItemInfo: NewItemModel?
     init(newItemInfo: NewItemModel? = nil) {
@@ -142,15 +144,13 @@ final class ImageDropDelegate: DropDelegate {
                 log("Drop error - no URL or error")
                 return
             }
-            if let info = self.newItemInfo {
-                Task { @MainActor in
+            Task { @MainActor in
+                if let info = self.newItemInfo {
                     info.originalImagePath = url.path
                     info.imageName = url.lastPathComponent
                     info.imagePath = Model.ingestCloningAsset(from: url)
                     info.updatePrototype()
-                }
-            } else if let entry = CGImage.checkForEntry(from: url) {
-                Task { @MainActor in
+                } else if let entry = CGImage.checkForEntry(from: url) {
                     await Model.shared.add(entry: entry)
                 }
             }

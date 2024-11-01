@@ -89,7 +89,7 @@ struct AboutView: View {
                         .font(.title)
                         .bold()
                     VStack(alignment: .trailing) {
-                        Text("© Copyright 2023")
+                        Text("© Copyright 2023-2024")
                             .font(.headline)
                         Text("Paul Tsochantaris")
                             .font(.headline)

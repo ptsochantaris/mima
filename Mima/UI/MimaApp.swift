@@ -153,7 +153,7 @@ struct MimaApp: App {
                                 guard newValue else {
                                     return
                                 }
-                                Task { @RenderActor in
+                                Task {
                                     await PipelineState.shared.shutDown()
                                     PipelineBuilder.current = PipelineBuilder(selecting: version)
                                 }
