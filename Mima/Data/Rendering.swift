@@ -15,7 +15,8 @@ enum PipelineActor {
     static let shared = ActorType()
 }
 
-final actor PipelineState: ObservableObject {
+@MainActor @Observable
+final class PipelineState {
     static let shared = PipelineState()
 
     @MainActor
@@ -51,13 +52,13 @@ final actor PipelineState: ObservableObject {
     private(set) var phase = Phase.setup(warmupPhase: .booting) {
         didSet {
             Task {
-                let booting = await phase.booting
+                let booting = phase.booting
                 if phaseIsBooting != booting {
                     phaseIsBooting = booting
                     if booting {
-                        await Maintini.startMaintaining()
+                        Maintini.startMaintaining()
                     } else {
-                        await Maintini.endMaintaining()
+                        Maintini.endMaintaining()
                     }
                 }
             }
@@ -73,7 +74,7 @@ final actor PipelineState: ObservableObject {
         }
     }
 
-    @MainActor @Published private(set) var reportedPhase = Phase.setup(warmupPhase: .booting)
+    @MainActor private(set) var reportedPhase = Phase.setup(warmupPhase: .booting)
 
     func shutDown() {
         if case let .ready(pipeline) = phase {
@@ -99,10 +100,10 @@ enum FetchError: Error {
     case noDataDownloaded(String)
 }
 
+@MainActor
 enum Rendering {
-    @MainActor
     static func render(_ item: ListItem) async -> Bool {
-        switch await PipelineState.shared.phase {
+        switch PipelineState.shared.phase {
         case .setup:
             break
         case .ready:
@@ -248,9 +249,8 @@ enum Rendering {
         return true
     }
 
-    @MainActor
-    static func shutdown() async {
-        await PipelineState.shared.shutDown()
+    static func shutdown() {
+        PipelineState.shared.shutDown()
         Model.shared.saveNow()
     }
 }

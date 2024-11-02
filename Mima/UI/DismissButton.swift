@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct DismissButton: View {
-    @ObservedObject private var entry: ListItem
+    private let entry: ListItem
     private let visibleControls: Bool
 
     init(entry: ListItem, visibleControls: Bool) {

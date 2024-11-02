@@ -1,22 +1,22 @@
 import Foundation
 import SwiftUI
 
-@MainActor
-final class NewItemModel: ObservableObject {
+@MainActor @Observable
+final class NewItemModel {
     var prototype: ListItem
 
-    @Published var showSafetyCheckerAlert = false
-    @Published var promptText = ""
-    @Published var imageName = ""
-    @Published var imagePath = ""
-    @Published var originalImagePath = ""
-    @Published var strengthText = ""
-    @Published var negativePromptText = ""
-    @Published var seedText = ""
-    @Published var stepText = ""
-    @Published var guidanceText = ""
+    var showSafetyCheckerAlert = false
+    var promptText = ""
+    var imageName = ""
+    var imagePath = ""
+    var originalImagePath = ""
+    var strengthText = ""
+    var negativePromptText = ""
+    var seedText = ""
+    var stepText = ""
+    var guidanceText = ""
 
-    @Published var flashWhenVisible = false {
+    var flashWhenVisible = false {
         didSet {
             if flashWhenVisible {
                 Task {
@@ -102,14 +102,11 @@ final class NewItemModel: ObservableObject {
             prototype.willClone = { [weak self] in
                 self?.updatePrototype()
             }
-            Task {
-                await Model.shared.createItem(basedOn: prototype, count: count, scroll: !optionClick)
-                prototype.willClone = nil
-            }
+            Model.shared.createItem(basedOn: prototype, count: count, scroll: !optionClick)
+            prototype.willClone = nil
+
         } else {
-            Task {
-                await Model.shared.replaceItem(basedOn: prototype)
-            }
+            Model.shared.replaceItem(basedOn: prototype)
         }
     }
 }

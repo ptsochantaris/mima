@@ -2,7 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ListItemView: View, Identifiable {
-    @ObservedObject private var entry: ListItem
+    private let entry: ListItem
     @State private var showPicker = false
     @State private var visibleControls = false
     @State private var uuid = UUID()
@@ -131,9 +131,7 @@ struct ListItemView: View, Identifiable {
                     if visibleControls {
                         MimaButon(look: .encore)
                             .onTapGesture {
-                                Task {
-                                    await Model.shared.createRandomVariant(of: entry)
-                                }
+                                Model.shared.createRandomVariant(of: entry)
                             }
                     }
                 }

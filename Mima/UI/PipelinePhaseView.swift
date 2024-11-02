@@ -43,7 +43,7 @@ struct PipelinePhaseView: View {
             case let .downloading(progress):
                 Icon(name: "clock")
                 VStack(alignment: .leading) {
-                    Text("Downloading the \(PipelineBuilder.userSelectedVersion.displayName) engine. This is only needed the first time, or after an egine upgrade.")
+                    Text("Downloading the \(PipelineBuilder.userSelectedVersion.displayName) engine. This is only needed the first time, or after an engine upgrade.")
                         .fixedSize(horizontal: false, vertical: true)
                     GeometryReader { proxy in
                         HStack(spacing: 0) {

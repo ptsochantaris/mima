@@ -6,21 +6,21 @@ import Maintini
 import PopTimer
 import SwiftUI
 
-@MainActor
-final class Model: ObservableObject, Codable {
-    @Published var entries: ContiguousArray<ListItem> = []
-    @Published var bottomId = UUID()
+@MainActor @Observable
+final class Model: Codable {
+    var entries: ContiguousArray<ListItem> = []
+    var bottomId = UUID()
 
     private var renderQueue: ContiguousArray<UUID> = []
     private var rendering = false {
         didSet {
             if rendering != oldValue {
                 if rendering {
-                    Task { @MainActor in
+                    Task {
                         Maintini.startMaintaining()
                     }
                 } else {
-                    Task { @MainActor in
+                    Task {
                         Maintini.endMaintaining()
                     }
                 }
@@ -30,6 +30,7 @@ final class Model: ObservableObject, Codable {
 
     private static let cloningAssets = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appending(path: "cloningAssets", directoryHint: .isDirectory)
 
+    @ObservationIgnored
     private lazy var saveTimer = PopTimer(timeInterval: 0.1) { [weak self] in
         guard let self else { return }
         saveNow()
@@ -40,6 +41,18 @@ final class Model: ObservableObject, Codable {
             ListItem(prompt: "A colorful bowl of fruit on a wooden table", imagePath: "", originalImagePath: "", imageName: "", strength: ListItem.defaultStrength, negativePrompt: "Berries", seed: nil, steps: ListItem.defaultSteps, guidance: ListItem.defaultGuidance, state: .creating)
         ]
         renderQueue = ContiguousArray<UUID>()
+
+        restoreSettings()
+    }
+
+    private func restoreSettings() {
+        let count = UserDefaults.standard.integer(forKey: "optionClickRepetitions")
+        optionClickRepetitions = count == 0 ? 10 : count
+
+        let period = UserDefaults.standard.double(forKey: "previewGenerationPeriod")
+        previewGenerationInterval = period == 0 ? 2 : period
+
+        useSafetyChecker = UserDefaults.standard.bool(forKey: "useSafetyChecker")
     }
 
     enum CodingKeys: CodingKey {
@@ -54,6 +67,7 @@ final class Model: ObservableObject, Codable {
         MainActor.assumeIsolated {
             entries = _entries
             renderQueue = _renderQueue
+            restoreSettings()
         }
     }
 
@@ -89,45 +103,26 @@ final class Model: ObservableObject, Codable {
             model = Model()
         }
 
-        Task {
-            await model.startRenderingIfNeeded()
-        }
+        model.startRenderingIfNeeded()
 
         return model
     }()
-}
 
-@MainActor
-extension Model {
-    var optionClickRepetitions: Int {
-        get {
-            let count = UserDefaults.standard.integer(forKey: "optionClickRepetitions")
-            return count == 0 ? 10 : count
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: "optionClickRepetitions")
-            objectWillChange.send()
+    var optionClickRepetitions = 10 {
+        didSet {
+            UserDefaults.standard.set(optionClickRepetitions, forKey: "optionClickRepetitions")
         }
     }
 
-    var previewGenerationInterval: Double {
-        get {
-            let period = UserDefaults.standard.double(forKey: "previewGenerationPeriod")
-            return period == 0 ? 2 : period
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: "previewGenerationPeriod")
-            objectWillChange.send()
+    var previewGenerationInterval: Double = 2 {
+        didSet {
+            UserDefaults.standard.set(previewGenerationInterval, forKey: "previewGenerationPeriod")
         }
     }
 
-    var useSafetyChecker: Bool {
-        get {
-            UserDefaults.standard.bool(forKey: "useSafetyChecker")
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: "useSafetyChecker")
-            objectWillChange.send()
+    var useSafetyChecker = false {
+        didSet {
+            UserDefaults.standard.set(useSafetyChecker, forKey: "useSafetyChecker")
         }
     }
 
@@ -175,7 +170,7 @@ extension Model {
         return nil
     }
 
-    func startRenderingIfNeeded() async {
+    func startRenderingIfNeeded() {
         if rendering {
             log("Already rendering")
             return
@@ -184,7 +179,7 @@ extension Model {
             log("Nothing to render")
             return
         }
-        if case .setup = await PipelineState.shared.phase {
+        if case .setup = PipelineState.shared.phase {
             log("Pipeline not ready")
             return
         }
@@ -210,13 +205,13 @@ extension Model {
         #endif
     }
 
-    private func submitToQueue(_ ids: [UUID]) async {
+    private func submitToQueue(_ ids: [UUID]) {
         renderQueue.append(contentsOf: ids)
-        await startRenderingIfNeeded()
+        startRenderingIfNeeded()
         save()
     }
 
-    func createItem(basedOn prototype: ListItem, count: Int, scroll: Bool) async {
+    func createItem(basedOn prototype: ListItem, count: Int, scroll: Bool) {
         guard let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) else {
             return
         }
@@ -229,10 +224,10 @@ extension Model {
             }
         }
 
-        await submitToQueue(newItems.map(\.id))
+        submitToQueue(newItems.map(\.id))
     }
 
-    func replaceItem(basedOn prototype: ListItem) async {
+    func replaceItem(basedOn prototype: ListItem) {
         guard let creatorIndex = entries.firstIndex(where: { $0.id == prototype.id }) else {
             return
         }
@@ -241,7 +236,7 @@ extension Model {
         withAnimation(.easeInOut(duration: 0.2)) {
             entries[creatorIndex] = newItem
         }
-        await submitToQueue([newItem.id])
+        submitToQueue([newItem.id])
     }
 
     func state(of entity: ListItem) -> ListItem.State? {
@@ -250,7 +245,7 @@ extension Model {
 
     func addAndRender(entry: ListItem) async {
         await add(entry: entry)
-        await submitToQueue([entry.id])
+        submitToQueue([entry.id])
     }
 
     func add(entry: ListItem) async {
@@ -270,7 +265,7 @@ extension Model {
         }
     }
 
-    func createRandomVariant(of entry: ListItem) async {
+    func createRandomVariant(of entry: ListItem) {
         guard let index = entries.firstIndex(where: { $0.id == entry.id }) else {
             return
         }
@@ -284,7 +279,7 @@ extension Model {
         withAnimation(.easeInOut(duration: 0.2)) {
             entries.insert(contentsOf: newEntries, at: index + 1)
         }
-        await submitToQueue(newEntries.map(\.id))
+        submitToQueue(newEntries.map(\.id))
     }
 
     func insertCreator(for entry: ListItem) {

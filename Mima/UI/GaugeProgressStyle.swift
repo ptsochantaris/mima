@@ -16,7 +16,7 @@ private struct SpinCircle: View {
 }
 
 struct ProgressCircle: View {
-    @ObservedObject var entry: ListItem
+    let entry: ListItem
     @State private var firstUpdateAfterAppearing = true
 
     var body: some View {

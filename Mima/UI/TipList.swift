@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TipList: View {
-    @StateObject private var jar = TipJar()
+    private let jar = TipJar()
     var body: some View {
         VStack(alignment: .trailing) {
             switch jar.state {

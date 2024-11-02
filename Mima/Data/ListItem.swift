@@ -1,7 +1,8 @@
 import Foundation
 import SwiftUI
 
-final class ListItem: ObservableObject, Codable, Identifiable, @unchecked Sendable {
+@Observable
+final class ListItem: Codable, Identifiable, @unchecked Sendable {
     static let defaultSteps = 50
     static let defaultGuidance: Float = 7.5
     static let defaultStrength: Float = 0.6
@@ -19,8 +20,8 @@ final class ListItem: ObservableObject, Codable, Identifiable, @unchecked Sendab
 
     var willClone: (() -> Void)?
 
-    @Published var imageName: String
-    @Published var state: State
+    var imageName: String
+    var state: State
 
     enum CodingKeys: CodingKey {
         case prompt

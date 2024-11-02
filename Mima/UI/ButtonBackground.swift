@@ -1,23 +1,13 @@
 import SwiftUI
 
 struct ButtonOverlayBackground: View {
+    @Environment(\.scenePhase) private var scenePhase
+
     var body: some View {
-        Group {
-            #if canImport(AppKit)
-                if NSApp.isActive {
-                    Circle()
-                        .foregroundStyle(.ultraThinMaterial)
-                } else {
-                    Circle()
-                        .foregroundStyle(.ultraThinMaterial.opacity(0.2))
-                }
-            #else
-                Circle()
-                    .foregroundStyle(.ultraThinMaterial)
-            #endif
-        }
-        .frame(width: 26, height: 26)
-        .padding(13)
+        Circle()
+            .foregroundStyle(.ultraThinMaterial.opacity(scenePhase == .active ? 1 : 0.2))
+            .frame(width: 26, height: 26)
+            .padding(13)
     }
 }
 

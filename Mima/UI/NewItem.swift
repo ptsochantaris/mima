@@ -2,7 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct NewItem: View {
-    @StateObject var newItemInfo: NewItemModel
+    @Bindable var newItemInfo: NewItemModel
 
     private func go() {
         if PipelineBuilder.userSelectedVersion == .sdXL, Model.shared.useSafetyChecker {

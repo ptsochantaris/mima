@@ -9,7 +9,7 @@ import SwiftUI
 
         func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
             Task {
-                await Rendering.shutdown()
+                Rendering.shutdown()
                 sender.reply(toApplicationShouldTerminate: true)
             }
             return .terminateLater
@@ -31,8 +31,8 @@ import SwiftUI
 #endif
 
 private struct ContentView: View {
-    @ObservedObject private var model = Model.shared
-    @ObservedObject private var pipeline = PipelineState.shared
+    let model: Model
+    let pipeline: PipelineState
 
     var body: some View {
         VStack(spacing: 0) {
@@ -95,12 +95,12 @@ struct MimaApp: App {
 
     @Environment(\.openWindow) var openWindow
     @State private var mainIsVisible = false
-    @StateObject private var bootWatcher = BootWatcher()
-    @ObservedObject private var model = Model.shared
+    private let model = Model.shared
+    private let pipeline = PipelineState.shared
 
     var body: some Scene {
         WindowGroup("Mima", id: "main") {
-            ContentView()
+            ContentView(model: model, pipeline: pipeline)
                 .onAppear {
                     mainIsVisible = true
                     if !UserDefaults.standard.bool(forKey: "InitialHelpShown") {
@@ -154,14 +154,14 @@ struct MimaApp: App {
                                     return
                                 }
                                 Task {
-                                    await PipelineState.shared.shutDown()
+                                    PipelineState.shared.shutDown()
                                     PipelineBuilder.current = PipelineBuilder(selecting: version)
                                 }
                                 model.cancelAllRendering()
                             }
                         )
                         Toggle(version.displayName, isOn: isOn)
-                            .disabled(isOn.wrappedValue || bootWatcher.booting)
+                            .disabled(isOn.wrappedValue || pipeline.reportedPhase.booting)
                     }
                 }
 

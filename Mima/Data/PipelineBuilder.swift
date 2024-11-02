@@ -133,7 +133,7 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
 
     private func handleNetworkError(_ error: Error, in task: URLSessionTask) async {
         log("Network error on \(task.originalRequest?.url?.absoluteString ?? "<no url>"): \(error.localizedDescription)")
-        await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
+        PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
         await builderDone()
     }
 

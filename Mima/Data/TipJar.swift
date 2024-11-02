@@ -2,7 +2,8 @@ import Foundation
 import StoreKit
 import SwiftUI
 
-final class Tip: ObservableObject {
+@Observable @MainActor
+final class Tip {
     enum State {
         case notPurchased, otherWasPurchased, purchased
     }
@@ -18,8 +19,8 @@ final class Tip: ObservableObject {
         }
     }
 
-    @Published var priceString: String
-    @Published var state: State
+    var priceString: String
+    var state: State
 
     init(productId: String, image: String) {
         priceString = "…"
@@ -40,8 +41,8 @@ enum TipJarError: LocalizedError {
     }
 }
 
-@MainActor
-final class TipJar: ObservableObject {
+@MainActor @Observable
+final class TipJar {
     enum State {
         case busy, ready, success, error(Error)
     }
@@ -49,7 +50,7 @@ final class TipJar: ObservableObject {
     let tip1 = Tip(productId: "build.bru.Mima.TipTier1", image: "🙂")
     let tip2 = Tip(productId: "build.bru.Mima.TipTier2", image: "🤗")
     let tip3 = Tip(productId: "build.bru.Mima.TipTier3", image: "😱")
-    @Published var state = State.busy
+    var state = State.busy
 
     init() {
         Task {

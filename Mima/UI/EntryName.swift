@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct EntryName: View {
-    @ObservedObject private var entry: ListItem
+    private let entry: ListItem
 
     private enum Mode {
         case bothEmpty, bothFilled, positiveOnly, negativeOnly
