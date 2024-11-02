@@ -80,6 +80,7 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
     private let displayName: String
     private let readyFileLocation: URL
     private let useVersion: ModelVersion
+    private let pipelineState = PipelineState.shared
 
     static var current: PipelineBuilder?
 
@@ -123,7 +124,7 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
     nonisolated func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask, didWriteData _: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
         Task {
-            await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloading(progress: progress)))
+            await pipelineState.setPhase(to: .setup(warmupPhase: .downloading(progress: progress)))
         }
     }
 
@@ -133,7 +134,7 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
 
     private func handleNetworkError(_ error: Error, in task: URLSessionTask) async {
         log("Network error on \(task.originalRequest?.url?.absoluteString ?? "<no url>"): \(error.localizedDescription)")
-        PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
+        pipelineState.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
         await builderDone()
     }
 
@@ -158,7 +159,7 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
                 try await modelDownloaded()
             } catch {
                 log("Error setting up the model: \(error.localizedDescription)")
-                await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
+                await pipelineState.setPhase(to: .setup(warmupPhase: .downloadingError(error: error)))
             }
             await builderDone()
         }
@@ -168,7 +169,7 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
     private func startup() async {
         log("Building pipeline assets for \(displayName)")
 
-        await PipelineState.shared.setPhase(to: .setup(warmupPhase: .booting))
+        await pipelineState.setPhase(to: .setup(warmupPhase: .booting))
 
         let downloadTasks = await urlSession.tasks.2
         while downloadTasks.count > 1, let last = downloadTasks.last {
@@ -207,14 +208,14 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
             }
 
             do {
-                await PipelineState.shared.setPhase(to: .setup(warmupPhase: .downloading(progress: 0)))
+                await pipelineState.setPhase(to: .setup(warmupPhase: .downloading(progress: 0)))
                 log("Requesting new model transfer...")
                 let downloadUrl = URL(string: "https://bruvault.net/\(zipName)")!
                 urlSession.downloadTask(with: downloadUrl).resume()
             }
         } catch {
             log("Error setting up the model: \(error.localizedDescription)")
-            await PipelineState.shared.setPhase(to: .setup(warmupPhase: .initialisingError(error: error)))
+            await pipelineState.setPhase(to: .setup(warmupPhase: .initialisingError(error: error)))
             builderDone()
         }
     }
@@ -241,7 +242,7 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
     @BootupActor
     private func modelDownloaded() async throws {
         log("Downloaded model to \(zipLocation.path)...")
-        await PipelineState.shared.setPhase(to: .setup(warmupPhase: .expanding))
+        await pipelineState.setPhase(to: .setup(warmupPhase: .expanding))
 
         log("Decompressing model...")
         let fm = FileManager.default
@@ -281,20 +282,20 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
 
     @BootupActor
     private func modelReady() async throws {
-        await PipelineState.shared.setPhase(to: .setup(warmupPhase: .initialising))
+        await pipelineState.setPhase(to: .setup(warmupPhase: .initialising))
         log("Constructing pipeline...")
         let config = MLModelConfiguration()
         #if canImport(AppKit)
             config.computeUnits = .cpuAndGPU
-            let pipeline = try await createPipeline(config: config, reduceMemory: false)
+            let newPipeline = try await createPipeline(config: config, reduceMemory: false)
         #else
             config.computeUnits = .cpuAndNeuralEngine
-            let pipeline = try await createPipeline(config: config, reduceMemory: true)
+            let newPipeline = try await createPipeline(config: config, reduceMemory: true)
         #endif
         log("Warmup...")
-        try pipeline.loadResources()
+        try newPipeline.loadResources()
         log("Pipeline ready")
-        await PipelineState.shared.setPhase(to: .ready(pipeline))
+        await pipelineState.setPhase(to: .ready(newPipeline))
         await Model.shared.startRenderingIfNeeded()
     }
 

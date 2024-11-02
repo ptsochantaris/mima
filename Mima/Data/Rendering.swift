@@ -103,7 +103,8 @@ enum FetchError: Error {
 @MainActor
 enum Rendering {
     static func render(_ item: ListItem) async -> Bool {
-        switch PipelineState.shared.phase {
+        let pipelineState = PipelineState.shared
+        switch pipelineState.phase {
         case .setup:
             break
         case .ready:
@@ -118,7 +119,7 @@ enum Rendering {
 
         let result: [CGImage?] = await Task { @RenderActor in
             guard
-                case let .ready(pipeline) = await PipelineState.shared.phase,
+                case let .ready(pipeline) = await pipelineState.phase,
                 await (MainActor.run { item.state.isCancelled }) == false
             else {
                 return []

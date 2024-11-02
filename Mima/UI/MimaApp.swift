@@ -96,11 +96,11 @@ struct MimaApp: App {
     @Environment(\.openWindow) var openWindow
     @State private var mainIsVisible = false
     private let model = Model.shared
-    private let pipeline = PipelineState.shared
+    private let pipelineState = PipelineState.shared
 
     var body: some Scene {
         WindowGroup("Mima", id: "main") {
-            ContentView(model: model, pipeline: pipeline)
+            ContentView(model: model, pipeline: pipelineState)
                 .onAppear {
                     mainIsVisible = true
                     if !UserDefaults.standard.bool(forKey: "InitialHelpShown") {
@@ -154,14 +154,14 @@ struct MimaApp: App {
                                     return
                                 }
                                 Task {
-                                    PipelineState.shared.shutDown()
+                                    pipelineState.shutDown()
                                     PipelineBuilder.current = PipelineBuilder(selecting: version)
                                 }
                                 model.cancelAllRendering()
                             }
                         )
                         Toggle(version.displayName, isOn: isOn)
-                            .disabled(isOn.wrappedValue || pipeline.reportedPhase.booting)
+                            .disabled(isOn.wrappedValue || pipelineState.reportedPhase.booting)
                     }
                 }
 
