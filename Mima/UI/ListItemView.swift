@@ -33,7 +33,7 @@ struct ListItemView: View, Identifiable {
 
             switch state {
             case .cloning, .creating:
-                NewItem(newItemInfo: NewItemModel(prototype: entry))
+                NewItem(entry: entry)
 
             case let .rendering(step, total, _):
                 let progress = Double(step) / Double(total)
