@@ -29,7 +29,7 @@ enum ListItemStatus: String, AppEnum {
     }
 }
 
-enum GladysAppIntents {
+enum MimaAppIntents {
     struct MimaImageEntity: AppEntity, Identifiable {
         struct MimaImageQuery: EntityStringQuery {
             @MainActor
@@ -163,15 +163,15 @@ enum GladysAppIntents {
         }
     }
 
-    struct GladysShortcuts: AppShortcutsProvider {
+    struct MimaShortcuts: AppShortcutsProvider {
         static var appShortcuts: [AppShortcut] {
             AppShortcut(intent: CreateItem(),
-                        phrases: ["Create image in Mima"],
+                        phrases: ["Create image in ${applicationName}"],
                         shortTitle: "Create image",
                         systemImageName: "wand.and.stars")
 
             AppShortcut(intent: GetItemStatus(),
-                        phrases: ["Get Mima image status"],
+                        phrases: ["Get ${applicationName} image status"],
                         shortTitle: "Get image status",
                         systemImageName: "doc.text.magnifyingglass")
         }
