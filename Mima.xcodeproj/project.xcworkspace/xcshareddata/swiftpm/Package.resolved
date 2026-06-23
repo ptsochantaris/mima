@@ -7,7 +7,7 @@
       "location" : "https://github.com/ptsochantaris/maintini",
       "state" : {
         "branch" : "main",
-        "revision" : "fa3c7d1b5ee1ac78842e78857707e2f97f42cbb4"
+        "revision" : "7aac5d225361b6c91db19b9c1e8540ec01935ce7"
       }
     },
     {
@@ -25,7 +25,7 @@
       "location" : "https://github.com/ptsochantaris/pop-timer",
       "state" : {
         "branch" : "main",
-        "revision" : "976417188ba25b95ef9e469927502e722f2eca68"
+        "revision" : "f1267d84a18f4dbdd97875949659226eb770318d"
       }
     },
     {
