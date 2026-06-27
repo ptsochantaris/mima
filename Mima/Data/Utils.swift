@@ -159,15 +159,6 @@ final class ImageDropDelegate: DropDelegate {
     }
 }
 
-extension RangeReplaceableCollection {
-    mutating func popFirst() -> Element? {
-        if !isEmpty {
-            return removeFirst()
-        }
-        return nil
-    }
-}
-
 #if canImport(AppKit)
 
     import AppKit

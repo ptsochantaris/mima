@@ -133,8 +133,12 @@ enum MimaAppIntents {
         func perform() async throws -> some IntentResult {
             let item = image.item
             let exportUrl = FileManager.default.temporaryDirectory.appending(path: item.exportFilename, directoryHint: .notDirectory)
-            try FileManager.default.copyItem(at: item.imageUrl, to: exportUrl)
-            var file = IntentFile(fileURL: item.imageUrl, filename: item.exportFilename, type: .png)
+            let fm = FileManager.default
+            if fm.fileExists(atPath: exportUrl.path) {
+                try fm.removeItem(at: exportUrl)
+            }
+            try fm.copyItem(at: item.imageUrl, to: exportUrl)
+            var file = IntentFile(fileURL: exportUrl, filename: item.exportFilename, type: .png)
             file.removedOnCompletion = true
             return .result(value: file)
         }

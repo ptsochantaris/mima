@@ -14,9 +14,7 @@ let appDocumentsUrl: URL = FileManager.default.urls(for: .documentDirectory, in:
 
 enum ModelVersion: String, Identifiable, CaseIterable {
     private var latestRevision: String {
-        switch self {
-        case .sd3m, .sd14, .sd15, .sd20, .sd21, .sdXL: "5"
-        }
+        "5"
     }
 
     #if canImport(AppKit)
@@ -63,10 +61,6 @@ enum ModelVersion: String, Identifiable, CaseIterable {
         }
     }
 
-    static var allCases: [ModelVersion] {
-        [.sd14, .sd15, .sd20, .sd21, .sdXL, .sd3m]
-    }
-
     var id: String {
         rawValue
     }
@@ -111,7 +105,7 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
     }
 
     static var userSelectedVersion: ModelVersion {
-        if let value = UserDefaults.standard.string(forKey: "SelectedModelVersion"), let version = ModelVersion(rawValue: value), ModelVersion.allCases.contains(version) {
+        if let value = UserDefaults.standard.string(forKey: "SelectedModelVersion"), let version = ModelVersion(rawValue: value) {
             return version
         }
         return .sd15
@@ -172,8 +166,8 @@ final class PipelineBuilder: NSObject, URLSessionDownloadDelegate {
         await pipelineState.setPhase(to: .setup(warmupPhase: .booting))
 
         let downloadTasks = await urlSession.tasks.2
-        while downloadTasks.count > 1, let last = downloadTasks.last {
-            last.cancel()
+        for staleTask in downloadTasks.dropFirst() {
+            staleTask.cancel()
         }
 
         do {

@@ -3,6 +3,7 @@ import CoreML
 import Foundation
 import Maintini
 import StableDiffusion
+import Synchronization
 import SwiftUI
 
 enum WarmUpPhase {
@@ -51,15 +52,13 @@ final class PipelineState {
 
     private(set) var phase = Phase.setup(warmupPhase: .booting) {
         didSet {
-            Task {
-                let booting = phase.booting
-                if phaseIsBooting != booting {
-                    phaseIsBooting = booting
-                    if booting {
-                        Maintini.startMaintaining()
-                    } else {
-                        Maintini.endMaintaining()
-                    }
+            let booting = phase.booting
+            if phaseIsBooting != booting {
+                phaseIsBooting = booting
+                if booting {
+                    Maintini.startMaintaining()
+                } else {
+                    Maintini.endMaintaining()
                 }
             }
         }
@@ -79,7 +78,6 @@ final class PipelineState {
     func shutDown() {
         if case let .ready(pipeline) = phase {
             setPhase(to: .shutdown)
-            phase = .shutdown
             pipeline.unloadResources()
             log("Pipeline shutdown")
         }
@@ -100,19 +98,28 @@ enum FetchError: Error {
     case noDataDownloaded(String)
 }
 
+/// Thread-safe gate that lets the background render callback decide whether to keep
+/// generating without blocking the main thread. The authoritative value is mirrored
+/// from `item.state` via a non-blocking hop to the main queue.
+private final class RenderGate: Sendable {
+    private let keepGoing = Mutex(true)
+
+    var shouldContinue: Bool {
+        keepGoing.withLock { $0 }
+    }
+
+    func set(_ value: Bool) {
+        keepGoing.withLock { $0 = value }
+    }
+}
+
 @MainActor
 enum Rendering {
     static func render(_ item: ListItem) async -> Bool {
         let pipelineState = PipelineState.shared
         switch pipelineState.phase {
-        case .setup:
+        case .setup, .ready:
             break
-        case .ready:
-            Task { @MainActor in
-                withAnimation(.easeInOut(duration: 1)) {
-                    item.state = .rendering(step: -1, total: Float(item.steps), preview: nil)
-                }
-            }
         case .shutdown:
             return false
         }
@@ -126,8 +133,10 @@ enum Rendering {
             }
 
             log("Starting render of item \(item.id)")
-            Task { @MainActor in
-                item.state = .rendering(step: -1, total: Float(item.steps), preview: nil)
+            await MainActor.run {
+                withAnimation(.easeInOut(duration: 1)) {
+                    item.state = .rendering(step: -1, total: Float(item.steps), preview: nil)
+                }
             }
 
             let useSafety = await Model.shared.useSafetyChecker
@@ -183,6 +192,7 @@ enum Rendering {
             }
 
             do {
+                let gate = RenderGate()
                 var lastProgressCheck = Date.distantPast
                 var firstCheck = true
                 let period = await Model.shared.previewGenerationInterval
@@ -194,14 +204,14 @@ enum Rendering {
                     }
                     lastProgressCheck = Date.now
 
-                    let rendering = DispatchQueue.main.sync { item.state.isRendering }
-                    guard rendering else {
+                    // Non-blocking cancellation check: read the value last mirrored from the main actor.
+                    guard gate.shouldContinue else {
                         return false
                     }
 
                     if firstCheck {
                         firstCheck = false
-                        DispatchQueue.main.async {
+                        Task { @MainActor in
                             withAnimation(.easeInOut(duration: previewTransitionPeriod)) {
                                 item.state = .rendering(step: 0, total: progressSteps, preview: nil)
                             }
@@ -209,14 +219,15 @@ enum Rendering {
                         return true
                     }
 
-                    let p = progress.currentImages.first
+                    let preview = progress.currentImages.first ?? nil
                     let step = Float(progress.step)
-                    if let p {
-                        DispatchQueue.main.sync {
-                            if case .rendering = item.state {
-                                withAnimation(.easeInOut(duration: previewTransitionPeriod)) {
-                                    item.state = .rendering(step: step, total: progressSteps, preview: p)
-                                }
+                    Task { @MainActor in
+                        // Mirror the authoritative state back into the gate and push the preview in one hop.
+                        let stillRendering = item.state.isRendering
+                        gate.set(stillRendering)
+                        if stillRendering, let preview {
+                            withAnimation(.easeInOut(duration: previewTransitionPeriod)) {
+                                item.state = .rendering(step: step, total: progressSteps, preview: preview)
                             }
                         }
                     }

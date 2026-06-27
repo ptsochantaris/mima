@@ -87,6 +87,7 @@ struct ListItemView: View, Identifiable {
                         Image(systemName: "xmark").onAppear {
                             log("Applying hack for `cancelled` phase: \(error.localizedDescription) attempt: \(attemptCount)")
                             if attemptCount < 4 {
+                                attemptCount += 1
                                 uuid = UUID()
                             }
                         }

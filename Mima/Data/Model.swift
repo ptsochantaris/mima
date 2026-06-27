@@ -16,13 +16,9 @@ final class Model: Codable {
         didSet {
             if rendering != oldValue {
                 if rendering {
-                    Task {
-                        Maintini.startMaintaining()
-                    }
+                    Maintini.startMaintaining()
                 } else {
-                    Task {
-                        Maintini.endMaintaining()
-                    }
+                    Maintini.endMaintaining()
                 }
             }
         }
